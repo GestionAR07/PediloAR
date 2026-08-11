@@ -9,6 +9,8 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Allow unit tests to import server-only modules (admin helpers, etc.).
+      "server-only": path.resolve(__dirname, "./test/server-only-stub.ts"),
     },
   },
 });

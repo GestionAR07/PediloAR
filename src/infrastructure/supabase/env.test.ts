@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { getSupabasePublicConfig, hasSupabasePublicConfig } from "./env";
+import {
+  getSupabasePublicConfig,
+  getSupabaseSecretKey,
+  hasSupabasePublicConfig,
+  hasSupabaseSecretKey,
+} from "./env";
 
 describe("supabase public config", () => {
   it("reports absence without throwing", () => {
@@ -31,5 +36,27 @@ describe("supabase public config", () => {
         NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "service_role_secret",
       }),
     ).toThrow(/service-role/);
+  });
+});
+
+describe("supabase secret key", () => {
+  it("reads server-only secret", () => {
+    expect(hasSupabaseSecretKey({})).toBe(false);
+    expect(
+      getSupabaseSecretKey({ SUPABASE_SECRET_KEY: "  secret-test  " }),
+    ).toBe("secret-test");
+  });
+
+  it("forbids NEXT_PUBLIC_SUPABASE_SECRET_KEY", () => {
+    expect(() =>
+      getSupabaseSecretKey({
+        SUPABASE_SECRET_KEY: "ok",
+        NEXT_PUBLIC_SUPABASE_SECRET_KEY: "leaked",
+      }),
+    ).toThrow(/forbidden/);
+  });
+
+  it("throws when missing", () => {
+    expect(() => getSupabaseSecretKey({})).toThrow(/SUPABASE_SECRET_KEY/);
   });
 });

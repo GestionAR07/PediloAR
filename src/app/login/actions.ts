@@ -7,6 +7,7 @@ import { getDb } from "@/infrastructure/db/client";
 import { userProfiles } from "@/infrastructure/db/schema";
 import { eq } from "drizzle-orm";
 import { hasDatabaseConfig } from "@/infrastructure/db/env";
+import { isSafeInternalPath, sanitizeInternalPath } from "@/lib/safe-redirect";
 
 export type LoginState = {
   error: string | null;
@@ -64,9 +65,9 @@ export async function loginAction(
     }
   }
 
-  const next = String(formData.get("next") ?? "").trim();
-  if (next.startsWith("/") && !next.startsWith("//")) {
-    redirect(next);
+  const nextRaw = String(formData.get("next") ?? "").trim();
+  if (isSafeInternalPath(nextRaw)) {
+    redirect(sanitizeInternalPath(nextRaw));
   }
 
   redirect("/");

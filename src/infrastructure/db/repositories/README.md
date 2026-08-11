@@ -1,5 +1,6 @@
-/**
+# Repositories
 
-- Repository implementations will land here in later phases.
-- Phase 2B only defines schema, client, and migrations.
-  */
+Repository implementations for server-side writes/reads.
+Application use cases depend on these through wiring (or test doubles).
+
+Never import from React Client Components.

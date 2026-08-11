@@ -64,6 +64,14 @@ Ver [`AUTHORIZATION.md`](./AUTHORIZATION.md).
 - Proxy Next.js 16 (`proxy.ts`) solo refresca sesión; authz en server pages.
 - Rutas: `/login`, `/admin`, `/merchant`.
 
+## Merchant onboarding (Fase 3B)
+
+Ver [`MERCHANT_ONBOARDING.md`](./MERCHANT_ONBOARDING.md).
+
+- Admin UI: geografía mínima + merchants DRAFT + invitación OWNER.
+- `SUPABASE_SECRET_KEY` server-only (Auth Admin); `APP_BASE_URL` para redirects.
+- Authz: `platform_role` vs `merchant_users` sin unificar roles.
+
 ## Entidades clave (conceptuales)
 
 - **`Order`** y **`Delivery`** son entidades **separadas**.

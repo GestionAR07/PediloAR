@@ -20,6 +20,9 @@ export type MerchantMembership = {
   merchantName: string;
   role: MerchantUserRole;
   active: boolean;
+  merchantStatus: string;
+  cityName: string;
+  zoneName: string;
 };
 
 export function isPlatformRole(value: string): value is PlatformRole {

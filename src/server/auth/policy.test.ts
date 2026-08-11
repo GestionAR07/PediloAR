@@ -28,6 +28,9 @@ const ownerMembership: MerchantMembership = {
   merchantName: "Panadería",
   role: "OWNER",
   active: true,
+  merchantStatus: "DRAFT",
+  cityName: "Rawson",
+  zoneName: "Centro",
 };
 
 const staffMembership: MerchantMembership = {
@@ -35,6 +38,9 @@ const staffMembership: MerchantMembership = {
   merchantName: "Panadería",
   role: "STAFF",
   active: true,
+  merchantStatus: "DRAFT",
+  cityName: "Rawson",
+  zoneName: "Centro",
 };
 
 describe("authorization policy", () => {

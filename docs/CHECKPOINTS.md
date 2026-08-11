@@ -39,3 +39,13 @@ Ver [`AUTHORIZATION.md`](./AUTHORIZATION.md).
 ## Siguiente
 
 **Fase 3B — Assisted merchant onboarding + owner invitations.**
+
+Ver [`MERCHANT_ONBOARDING.md`](./MERCHANT_ONBOARDING.md).
+
+Estados posibles:
+
+| Checkpoint                                            | Significado                                      |
+| ----------------------------------------------------- | ------------------------------------------------ |
+| `MERCHANT_ONBOARDING_READY`                           | Código + E2E manual completo (invite email real) |
+| `MERCHANT_ONBOARDING_READY_MANUAL_VALIDATION_PENDING` | Código listo; falta validación manual en dev     |
+| `MERCHANT_ONBOARDING_BLOCKED`                         | Bloqueo (schema, secret, config)                 |

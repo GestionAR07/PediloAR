@@ -3,9 +3,11 @@ import "server-only";
 import { and, eq } from "drizzle-orm";
 import { getDb } from "@/infrastructure/db/client";
 import {
+  cities,
   merchantUsers,
   merchants,
   userProfiles,
+  zones,
 } from "@/infrastructure/db/schema";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/server";
 import { hasSupabasePublicConfig } from "@/infrastructure/supabase/env";
@@ -99,9 +101,14 @@ async function loadMemberships(userId: string): Promise<MerchantMembership[]> {
       merchantName: merchants.name,
       role: merchantUsers.role,
       active: merchantUsers.active,
+      merchantStatus: merchants.status,
+      cityName: cities.name,
+      zoneName: zones.name,
     })
     .from(merchantUsers)
     .innerJoin(merchants, eq(merchants.id, merchantUsers.merchantId))
+    .innerJoin(cities, eq(cities.id, merchants.cityId))
+    .innerJoin(zones, eq(zones.id, merchants.zoneId))
     .where(
       and(eq(merchantUsers.userId, userId), eq(merchantUsers.active, true)),
     );
@@ -118,6 +125,9 @@ async function loadMemberships(userId: string): Promise<MerchantMembership[]> {
       merchantName: row.merchantName,
       role: row.role,
       active: row.active,
+      merchantStatus: row.merchantStatus,
+      cityName: row.cityName,
+      zoneName: row.zoneName,
     };
   });
 }

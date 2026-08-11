@@ -1,35 +1,19 @@
-import { redirect } from "next/navigation";
-import { logoutAction } from "@/app/login/actions";
-import { isAuthzError } from "@/server/auth/errors";
-import { requirePlatformAdmin } from "@/server/auth/authorization";
-import type { AuthorizedContext } from "@/server/auth/authorization";
+import { loadAdminContext } from "./_lib/load-admin";
 
 export const dynamic = "force-dynamic";
 
-async function loadAdminContext(): Promise<AuthorizedContext> {
-  try {
-    return await requirePlatformAdmin();
-  } catch (error) {
-    if (isAuthzError(error)) {
-      if (error.code === "UNAUTHENTICATED" || error.code === "CONFIG_MISSING") {
-        redirect("/login?next=/admin");
-      }
-      redirect("/login?next=/admin&error=forbidden");
-    }
-    throw error;
-  }
-}
-
 export default async function AdminPage() {
-  const { profile, user } = await loadAdminContext();
+  const { profile, user } = await loadAdminContext("/admin");
 
   return (
-    <main className="flex flex-1 flex-col gap-6 border-t border-border pt-10">
+    <main className="space-y-6">
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">
-          Administración Marketplace Rawson
+          Panel administrativo
         </h1>
-        <p className="text-sm text-muted">Acceso administrativo validado</p>
+        <p className="text-sm text-muted">
+          Onboarding asistido de comercios y configuración geográfica mínima.
+        </p>
       </header>
 
       <dl className="space-y-2 text-sm">
@@ -46,15 +30,6 @@ export default async function AdminPage() {
           <dd>{profile.status}</dd>
         </div>
       </dl>
-
-      <form action={logoutAction}>
-        <button
-          type="submit"
-          className="rounded-md border border-border px-3 py-2 text-sm"
-        >
-          Cerrar sesión
-        </button>
-      </form>
     </main>
   );
 }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { logoutAction } from "@/app/login/actions";
 import { isAuthzError } from "@/server/auth/errors";
@@ -31,14 +32,17 @@ async function loadMerchantHome(): Promise<{
 export default async function MerchantPage() {
   const { memberships, user } = await loadMerchantHome();
 
+  if (memberships.length === 1) {
+    const only = memberships[0]!;
+    redirect(`/merchant/${only.merchantId}`);
+  }
+
   return (
     <main className="flex flex-1 flex-col gap-6 border-t border-border pt-10">
       <header className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Panel de comercio
-        </h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Mi comercio</h1>
         <p className="text-sm text-muted">
-          Membresías activas (validación de acceso — sin catálogo ni pedidos).
+          Seleccioná el comercio al que querés ingresar.
         </p>
       </header>
 
@@ -50,8 +54,18 @@ export default async function MerchantPage() {
             key={membership.merchantId}
             className="border-b border-border pb-3"
           >
-            <p className="font-medium">{membership.merchantName}</p>
-            <p className="text-muted">Rol: {membership.role}</p>
+            <Link
+              href={`/merchant/${membership.merchantId}`}
+              className="font-medium text-accent underline-offset-4 hover:underline"
+            >
+              {membership.merchantName}
+            </Link>
+            <p className="text-muted">
+              Rol: {membership.role} · Estado: {membership.merchantStatus}
+            </p>
+            <p className="text-muted">
+              {membership.cityName} / {membership.zoneName}
+            </p>
           </li>
         ))}
       </ul>

@@ -127,8 +127,13 @@ El servidor Next usa `DATABASE_URL` (role de conexión que no queda sujeto a las
 | `/admin`    | ADMIN + ACTIVE         |
 | `/merchant` | ACTIVE + ≥1 membership |
 
-## Fase 3B (siguiente)
+## Fase 3B (onboarding)
 
-Onboarding asistido de merchants + invitaciones OWNER/STAFF.
+Ver [`MERCHANT_ONBOARDING.md`](./MERCHANT_ONBOARDING.md).
+
+- ADMIN crea Merchant `DRAFT` + geografía mínima en UI.
+- Invita OWNER vía Supabase Auth Admin (`SUPABASE_SECRET_KEY` server-only).
+- Membership `merchant_users.role = OWNER` es la fuente de autoridad.
+- Flujo: invite → `/auth/confirm` → `/set-password` → `/merchant`.
 
 No incluye: public customer signup, OAuth, MFA, Storage, catálogo, checkout.

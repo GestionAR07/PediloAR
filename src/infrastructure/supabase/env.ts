@@ -1,6 +1,6 @@
 /**
  * Public Supabase client configuration (URL + publishable key only).
- * Never accept secret/service keys here.
+ * Secret/admin key lives in separate helpers — never NEXT_PUBLIC_*.
  */
 
 export type SupabasePublicConfig = {
@@ -36,4 +36,29 @@ export function getSupabasePublicConfig(
   }
 
   return { url, publishableKey };
+}
+
+export function hasSupabaseSecretKey(env: EnvLike = process.env): boolean {
+  return Boolean(env.SUPABASE_SECRET_KEY?.trim());
+}
+
+/**
+ * Server-only secret for Auth Admin API.
+ * Never log the return value. Never expose as NEXT_PUBLIC_*.
+ */
+export function getSupabaseSecretKey(env: EnvLike = process.env): string {
+  if (env.NEXT_PUBLIC_SUPABASE_SECRET_KEY?.trim()) {
+    throw new Error(
+      "NEXT_PUBLIC_SUPABASE_SECRET_KEY is forbidden. Use SUPABASE_SECRET_KEY (server-only).",
+    );
+  }
+
+  const secretKey = env.SUPABASE_SECRET_KEY?.trim();
+  if (!secretKey) {
+    throw new Error(
+      "SUPABASE_SECRET_KEY is required for Auth Admin operations. Set it in .env.local (never NEXT_PUBLIC_*).",
+    );
+  }
+
+  return secretKey;
 }
