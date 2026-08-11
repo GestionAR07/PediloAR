@@ -8,6 +8,13 @@
       "when": 1786449715525,
       "tag": "0000_luxuriant_puma",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786456449393,
+      "tag": "0001_auth_foundation",
+      "breakpoints": true
     }
   ]
 }

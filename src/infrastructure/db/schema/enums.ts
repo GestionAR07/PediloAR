@@ -16,6 +16,8 @@ export const PAYMENT_METHOD_CODE_VALUES = [
   "TRANSFER",
   "MERCADO_PAGO",
 ] as const;
+export const PLATFORM_ROLE_VALUES = ["USER", "ADMIN"] as const;
+export const USER_PROFILE_STATUS_VALUES = ["ACTIVE", "SUSPENDED"] as const;
 export const STOCK_MODE_VALUES = ["NOT_TRACKED", "TRACKED"] as const;
 export const OPTION_SELECTION_MODE_VALUES = [
   "SINGLE",

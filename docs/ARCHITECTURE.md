@@ -50,7 +50,19 @@ Ver [`PERSISTENCE.md`](./PERSISTENCE.md).
 - Cliente server-only: `getDb()` requiere `DATABASE_URL` (nunca `NEXT_PUBLIC_*`).
 - Money: `BIGINT` cents + mapeo seguro a `MoneyCents`.
 - Order **sin** `delivery_id`; `deliveries.order_id` UNIQUE.
-- Auth / RLS / checkout: fuera de alcance en 2B.
+- Checkpoint: `CORE_PERSISTENCE_SCHEMA_VALIDATED` en **marketplace-rawson-dev**.
+
+## Auth / autorización (Fase 3A)
+
+Ver [`AUTHORIZATION.md`](./AUTHORIZATION.md).
+
+- Supabase Auth SSR (`@supabase/ssr` + publishable key).
+- `user_profiles` 1:1 con `auth.users` (FK + trigger).
+- Platform roles: `USER` | `ADMIN` únicamente.
+- Merchant roles en `merchant_users`: `OWNER` | `STAFF` (scoped, no JWT).
+- RLS enabled en todas las tablas public; policies mínimas sin `USING (true)`.
+- Proxy Next.js 16 (`proxy.ts`) solo refresca sesión; authz en server pages.
+- Rutas: `/login`, `/admin`, `/merchant`.
 
 ## Entidades clave (conceptuales)
 

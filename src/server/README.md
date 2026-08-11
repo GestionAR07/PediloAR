@@ -1,6 +1,9 @@
 # Server utilities
 
-Server-only helpers (Next.js server entrypoints, privileged clients).
+Server-only helpers for marketplace-rawson.
 
-Database access lives in `src/infrastructure/db/client.ts` (`server-only`).
-Do not pass connection handles into Client Components.
+- Auth authorization: `src/server/auth/`
+- Prefer `requireActiveUser` / `requirePlatformAdmin` / merchant helpers near protected resources.
+- Session clients live in `src/infrastructure/supabase/` (`server-only` for server entry).
+
+Do not import these modules from Client Components.

@@ -1,10 +1,12 @@
 # Roadmap
 
-1. Fundación técnica — **completada** (`BASE_TECH_FOUNDATION_READY`)
+1. Fundación técnica — **completada**
 2. Dominio y datos
-   - **2A Dominio puro** — completada (`CORE_DOMAIN_MODEL_VALIDATED` + `HARDENED`)
-   - **2B Persistencia PostgreSQL/Supabase + Drizzle** ← _actual_
+   - 2A Dominio puro — **completada**
+   - 2B Persistencia — **completada** (`CORE_PERSISTENCE_SCHEMA_VALIDATED` en marketplace-rawson-dev)
 3. Auth + admin + onboarding
+   - **3A Auth foundation + authz baseline** ← _actual_
+   - 3B Assisted merchant onboarding + owner invitations
 4. Catálogo
 5. Storefront
 6. Carrito + checkout
@@ -17,16 +19,12 @@
 13. Trelew
 14. Puerto Madryn
 
-## Fase 2A — Modelo de dominio
+## Fase 3A — Auth foundation (actual)
 
-TypeScript puro en `src/domain`: entidades, value types, máquinas de estado, totales y snapshots. Commit de hardening: `9c3ae12`.
+Supabase Auth SSR, `user_profiles`, trigger de provisioning, RLS baseline, helpers de autorización server-side, `/login` `/admin` `/merchant`.
 
-## Fase 2B — Persistencia (actual)
+Sin onboarding, invites, signup público, catálogo ni checkout.
 
-PostgreSQL/Supabase, Drizzle, migraciones versionadas, constraints (unique `idempotency_key`, Delivery.order_id unique, snapshots). Ver [`PERSISTENCE.md`](./PERSISTENCE.md).
+## Fase 3B — Onboarding + invitaciones (siguiente)
 
-Sin Auth, checkout, UI comercial ni couriers.
-
-## Fase 3+ (siguiente bloque funcional)
-
-Auth Supabase, permisos, y luego catálogo/storefront/checkout sobre el schema persistido.
+Creación asistida de comercios e invitaciones OWNER/STAFF.

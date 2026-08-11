@@ -119,19 +119,22 @@ Preferir `active` / `status` a hard delete en catálogo y merchants.
 - deliveries por order (unique) y status
 - slugs/uniques de geo y merchant+zone
 
-## RLS (diferido)
+## RLS
 
-Auth no existe todavía → **no** se habilitan políticas RLS permisivas (`USING (true)` prohibido).
+Baseline de Fase 3A: **RLS enabled** en todas las tablas `public` del marketplace.
 
-Expectativa:
+- Sin políticas `USING (true)`.
+- Policies mínimas: `user_profiles` SELECT own, `merchant_users` SELECT own, `merchants` SELECT if member.
+- Sin UPDATE de `user_profiles` vía API autenticada (bloquea self-elevate de `platform_role` / `status`).
+- Detalle: [`AUTHORIZATION.md`](./AUTHORIZATION.md).
 
-| Acceso                                                       | Política                                                                  |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------- |
-| App server vía `DATABASE_URL` (service / pooler server-side) | Todas las tablas operan server-only en MVP                                |
-| Cliente browser                                              | Nunca con connection string DB; futuro PostgREST solo con RLS real + Auth |
-| Tablas comerciales (orders, deliveries, …)                   | RLS cuando exista Auth; diseño actual no las expone al anon key           |
+Server app continúa usando `DATABASE_URL` + helpers de autorización server-side para operaciones privilegiadas.
 
-Ninguna tabla es “pública” solo por vivir en Supabase.
+## Auth boundary (Supabase)
+
+- `auth.users` es schema administrado por Supabase — **no** modelado ni migrado por Drizzle.
+- `user_profiles.id` = `auth.users.id` con FK añadida en SQL controlado (`0001_auth_foundation.sql`).
+- Trigger de provisioning: `auth.users` INSERT → `user_profiles` (role USER, status ACTIVE).
 
 ## Scripts npm
 
@@ -143,11 +146,12 @@ npm run db:check      # verifica consistencia schema/migraciones
 
 ## Migraciones seguras
 
-1. Confirmar entorno (solo dev Supabase / local).
-2. `npm run db:generate` tras cambios de schema.
+1. Confirmar entorno (solo **marketplace-rawson-dev** / local).
+2. `npm run db:generate` tras cambios de schema (o migración custom revisada).
 3. Revisar el SQL en `drizzle/*.sql`.
 4. `npm run db:migrate` **solo** contra DB de desarrollo.
 5. Nunca contra producción hasta proceso de release explícito.
+6. **No editar** migraciones ya aplicadas (`0000_…`).
 
 ## Estructura
 
@@ -158,6 +162,9 @@ src/infrastructure/db/
   env.ts           # DATABASE_URL
   money-mapping.ts # BIGINT ↔ MoneyCents
   repositories/    # futuro
+src/infrastructure/supabase/
+  env.ts / browser.ts / server.ts / update-session.ts
+proxy.ts           # refresh de sesión Auth (Next.js 16)
 drizzle/           # migraciones SQL versionadas
 drizzle.config.ts
 ```

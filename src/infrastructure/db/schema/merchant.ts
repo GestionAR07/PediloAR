@@ -18,6 +18,7 @@ import {
   sqlInList,
 } from "./enums";
 import { cities, zones } from "./geo";
+import { userProfiles } from "./user-profile";
 
 /**
  * merchants.status DRAFT | ACTIVE | SUSPENDED
@@ -67,11 +68,10 @@ export const merchants = pgTable(
 );
 
 /**
- * Merchant staff roster (conceptual user link).
+ * Merchant staff roster linked to authenticated profiles.
  *
- * Auth is NOT implemented. `externalUserId` is an opaque UUID reserved for the
- * future identity subject (e.g. Supabase auth.users.id once strategy is approved).
- * No FK to auth.users, no password/credentials tables.
+ * Roles OWNER | STAFF are merchant-scoped membership roles — never global JWT claims.
+ * Deactivate with `active = false` / user status SUSPENDED rather than hard-delete.
  */
 export const merchantUsers = pgTable(
   "merchant_users",
@@ -80,18 +80,21 @@ export const merchantUsers = pgTable(
     merchantId: uuid("merchant_id")
       .notNull()
       .references(() => merchants.id, { onDelete: "cascade" }),
-    externalUserId: uuid("external_user_id").notNull(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => userProfiles.id, { onDelete: "restrict" }),
     role: text("role").notNull(),
     active: boolean("active").notNull().default(true),
     createdAt: createdAtColumn(),
     updatedAt: updatedAtColumn(),
   },
   (table) => [
-    uniqueIndex("merchant_users_merchant_external_uidx").on(
+    uniqueIndex("merchant_users_merchant_user_uidx").on(
       table.merchantId,
-      table.externalUserId,
+      table.userId,
     ),
     index("merchant_users_merchant_id_idx").on(table.merchantId),
+    index("merchant_users_user_id_idx").on(table.userId),
     check(
       "merchant_users_role_check",
       sql.raw(`role IN (${sqlInList(MERCHANT_USER_ROLE_VALUES)})`),
