@@ -85,9 +85,11 @@ ADMIN crea Merchant DRAFT
   → Supabase envía mail (Invite)
   → Link: /auth/confirm?token_hash=…&type=invite&next=/set-password
   → sesión cookies SSR
-  → /set-password (updateUser password del usuario)
+  → /set-password (updateUser password del usuario + verificación signInWithPassword)
   → /merchant (membership OWNER en merchant_users)
 ```
+
+`/set-password` solo redirige a `/merchant` si `updateUser({ password })` **y** un `signInWithPassword` posterior con esa misma contraseña tienen éxito. Si el update “parece” OK pero la contraseña no es usable, la UI muestra error (no hay redirect engañoso).
 
 ## Superficies de producto
 
@@ -150,6 +152,21 @@ Si el código está listo pero falta este E2E:
 
 `MERCHANT_ONBOARDING_READY_MANUAL_VALIDATION_PENDING`
 
+## Password recovery (fuera de 3B)
+
+Estado: **`PASSWORD_RECOVERY_NOT_IMPLEMENTED`**
+
+El callback `/auth/confirm` **acepta** `type=recovery` y puede redirigir a `/set-password` si el mail trae `token_hash` + `type=recovery` + `next` interno seguro. Eso **no** es un producto de recuperación completo.
+
+Por qué el “Reset password” del Dashboard suele terminar en `/login`:
+
+1. La plantilla **Reset Password** de Supabase (distinta de Invite) suele usar `{{ .ConfirmationURL }}` / Site URL, no el deep-link SSR `/auth/confirm?token_hash=…&type=recovery&next=/set-password`.
+2. Sin `verifyOtp(type=recovery)` no hay sesión recovery en cookies SSR; el navegador cae en Site URL (p. ej. `/` o `/login`).
+3. Recovery **no** es el mismo flujo que invite (`type=invite`). No reutilizar ciegamente la plantilla de invitación.
+4. La app **no** expone UI para `resetPasswordForEmail` ni un flujo dedicado post-recovery.
+
+Fase posterior: plantilla Reset → `/auth/confirm?type=recovery&next=/set-password`, UI “olvidé mi contraseña”, y pruebas E2E propias. **No** usar Magic Link como sustituto del bug de password set.
+
 ## Fuera de alcance (3B)
 
-Catálogo, productos, pedidos, carrito, checkout, platform delivery, mapas, Storage, OAuth, customer signup público, activación AUTO de merchant.
+Catálogo, productos, pedidos, carrito, checkout, platform delivery, mapas, Storage, OAuth, customer signup público, activación AUTO de merchant, recuperación completa de contraseña.

@@ -27,7 +27,10 @@ export async function loginAction(
   const email = String(formData.get("email") ?? "")
     .trim()
     .toLowerCase();
-  const password = String(formData.get("password") ?? "");
+  // Password must be passed through unchanged (no trim / case changes).
+  const passwordRaw = formData.get("password");
+  const password =
+    typeof passwordRaw === "string" ? passwordRaw : String(passwordRaw ?? "");
 
   if (!email || !password) {
     return { error: "Ingresá email y contraseña." };

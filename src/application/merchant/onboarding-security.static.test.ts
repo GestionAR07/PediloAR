@@ -99,8 +99,12 @@ describe("merchant onboarding security static checks", () => {
     const confirm = read("src/app/auth/confirm/route.ts");
     expect(confirm).toContain("token_hash");
     expect(confirm).toContain("invite");
+    expect(confirm).toContain("recovery");
     expect(confirm).toContain("verifyOtp");
     expect(confirm).toContain("sanitizeInternalPath");
+    // Session cookies must be set on the redirect response (not only cookies()).
+    expect(confirm).toContain("response.cookies.set");
+    expect(confirm).toContain("NextResponse.redirect");
   });
 
   it("set-password requires authenticated session", () => {
@@ -108,5 +112,16 @@ describe("merchant onboarding security static checks", () => {
     expect(page).toContain("getUser");
     expect(page).toContain("redirect");
     expect(page).toContain("/login?next=/set-password");
+  });
+
+  it("set-password action uses user-scoped updateUser and checks errors", () => {
+    const actions = read("src/app/set-password/actions.ts");
+    const core = read("src/app/set-password/set-password-core.ts");
+    expect(actions).toContain("createSupabaseServerClient");
+    expect(actions).not.toContain("createSupabaseAdminClient");
+    expect(core).toContain("updateUser");
+    expect(core).toContain("signInWithPassword");
+    expect(core).toContain("getUser");
+    expect(actions).toContain('redirect("/merchant")');
   });
 });

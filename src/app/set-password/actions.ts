@@ -3,6 +3,10 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/server";
 import { hasSupabasePublicConfig } from "@/infrastructure/supabase/env";
+import {
+  persistInvitedUserPassword,
+  validateSetPasswordFields,
+} from "./set-password-core";
 
 export type SetPasswordState = {
   error: string | null;
@@ -18,43 +22,28 @@ export async function setPasswordAction(
     };
   }
 
-  const password = String(formData.get("password") ?? "");
-  const confirm = String(formData.get("confirm") ?? "");
+  // Read raw FormData values — do not trim/modify the password.
+  const passwordRaw = formData.get("password");
+  const confirmRaw = formData.get("confirm");
+  const password =
+    typeof passwordRaw === "string" ? passwordRaw : String(passwordRaw ?? "");
+  const confirm =
+    typeof confirmRaw === "string" ? confirmRaw : String(confirmRaw ?? "");
 
-  if (!password || !confirm) {
-    return { error: "Completá ambos campos de contraseña." };
+  const validated = validateSetPasswordFields({ password, confirm });
+  if (!validated.ok) {
+    return { error: validated.error };
   }
 
-  if (password !== confirm) {
-    return { error: "Las contraseñas no coinciden." };
-  }
-
-  if (password.length < 8) {
-    return {
-      error: "La contraseña debe tener al menos 8 caracteres.",
-    };
-  }
-
-  if (password.length > 72) {
-    return { error: "La contraseña es demasiado larga." };
-  }
-
+  // User-scoped SSR client (cookie session) — never Admin/secret client.
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+  const result = await persistInvitedUserPassword(supabase, validated.password);
 
-  if (userError || !user) {
-    redirect("/login?next=/set-password");
-  }
-
-  const { error } = await supabase.auth.updateUser({ password });
-  if (error) {
-    return {
-      error:
-        "No se pudo actualizar la contraseña. Verificá los requisitos e intentá de nuevo.",
-    };
+  if (!result.ok) {
+    if (result.unauthenticated) {
+      redirect("/login?next=/set-password");
+    }
+    return { error: result.error };
   }
 
   redirect("/merchant");
