@@ -25,16 +25,32 @@
 - **Server** (`server/`): utilidades exclusivas de servidor.
 - **Lib** (`lib/`): helpers compartidos transversales.
 
-## Entidades clave (conceptuales, sin schema aún)
+## Dominio (Fase 2A)
 
-- **`Order`** y **`Delivery`** serán entidades **separadas**.
-- Carrito persistente local previsto para el MVP (no en Fase 1).
+El modelo puro está implementado en `src/domain` y documentado en [`DOMAIN.md`](./DOMAIN.md).
+
+Resumen de decisiones vigentes:
+
+- Dinero en **integer cents** (`MoneyCents`).
+- Geografía `Province → City → Zone` (sin hardcode de Rawson/Playa Unión en reglas).
+- `Order` y `Delivery` son entidades **separadas**, con máquinas de estado propias.
+- Fulfillment: `PICKUP` | `MERCHANT_DELIVERY` | `PLATFORM_DELIVERY` (plataforma deshabilitada en MVP).
+- Catálogo con opciones `SINGLE` | `MULTIPLE` | `QUANTITY`.
+- Snapshots históricos en ítems/opciones/pago/dirección.
+- Carrito **local** en el navegador (sin entidad Cart de servidor).
+- `idempotencyKey` contemplado; constraint unique en persistencia (Fase 2B).
+- `CourierProfile` **no** implementado.
+
+## Entidades clave (conceptuales)
+
+- **`Order`** y **`Delivery`** son entidades **separadas**.
+- Carrito persistente local previsto para el MVP (no en DB).
 - Pagos iniciales: directo **cliente → comercio** (sin pasarela de plataforma en el MVP).
-- **`PLATFORM_DELIVERY`** es futuro: red de repartidores propia, no parte del alcance actual.
+- **`PLATFORM_DELIVERY`** es futuro: red de repartidores propia, no parte del alcance operativo actual.
 
-## Fuera de alcance de esta fundación
+## Persistencia (aún no)
 
-No se implementa todavía: Supabase, migraciones, auth, catálogo, carrito, checkout, pedidos, delivery, repartidores, mapas, Mercado Pago, emails, Sentry, PWA, admin ni storefront real.
+PostgreSQL/Supabase + Drizzle llegan en **Fase 2B**. Esta fase no incluye schema SQL, migraciones ni clientes de DB.
 
 ## Principio de crecimiento
 

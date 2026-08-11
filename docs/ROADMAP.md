@@ -1,7 +1,9 @@
 # Roadmap
 
-1. **Fundación técnica** ← _actual (Fase 1)_
+1. Fundación técnica — **completada** (`BASE_TECH_FOUNDATION_READY`)
 2. Dominio y datos
+   - **2A Dominio puro** ← _actual_ (`CORE_DOMAIN_MODEL_VALIDATED`)
+   - 2B Persistencia PostgreSQL/Supabase + Drizzle
 3. Auth + admin + onboarding
 4. Catálogo
 5. Storefront
@@ -15,12 +17,10 @@
 13. Trelew
 14. Puerto Madryn
 
-## Fase 1 — Fundación técnica (actual)
+## Fase 2A — Modelo de dominio (actual)
 
-Objetivo: repositorio sano, Next.js + TypeScript strict + Tailwind, estructura modular, lint/format/tests/CI, documentación y build de producción. Sin lógica de marketplace.
+TypeScript puro en `src/domain`: entidades, value types, máquinas de estado, totales y snapshots. Sin persistencia.
 
-Checkpoint de salida: `BASE_TECH_FOUNDATION_READY`.
+## Fase 2B — Persistencia (siguiente)
 
-## Fase 2 — Dominio y datos (siguiente)
-
-Modelo de dominio, PostgreSQL/Supabase, Drizzle, contratos con Zod. Sin features de producto aún más allá de datos y tipos.
+PostgreSQL/Supabase, Drizzle, migraciones, constraints (incluye unique de `idempotencyKey`).
