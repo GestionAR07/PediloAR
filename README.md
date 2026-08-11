@@ -6,9 +6,9 @@ Permite descubrir comercios, comprar, pedir con retiro o delivery, y digitalizar
 
 ## Estado actual
 
-**Fase 1 — Fundación técnica** (`BASE_TECH_FOUNDATION_READY` en curso de validación).
+**Fase 2B — Persistencia** (`CORE_PERSISTENCE_SCHEMA_*`).
 
-Hay un proyecto Next.js operativo con TypeScript estricto, Tailwind, lint, formato, tests y CI. **Todavía no** hay marketplace: sin autenticación, catálogo, carrito, pedidos ni base de datos.
+Dominio puro validado en `src/domain`. Schema PostgreSQL/Drizzle y migraciones versionadas. **Todavía no** hay Auth, checkout, UI comercial ni operaciones de marketplace.
 
 ## Stack
 
@@ -21,7 +21,7 @@ Hay un proyecto Next.js operativo con TypeScript estricto, Tailwind, lint, forma
 | Tests           | Vitest                                    |
 | Calidad         | ESLint + Prettier                         |
 | Deploy previsto | Vercel (aún no conectado)                 |
-| Datos previstos | PostgreSQL / Supabase + Drizzle (Fase 2+) |
+| Datos           | PostgreSQL / Supabase + Drizzle (Fase 2B) |
 
 ## Requisitos
 
@@ -38,7 +38,7 @@ npm install
 copy .env.example .env.local
 ```
 
-`.env.local` es solo para tu máquina. **No lo subas a Git.** En Fase 1 no hace falta ninguna variable real; Supabase se documentará en `.env.example` en la fase de datos.
+Configurá `DATABASE_URL` en `.env.local` solo para Postgres de **desarrollo**. **No subas secrets a Git.**
 
 ## Desarrollo
 
@@ -48,6 +48,16 @@ npm run dev
 
 Abrí [http://localhost:3000](http://localhost:3000).
 
+## Base de datos (Fase 2B)
+
+```powershell
+npm run db:generate
+npm run db:check
+npm run db:migrate   # requiere DATABASE_URL de desarrollo
+```
+
+Detalle: [`docs/PERSISTENCE.md`](docs/PERSISTENCE.md).
+
 ## Validaciones
 
 ```powershell
@@ -55,6 +65,7 @@ npm run lint
 npm run typecheck
 npm run test
 npm run format:check
+npm run db:check
 ```
 
 Formatear el código:
@@ -74,20 +85,20 @@ npm run start
 
 ```text
 src/
-├── app/                 # Rutas Next.js (App Router)
+├── app/
 ├── components/
-│   ├── ui/              # Primitivas visuales compartidas
-│   └── layout/          # Layouts de página
-├── features/            # Módulos por dominio funcional (vacío en Fase 1)
-├── domain/              # Reglas de negocio puras (sin React)
-├── application/         # Casos de uso
-├── infrastructure/      # Integraciones externas
-├── server/              # Utilidades solo servidor
-├── lib/                 # Utilidades compartidas
-└── styles/              # Estilos globales
+├── features/
+├── domain/                 # Reglas puras (sin React / sin DB)
+├── application/
+├── infrastructure/db/      # Drizzle schema + client server-only
+├── server/
+├── lib/
+└── styles/
+
+drizzle/                    # Migraciones SQL versionadas
 ```
 
-Más detalle en [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), roadmap en [`docs/ROADMAP.md`](docs/ROADMAP.md) y checkpoints en [`docs/CHECKPOINTS.md`](docs/CHECKPOINTS.md).
+Docs: [`ARCHITECTURE`](docs/ARCHITECTURE.md) · [`DOMAIN`](docs/DOMAIN.md) · [`PERSISTENCE`](docs/PERSISTENCE.md) · [`ROADMAP`](docs/ROADMAP.md) · [`CHECKPOINTS`](docs/CHECKPOINTS.md).
 
 ## Licencia
 

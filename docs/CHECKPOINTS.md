@@ -12,16 +12,21 @@ Fundación técnica validada (Next.js, strict TS, Tailwind, lint/format/tests/CI
 
 ### `CORE_DOMAIN_MODEL_VALIDATED`
 
-Dominio puro en `src/domain`: dinero en cents, geografía, merchant, catálogo con SINGLE/MULTIPLE/QUANTITY, Order/Delivery separados con máquinas de estado, snapshots, totales integer, idempotencyKey conceptual. Sin DB/Auth/UI de negocio.
-
-Estado: **listo** cuando lint/typecheck/test/format/build pasan y existe el commit de dominio. Commit: `afc53f9`.
+Dominio puro en `src/domain`. Commit: `afc53f9`.
 
 ### `CORE_DOMAIN_MODEL_HARDENED`
 
-Hardening pre-persistencia (Fase 2A.1): validación de `idempotencyKey`, overflow seguro de `MoneyCents`, políticas de cancelación/compleción, compatibilidad fulfillment/Delivery, `resolveMerchantDeliveryForZone`, Order sin `deliveryId`. Sin DB/checkout/UI.
+Hardening pre-persistencia. Commit: `9c3ae12`.
 
-Estado: **listo** cuando lint/typecheck/test/format/build pasan y existe el commit de hardening.
+### `CORE_PERSISTENCE_SCHEMA_READY_REMOTE_APPLY_PENDING` / `CORE_PERSISTENCE_SCHEMA_VALIDATED`
+
+Schema Drizzle + migración inicial versionada + money mapping + constraints + docs.
+
+- **VALIDATED:** migración aplicada y verificada en PostgreSQL de desarrollo dedicado.
+- **READY_REMOTE_APPLY_PENDING:** schema y SQL listos; aplicar remoto queda pendiente hasta existir/usar solo un proyecto Supabase de dev.
+
+Ver [`PERSISTENCE.md`](./PERSISTENCE.md).
 
 ## Siguiente
 
-Persistencia PostgreSQL/Supabase + Drizzle (Fase 2B).
+Auth + admin + onboarding (Fase 3), sin saltar checkout antes de identidad/roles.

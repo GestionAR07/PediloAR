@@ -8,8 +8,8 @@
 | Framework               | Next.js App Router                                                        |
 | Lenguaje                | TypeScript strict                                                         |
 | Estilos                 | Tailwind CSS                                                              |
-| Persistencia prevista   | PostgreSQL vía Supabase                                                   |
-| ORM previsto            | Drizzle                                                                   |
+| Persistencia            | PostgreSQL vía Supabase + Drizzle ORM                                     |
+| ORM                     | Drizzle (`drizzle-orm` + `postgres` + kit)                                |
 | Validación de contratos | Zod (cuando existan inputs/contratos)                                     |
 | Deploy inicial previsto | Vercel                                                                    |
 | Enfoque UI              | Mobile-first                                                              |
@@ -19,7 +19,7 @@
 
 - **UI** (`components/`, `app/`): presentación. Sin reglas de negocio.
 - **Features** (`features/`): agrupación por dominio funcional.
-- **Domain** (`domain/`): conceptos y reglas puras. **No depende de React.**
+- **Domain** (`domain/`): conceptos y reglas puras. **No depende de React ni de DB.**
 - **Application** (`application/`): casos de uso / orquestación.
 - **Infrastructure** (`infrastructure/`): clientes externos (DB, pagos, email, etc.).
 - **Server** (`server/`): utilidades exclusivas de servidor.
@@ -38,8 +38,19 @@ Resumen de decisiones vigentes:
 - Catálogo con opciones `SINGLE` | `MULTIPLE` | `QUANTITY`.
 - Snapshots históricos en ítems/opciones/pago/dirección.
 - Carrito **local** en el navegador (sin entidad Cart de servidor).
-- `idempotencyKey` contemplado; constraint unique en persistencia (Fase 2B).
+- `idempotencyKey` validada en dominio; **UNIQUE en DB** (Fase 2B).
 - `CourierProfile` **no** implementado.
+
+## Persistencia (Fase 2B)
+
+Ver [`PERSISTENCE.md`](./PERSISTENCE.md).
+
+- Schema Drizzle en `src/infrastructure/db/schema`.
+- Migraciones SQL versionadas en `drizzle/`.
+- Cliente server-only: `getDb()` requiere `DATABASE_URL` (nunca `NEXT_PUBLIC_*`).
+- Money: `BIGINT` cents + mapeo seguro a `MoneyCents`.
+- Order **sin** `delivery_id`; `deliveries.order_id` UNIQUE.
+- Auth / RLS / checkout: fuera de alcance en 2B.
 
 ## Entidades clave (conceptuales)
 
@@ -48,10 +59,6 @@ Resumen de decisiones vigentes:
 - Pagos iniciales: directo **cliente → comercio** (sin pasarela de plataforma en el MVP).
 - **`PLATFORM_DELIVERY`** es futuro: red de repartidores propia, no parte del alcance operativo actual.
 
-## Persistencia (aún no)
-
-PostgreSQL/Supabase + Drizzle llegan en **Fase 2B**. Esta fase no incluye schema SQL, migraciones ni clientes de DB.
-
 ## Principio de crecimiento
 
-Ampliar por capas y features sin mezclar UI con dominio. Preferir cambios pequeños y verificables (`lint` / `typecheck` / `test` / `build`).
+Ampliar por capas y features sin mezclar UI con dominio. Preferir cambios pequeños y verificables (`lint` / `typecheck` / `test` / `build` / `db:check`).
