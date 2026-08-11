@@ -49,7 +49,11 @@ export function assertProduct(product: Product): void {
   }
 }
 
-/** A product can be sold only when active, available, and (if tracked) in stock. */
+/**
+ * A product can be sold only when active, available, and (if tracked) in stock.
+ * Concurrent reservation / TRACKED decrement at checkout is transactional
+ * server work (application + persistence) — not simulated here.
+ */
 export function isProductSellable(product: Product): boolean {
   assertProduct(product);
 

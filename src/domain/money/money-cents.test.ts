@@ -46,4 +46,37 @@ describe("money-cents", () => {
     expect(() => multiplyMoney(moneyCents(100), -1)).toThrow(DomainError);
     expect(() => multiplyMoney(moneyCents(100), 1.5)).toThrow(DomainError);
   });
+
+  it("detects addition overflow near Number.MAX_SAFE_INTEGER", () => {
+    const nearMax = moneyCents(Number.MAX_SAFE_INTEGER - 10);
+    const small = moneyCents(100);
+    try {
+      addMoney(nearMax, small);
+      expect.unreachable();
+    } catch (error) {
+      expect(error).toBeInstanceOf(DomainError);
+      expect((error as DomainError).code).toBe("MONEY_OVERFLOW");
+    }
+  });
+
+  it("allows addition that remains a safe integer", () => {
+    const nearMax = moneyCents(Number.MAX_SAFE_INTEGER - 10);
+    expect(addMoney(nearMax, moneyCents(5))).toBe(Number.MAX_SAFE_INTEGER - 5);
+  });
+
+  it("detects multiplication overflow near Number.MAX_SAFE_INTEGER", () => {
+    const unit = moneyCents(Math.floor(Number.MAX_SAFE_INTEGER / 2) + 1);
+    try {
+      multiplyMoney(unit, 2);
+      expect.unreachable();
+    } catch (error) {
+      expect(error).toBeInstanceOf(DomainError);
+      expect((error as DomainError).code).toBe("MONEY_OVERFLOW");
+    }
+  });
+
+  it("allows multiplication at the safe integer boundary", () => {
+    const unit = moneyCents(Math.floor(Number.MAX_SAFE_INTEGER / 3));
+    expect(multiplyMoney(unit, 3)).toBe(unit * 3);
+  });
 });

@@ -5,7 +5,8 @@ import type { DeliveryProvider, DeliveryStatus } from "./enums";
 
 /**
  * Logistics entity separate from Order (commercial commitment).
- * CourierProfile is intentionally not modeled in Phase 2A.
+ * Unidirectional link: orderId → Order.id (Order has no deliveryId).
+ * Phase 2B: FK + UNIQUE on orderId. CourierProfile not modeled in 2A.
  */
 export type Delivery = {
   id: DeliveryId;

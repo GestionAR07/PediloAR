@@ -2,7 +2,6 @@ import type { MoneyCents } from "../money/money-cents";
 import type { PaymentMethodCode } from "../merchant/enums";
 import type { DeliveryAddressSnapshot } from "../shared/address";
 import type {
-  DeliveryId,
   IdempotencyKey,
   MerchantId,
   OrderEventId,
@@ -43,17 +42,16 @@ export type OrderItem = {
   options: OrderOptionSnapshot[];
 };
 
+/**
+ * Commercial commitment. Logistics live on Delivery (Delivery.orderId → Order.id).
+ * Order intentionally has no deliveryId — unidirectional relation only.
+ */
 export type Order = {
   id: OrderId;
   merchantId: MerchantId;
   customerUserId: UserId | null;
   status: OrderStatus;
   fulfillmentMethod: FulfillmentMethod;
-  /**
-   * Present when fulfillmentMethod is MERCHANT_DELIVERY or PLATFORM_DELIVERY.
-   * Absent for PICKUP.
-   */
-  deliveryId: DeliveryId | null;
   paymentMethodSnapshot: PaymentMethodSnapshot;
   deliveryAddressSnapshot: DeliveryAddressSnapshot | null;
   itemSubtotalCents: MoneyCents;
@@ -61,7 +59,10 @@ export type Order = {
   orderSubtotalCents: MoneyCents;
   deliveryFeeCents: MoneyCents;
   totalCents: MoneyCents;
-  /** Client-supplied key; unique constraint arrives in Phase 2B persistence. */
+  /**
+   * Client-supplied key; domain validates shape via parseIdempotencyKey.
+   * UNIQUE constraint arrives in Phase 2B persistence.
+   */
   idempotencyKey: IdempotencyKey;
   canceledAt: string | null;
   canceledBy: OrderActorType | null;

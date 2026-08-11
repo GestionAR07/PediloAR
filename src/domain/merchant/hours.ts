@@ -50,7 +50,11 @@ export function assertOpeningInterval(
 
 /**
  * Returns whether a local-day minute falls inside any interval for that weekday.
- * Caller must convert "now" using the city's timezone — never the browser TZ.
+ *
+ * Split schedules (multiple intervals per weekday) are fully representable.
+ * Caller must convert absolute "now" via City.timezone → (weekday, localMinute).
+ * That IANA conversion belongs to application/infrastructure at checkout —
+ * domain does not embed timezone libraries or approximate offsets.
  */
 export function isOpenAtLocalMinute(
   intervals: readonly MerchantOpeningInterval[],

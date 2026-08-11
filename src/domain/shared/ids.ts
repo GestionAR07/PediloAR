@@ -23,4 +23,5 @@ export type OrderItemId = EntityId;
 export type OrderEventId = EntityId;
 export type DeliveryId = EntityId;
 
+/** Client-supplied; shape validated by parseIdempotencyKey. UNIQUE in Phase 2B. */
 export type IdempotencyKey = string;

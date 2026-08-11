@@ -3,6 +3,9 @@ import { DomainError } from "../shared/errors";
 /**
  * Monetary amount in integer minor units (centavos for ARS).
  * Never use floating point for money.
+ *
+ * Technical bound only: values must remain Number.isSafeInteger.
+ * There is no commercial cap (e.g. max order amount) in domain.
  */
 export type MoneyCents = number & { readonly __brand: "MoneyCents" };
 
@@ -43,13 +46,45 @@ export function zeroCents(): MoneyCents {
   return 0 as MoneyCents;
 }
 
+function assertSafeMoneyResult(value: number, operation: string): MoneyCents {
+  if (!Number.isFinite(value) || Number.isNaN(value)) {
+    throw new DomainError(
+      "MONEY_OVERFLOW",
+      `Money ${operation} produced a non-finite result`,
+    );
+  }
+
+  if (!isSafeMoneyInteger(value)) {
+    throw new DomainError(
+      "MONEY_OVERFLOW",
+      `Money ${operation} exceeded Number.MAX_SAFE_INTEGER`,
+    );
+  }
+
+  if (value < 0) {
+    throw new DomainError(
+      "MONEY_NEGATIVE",
+      "Money amount cannot be negative for prices and totals",
+    );
+  }
+
+  return value as MoneyCents;
+}
+
 export function addMoney(...amounts: MoneyCents[]): MoneyCents {
   let total = 0;
   for (const amount of amounts) {
     assertNonNegativeMoneyCents(amount);
-    total += amount;
+    const next = total + amount;
+    if (!Number.isSafeInteger(next)) {
+      throw new DomainError(
+        "MONEY_OVERFLOW",
+        "Money addition exceeded Number.MAX_SAFE_INTEGER",
+      );
+    }
+    total = next;
   }
-  return assertNonNegativeMoneyCents(total);
+  return assertSafeMoneyResult(total, "addition");
 }
 
 export function multiplyMoney(unit: MoneyCents, quantity: number): MoneyCents {
@@ -69,7 +104,18 @@ export function multiplyMoney(unit: MoneyCents, quantity: number): MoneyCents {
     );
   }
 
-  return assertNonNegativeMoneyCents(unit * quantity);
+  // Guard before JS loses integer precision on large products.
+  if (unit > 0 && quantity > 0) {
+    const maxFactor = Math.floor(Number.MAX_SAFE_INTEGER / unit);
+    if (quantity > maxFactor) {
+      throw new DomainError(
+        "MONEY_OVERFLOW",
+        "Money multiplication exceeded Number.MAX_SAFE_INTEGER",
+      );
+    }
+  }
+
+  return assertSafeMoneyResult(unit * quantity, "multiplication");
 }
 
 /**

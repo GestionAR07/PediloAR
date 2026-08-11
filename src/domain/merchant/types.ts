@@ -22,10 +22,15 @@ export type Merchant = {
   description: string;
   status: MerchantStatus;
   pickupEnabled: boolean;
+  /**
+   * Merchant may offer own delivery. Does NOT alone authorize checkout
+   * delivery: also requires an active MerchantDeliveryZone and minimum.
+   * See resolveMerchantDeliveryForZone.
+   */
   merchantDeliveryEnabled: boolean;
   /**
    * Conceptual flag for future platform courier network.
-   * MVP: always false / operationally disabled.
+   * MVP: always false / operationally disabled (assertFulfillmentAllowedForMvp).
    */
   platformDeliveryEnabled: boolean;
   preparationMinutes: number;
