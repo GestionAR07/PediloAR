@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import { inviteOwnerAction, initialActionState } from "../actions";
+import { inviteOwnerAction } from "../actions";
+import { initialActionState } from "../action-state";
 
 type InviteOwnerFormProps = {
   merchantId: string;

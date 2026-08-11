@@ -2,10 +2,8 @@
 
 import { useActionState, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  createMerchantActionWithId,
-  type CreateMerchantActionState,
-} from "../actions";
+import { createMerchantActionWithId } from "../actions";
+import type { CreateMerchantActionState } from "../action-state";
 
 export type CityOption = {
   id: string;

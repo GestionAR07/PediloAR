@@ -5,8 +5,8 @@ import {
   createCityAction,
   createProvinceAction,
   createZoneAction,
-  initialActionState,
 } from "../actions";
+import { initialActionState } from "../action-state";
 
 type ProvinceOption = { id: string; name: string; code: string };
 type CityOption = { id: string; name: string; provinceId: string };

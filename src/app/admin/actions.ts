@@ -8,16 +8,7 @@ import {
   inviteMerchantOwnerApp,
 } from "@/application/merchant/wiring";
 import { isAuthzError } from "@/server/auth/errors";
-
-export type ActionState = {
-  error: string | null;
-  success: string | null;
-};
-
-export const initialActionState: ActionState = {
-  error: null,
-  success: null,
-};
+import type { ActionState, CreateMerchantActionState } from "./action-state";
 
 function mapAuthzFailure(error: unknown): ActionState {
   if (isAuthzError(error)) {
@@ -97,10 +88,6 @@ export async function createZoneAction(
     return mapAuthzFailure(error);
   }
 }
-
-export type CreateMerchantActionState = ActionState & {
-  merchantId?: string;
-};
 
 export async function createMerchantActionWithId(
   _prev: CreateMerchantActionState,
