@@ -34,6 +34,7 @@ export type ProductRecord = {
 
 export type ProductListRow = ProductRecord & {
   categoryName: string;
+  categoryActive: boolean;
   optionGroupCount: number;
 };
 
@@ -77,6 +78,28 @@ export async function listMerchantCategories(
     })
     .from(merchantCategories)
     .where(eq(merchantCategories.merchantId, merchantId))
+    .orderBy(asc(merchantCategories.sortOrder), asc(merchantCategories.name));
+}
+
+export async function listActiveMerchantCategories(
+  merchantId: string,
+): Promise<MerchantCategoryRecord[]> {
+  const db = getDb();
+  return db
+    .select({
+      id: merchantCategories.id,
+      merchantId: merchantCategories.merchantId,
+      name: merchantCategories.name,
+      sortOrder: merchantCategories.sortOrder,
+      active: merchantCategories.active,
+    })
+    .from(merchantCategories)
+    .where(
+      and(
+        eq(merchantCategories.merchantId, merchantId),
+        eq(merchantCategories.active, true),
+      ),
+    )
     .orderBy(asc(merchantCategories.sortOrder), asc(merchantCategories.name));
 }
 
@@ -251,6 +274,7 @@ export async function listProductsForMerchant(
       stockQuantity: products.stockQuantity,
       sortOrder: products.sortOrder,
       categoryName: merchantCategories.name,
+      categoryActive: merchantCategories.active,
       optionGroupCount: optionCounts.optionGroupCount,
     })
     .from(products)
@@ -282,6 +306,7 @@ export async function listProductsForMerchant(
     stockQuantity: row.stockQuantity,
     sortOrder: row.sortOrder,
     categoryName: row.categoryName,
+    categoryActive: row.categoryActive,
     optionGroupCount: Number(row.optionGroupCount ?? 0),
   }));
 }

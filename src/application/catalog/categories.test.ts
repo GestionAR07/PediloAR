@@ -95,6 +95,30 @@ describe("updateMerchantCategory cross-merchant", () => {
       expect(result.error.code).toBe("CATEGORY_NOT_FOUND");
     }
   });
+
+  it("deactivating category does not cascade to products", async () => {
+    const updateMerchantCategoryMock = vi.fn(async () => ({ id: "cat-1" }));
+    const deps = baseDeps({
+      updateMerchantCategory: updateMerchantCategoryMock,
+    });
+    const result = await updateMerchantCategory(
+      "merchant-a",
+      "cat-1",
+      { active: false },
+      deps,
+    );
+    expect(result.ok).toBe(true);
+    expect(updateMerchantCategoryMock).toHaveBeenCalledWith(
+      "merchant-a",
+      "cat-1",
+      { active: false },
+    );
+    expect(updateMerchantCategoryMock).not.toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.objectContaining({ name: expect.anything() }),
+    );
+  });
 });
 
 describe("reorderMerchantCategory", () => {

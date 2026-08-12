@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { isAuthzError } from "@/server/auth/errors";
 import { requireMerchantMembership } from "@/server/auth/authorization";
-import { listMerchantCategories } from "@/infrastructure/db/repositories/catalog-repository";
+import { listActiveMerchantCategories } from "@/infrastructure/db/repositories/catalog-repository";
 import { findMerchantDetailForMember } from "@/infrastructure/db/repositories/merchant-repository";
 import { createProductAction } from "../../actions";
 
@@ -37,13 +37,14 @@ async function loadPage(merchantId: string) {
 export default async function NewProductPage({ params }: PageProps) {
   const { merchantId } = await params;
   const { merchant } = await loadPage(merchantId);
-  const categories = await listMerchantCategories(merchantId);
+  const categories = await listActiveMerchantCategories(merchantId);
 
   if (categories.length === 0) {
     return (
       <main className="flex flex-1 flex-col gap-6 border-t border-border pt-10">
         <p className="text-sm text-muted">
-          Creá al menos una categoría antes de agregar productos.{" "}
+          No hay categorías activas. Reactivá una categoría o creá una nueva
+          antes de agregar productos.{" "}
           <Link
             href={`/merchant/${merchantId}/catalog/categories`}
             className="text-accent underline-offset-4 hover:underline"

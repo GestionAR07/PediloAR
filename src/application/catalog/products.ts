@@ -16,7 +16,7 @@ export type ProductDeps = CatalogAuthDeps & {
   findMerchantCategoryById: (
     merchantId: string,
     categoryId: string,
-  ) => Promise<{ id: string } | null>;
+  ) => Promise<{ id: string; active: boolean } | null>;
   findProductById: (
     merchantId: string,
     productId: string,
@@ -133,6 +133,14 @@ export async function createProduct(
     return err({
       code: "CATEGORY_NOT_FOUND",
       message: "La categoría no pertenece a este comercio.",
+    });
+  }
+
+  if (!category.active) {
+    return err({
+      code: "CATEGORY_INACTIVE",
+      message:
+        "La categoría seleccionada está inactiva. Reactivala o elegí otra.",
     });
   }
 
@@ -274,6 +282,17 @@ export async function updateProduct(
         message: "La categoría no pertenece a este comercio.",
       });
     }
+
+    const keepingCurrentCategory =
+      input.merchantCategoryId === existing.merchantCategoryId;
+    if (!category.active && !keepingCurrentCategory) {
+      return err({
+        code: "CATEGORY_INACTIVE",
+        message:
+          "La categoría seleccionada está inactiva. Reactivala o elegí otra.",
+      });
+    }
+
     patch.merchantCategoryId = input.merchantCategoryId;
   }
 

@@ -8,6 +8,7 @@ import {
 } from "@/infrastructure/db/repositories/catalog-repository";
 import { findMerchantDetailForMember } from "@/infrastructure/db/repositories/merchant-repository";
 import { formatMoneyCentsArs } from "@/lib/format-money";
+import { formatMerchantCategoryLabel } from "@/lib/format-category-label";
 import { moneyCents } from "@/domain/money/money-cents";
 import { toggleProductAvailabilityAction } from "./actions";
 import { ProductAvailabilityToggle } from "./product-availability-toggle";
@@ -120,7 +121,7 @@ export default async function CatalogPage({ params, searchParams }: PageProps) {
             <option value="">Todas</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
-                {category.name}
+                {formatMerchantCategoryLabel(category.name, category.active)}
               </option>
             ))}
           </select>
@@ -178,8 +179,11 @@ export default async function CatalogPage({ params, searchParams }: PageProps) {
                   <div className="space-y-1">
                     <p className="font-medium">{product.name}</p>
                     <p className="text-sm text-muted">
-                      {product.categoryName} ·{" "}
-                      {formatMoneyCentsArs(moneyCents(product.priceCents))}
+                      {formatMerchantCategoryLabel(
+                        product.categoryName,
+                        product.categoryActive,
+                      )}{" "}
+                      · {formatMoneyCentsArs(moneyCents(product.priceCents))}
                     </p>
                     <p className="text-sm">
                       <span

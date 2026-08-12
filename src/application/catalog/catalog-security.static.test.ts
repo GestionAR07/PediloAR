@@ -29,6 +29,26 @@ describe("catalog management security static checks", () => {
     expect(actions).not.toMatch(/export\s+const\s+/);
   });
 
+  it("new product page uses active categories only for assignment", () => {
+    const page = read(
+      "src/app/merchant/[merchantId]/catalog/products/new/page.tsx",
+    );
+    expect(page).toContain("listActiveMerchantCategories");
+    expect(page).not.toContain("listMerchantCategories");
+  });
+
+  it("catalog filter keeps inactive categories visible for admin search", () => {
+    const page = read("src/app/merchant/[merchantId]/catalog/page.tsx");
+    expect(page).toContain("listMerchantCategories");
+    expect(page).toContain("formatMerchantCategoryLabel");
+  });
+
+  it("deactivating category does not touch products in use case layer", () => {
+    const categories = read("src/application/catalog/categories.ts");
+    expect(categories).not.toContain("updateProduct");
+    expect(categories).not.toContain("setProductAvailability");
+  });
+
   it("order snapshots remain independent of catalog updates", () => {
     const orderSchema = read("src/infrastructure/db/schema/order.ts");
     expect(orderSchema).toContain("productNameSnapshot");

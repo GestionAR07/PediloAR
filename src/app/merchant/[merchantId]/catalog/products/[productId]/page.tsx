@@ -9,6 +9,7 @@ import {
   listOptionGroupsForProduct,
 } from "@/infrastructure/db/repositories/catalog-repository";
 import { findMerchantDetailForMember } from "@/infrastructure/db/repositories/merchant-repository";
+import { formatMerchantCategoryLabel } from "@/lib/format-category-label";
 import { formatMoneyCentsArs } from "@/lib/format-money";
 import { moneyCents } from "@/domain/money/money-cents";
 import {
@@ -57,6 +58,9 @@ export default async function EditProductPage({ params }: PageProps) {
   const { merchantId, productId } = await params;
   const { merchant, product } = await loadPage(merchantId, productId);
   const categories = await listMerchantCategories(merchantId);
+  const selectableCategories = categories.filter(
+    (category) => category.active || category.id === product.merchantCategoryId,
+  );
   const groups = await listOptionGroupsForProduct(merchantId, productId);
   const choices = await listOptionChoicesForGroups(groups.map((g) => g.id));
   const choicesByGroup = new Map<string, typeof choices>();
@@ -110,9 +114,9 @@ export default async function EditProductPage({ params }: PageProps) {
               defaultValue={product.merchantCategoryId}
               className="rounded-md border border-border bg-white px-3 py-2"
             >
-              {categories.map((category) => (
+              {selectableCategories.map((category) => (
                 <option key={category.id} value={category.id}>
-                  {category.name}
+                  {formatMerchantCategoryLabel(category.name, category.active)}
                 </option>
               ))}
             </select>
