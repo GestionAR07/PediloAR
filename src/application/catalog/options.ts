@@ -10,6 +10,7 @@ import { moneyCents } from "@/domain/money/money-cents";
 import { DomainError } from "@/domain/shared/errors";
 import { err, ok, type Result } from "@/domain/shared/result";
 import { parseMoneyInputToCents } from "@/lib/parse-money";
+import { defaultBoundsForNewOptionGroup } from "@/lib/option-mode-presentation";
 import { isValidUuid } from "@/lib/uuid";
 import type { CatalogApplicationError, CatalogAuthDeps } from "./types";
 
@@ -75,14 +76,7 @@ function defaultBoundsForMode(mode: OptionSelectionMode): {
   minSelections: number;
   maxSelections: number;
 } {
-  switch (mode) {
-    case "SINGLE":
-      return { minSelections: 0, maxSelections: 1 };
-    case "MULTIPLE":
-      return { minSelections: 0, maxSelections: 10 };
-    case "QUANTITY":
-      return { minSelections: 1, maxSelections: 24 };
-  }
+  return defaultBoundsForNewOptionGroup(mode);
 }
 
 function validateOptionName(name: string): string | null {

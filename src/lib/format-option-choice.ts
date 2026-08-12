@@ -9,6 +9,3 @@ export function formatOptionChoiceLine(
   }
   return `${name} — +${formatMoney(priceDeltaCents).replace(/^\$/, "")}`;
 }
-
-export const OPTION_SELECTION_MODE_HINT =
-  "SINGLE: una sola elección (ej. presentación). MULTIPLE: varios extras. QUANTITY: cantidades por opción.";

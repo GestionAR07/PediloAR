@@ -1,8 +1,6 @@
 import { formatMoneyCentsArs } from "@/lib/format-money";
-import {
-  formatOptionChoiceLine,
-  OPTION_SELECTION_MODE_HINT,
-} from "@/lib/format-option-choice";
+import { formatOptionChoiceLine } from "@/lib/format-option-choice";
+import { getOptionModePresentation } from "@/lib/option-mode-presentation";
 import { moneyCents } from "@/domain/money/money-cents";
 import type {
   ProductOptionChoiceRecord,
@@ -14,6 +12,8 @@ import {
   updateOptionChoiceAction,
   updateOptionGroupAction,
 } from "./actions";
+import { OptionGroupAdvancedSettings } from "./option-group-advanced-settings";
+import { OptionModeSelector, OptionModeSummary } from "./option-mode-selector";
 
 type OptionGroupsSectionProps = {
   merchantId: string;
@@ -21,24 +21,6 @@ type OptionGroupsSectionProps = {
   groups: ProductOptionGroupRecord[];
   choicesByGroup: Map<string, ProductOptionChoiceRecord[]>;
 };
-
-function SelectionModeFields({ defaultMode }: { defaultMode: string }) {
-  return (
-    <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-      <span>Modo de selección</span>
-      <select
-        name="selectionMode"
-        defaultValue={defaultMode}
-        className="rounded-md border border-border bg-white px-3 py-2"
-      >
-        <option value="SINGLE">Una opción (SINGLE)</option>
-        <option value="MULTIPLE">Varias (MULTIPLE)</option>
-        <option value="QUANTITY">Cantidades (QUANTITY)</option>
-      </select>
-      <span className="text-xs text-muted">{OPTION_SELECTION_MODE_HINT}</span>
-    </label>
-  );
-}
 
 export function OptionGroupsSection({
   merchantId,
@@ -71,6 +53,7 @@ export function OptionGroupsSection({
 
       {groups.map((group) => {
         const groupChoices = choicesByGroup.get(group.id) ?? [];
+        const modePresentation = getOptionModePresentation(group.selectionMode);
         const boundUpdateGroup = updateOptionGroupAction.bind(
           null,
           merchantId,
@@ -82,49 +65,36 @@ export function OptionGroupsSection({
             key={group.id}
             className="space-y-5 rounded-lg border border-border bg-white/60 p-4"
           >
-            <header className="border-b border-border pb-3">
+            <header className="space-y-2 border-b border-border pb-3">
               <p className="text-xs font-medium uppercase tracking-wide text-muted">
                 Grupo de opciones
               </p>
               <h3 className="text-lg font-semibold tracking-tight">
                 {group.name}
               </h3>
+              <OptionModeSummary mode={group.selectionMode} />
             </header>
 
-            <form action={boundUpdateGroup} className="grid gap-3">
+            <form action={boundUpdateGroup} className="grid gap-4">
               <p className="text-sm font-medium">Configuración del grupo</p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label className="flex flex-col gap-1 text-sm">
-                  <span>Nombre del grupo</span>
-                  <input
-                    name="name"
-                    defaultValue={group.name}
-                    required
-                    className="rounded-md border border-border bg-white px-3 py-2"
-                  />
-                </label>
-                <SelectionModeFields defaultMode={group.selectionMode} />
-                <label className="flex flex-col gap-1 text-sm">
-                  <span>Mínimo</span>
-                  <input
-                    name="minSelections"
-                    type="number"
-                    min={0}
-                    defaultValue={group.minSelections}
-                    className="rounded-md border border-border bg-white px-3 py-2"
-                  />
-                </label>
-                <label className="flex flex-col gap-1 text-sm">
-                  <span>Máximo</span>
-                  <input
-                    name="maxSelections"
-                    type="number"
-                    min={0}
-                    defaultValue={group.maxSelections}
-                    className="rounded-md border border-border bg-white px-3 py-2"
-                  />
-                </label>
-              </div>
+              <label className="flex flex-col gap-1 text-sm">
+                <span>Nombre del grupo</span>
+                <input
+                  name="name"
+                  defaultValue={group.name}
+                  required
+                  className="rounded-md border border-border bg-white px-3 py-2"
+                />
+              </label>
+              <OptionModeSelector
+                defaultMode={group.selectionMode}
+                fieldIdPrefix={`edit-${group.id}`}
+              />
+              <OptionGroupAdvancedSettings
+                mode={group.selectionMode}
+                minSelections={group.minSelections}
+                maxSelections={group.maxSelections}
+              />
               <label className="flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"
@@ -238,7 +208,7 @@ export function OptionGroupsSection({
                   <span>Nombre de la opción</span>
                   <input
                     name="name"
-                    placeholder="475cc, 1,5L, 2,25L"
+                    placeholder={modePresentation.optionNamePlaceholder}
                     required
                     className="rounded-md border border-border bg-white px-3 py-2"
                   />
@@ -268,21 +238,24 @@ export function OptionGroupsSection({
         <header className="space-y-1">
           <h3 className="text-sm font-medium">Crear nuevo grupo de opciones</h3>
           <p className="text-xs text-muted">
-            Definí el grupo primero. Después podrás agregar opciones como 475cc,
-            1,5L o 2,25L.
+            Definí el grupo primero. Después podrás agregar opciones (por
+            ejemplo: 475 cc, 1,5 L o 2,25 L).
           </p>
         </header>
-        <form action={boundCreateGroup} className="grid gap-3">
+        <form action={boundCreateGroup} className="grid gap-4">
           <label className="flex flex-col gap-1 text-sm">
             <span>Nombre del grupo</span>
             <input
               name="name"
-              placeholder="Presentación, Tamaño, Extras"
+              placeholder="Presentación, Extras, Sabores"
               required
               className="rounded-md border border-border bg-white px-3 py-2"
             />
           </label>
-          <SelectionModeFields defaultMode="SINGLE" />
+          <OptionModeSelector
+            defaultMode="SINGLE"
+            fieldIdPrefix="create-group"
+          />
           <button
             type="submit"
             className="w-fit rounded-md border border-border px-4 py-2 text-sm font-medium"

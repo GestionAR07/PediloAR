@@ -43,7 +43,7 @@ function baseDeps(overrides: Partial<OptionDeps> = {}): OptionDeps {
 }
 
 describe("createOptionGroup modes", () => {
-  it("creates SINGLE group", async () => {
+  it("creates SINGLE group with default bounds 1/1", async () => {
     const deps = baseDeps();
     const result = await createOptionGroup(
       MERCHANT_A,
@@ -52,7 +52,11 @@ describe("createOptionGroup modes", () => {
     );
     expect(result.ok).toBe(true);
     expect(deps.insertOptionGroup).toHaveBeenCalledWith(
-      expect.objectContaining({ selectionMode: "SINGLE" }),
+      expect.objectContaining({
+        selectionMode: "SINGLE",
+        minSelections: 1,
+        maxSelections: 1,
+      }),
     );
   });
 
