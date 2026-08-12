@@ -70,10 +70,10 @@ export default async function MerchantDetailPage({ params }: PageProps) {
       <header className="space-y-2">
         <p className="text-sm">
           <Link
-            href="/merchant"
+            href="/"
             className="text-accent underline-offset-4 hover:underline"
           >
-            ← Mi comercio
+            ← Marketplace
           </Link>
         </p>
         <h1 className="text-2xl font-semibold tracking-tight">

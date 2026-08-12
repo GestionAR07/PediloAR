@@ -52,7 +52,7 @@ async function loadCatalogPage(merchantId: string) {
 export default async function CatalogPage({ params, searchParams }: PageProps) {
   const { merchantId } = await params;
   const filters = await searchParams;
-  const { merchant } = await loadCatalogPage(merchantId);
+  await loadCatalogPage(merchantId);
 
   const categories = await listMerchantCategories(merchantId);
   const products = await listProductsForMerchant(merchantId, {
@@ -79,7 +79,7 @@ export default async function CatalogPage({ params, searchParams }: PageProps) {
             href={`/merchant/${merchantId}`}
             className="text-accent underline-offset-4 hover:underline"
           >
-            ← {merchant.name}
+            ← Mi comercio
           </Link>
         </p>
         <h1 className="text-2xl font-semibold tracking-tight">Catálogo</h1>
