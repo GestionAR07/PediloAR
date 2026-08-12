@@ -47,13 +47,31 @@ describe("validateProductImageFile", () => {
     ).toBe("INVALID_TYPE");
   });
 
-  it("rejects oversized files", () => {
+  it("allows a 4.9 MB JPEG", () => {
     expect(
       validateProductImageFile({
         mimeType: "image/jpeg",
-        sizeBytes: PRODUCT_IMAGE_MAX_BYTES + 1,
-      })?.code,
-    ).toBe("TOO_LARGE");
+        sizeBytes: Math.floor(4.9 * 1024 * 1024),
+      }),
+    ).toBeNull();
+  });
+
+  it("allows exactly 5 MB", () => {
+    expect(
+      validateProductImageFile({
+        mimeType: "image/jpeg",
+        sizeBytes: PRODUCT_IMAGE_MAX_BYTES,
+      }),
+    ).toBeNull();
+  });
+
+  it("rejects oversized files", () => {
+    const result = validateProductImageFile({
+      mimeType: "image/jpeg",
+      sizeBytes: PRODUCT_IMAGE_MAX_BYTES + 1,
+    });
+    expect(result?.code).toBe("TOO_LARGE");
+    expect(result?.message).toBe("La imagen no puede superar los 5 MB.");
   });
 
   it("rejects empty files", () => {

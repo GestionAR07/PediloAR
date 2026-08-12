@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
+import { gateProductImageBeforeUpload } from "@/lib/product-image-client-gate";
 import {
   PRODUCT_IMAGE_ACCEPT_ATTR,
   PRODUCT_IMAGE_HELP_TEXT,
@@ -23,6 +24,9 @@ type Props = {
   ) => Promise<CatalogActionState>;
 };
 
+const UNEXPECTED_ACTION_ERROR =
+  "No se pudo completar la operación. Intentá de nuevo.";
+
 export function ProductImageEditor({
   merchantId,
   productId,
@@ -36,6 +40,12 @@ export function ProductImageEditor({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  function clearFileInput(): void {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }
+
   function run(
     action: () => Promise<CatalogActionState>,
     clearFile = false,
@@ -43,17 +53,40 @@ export function ProductImageEditor({
     startTransition(async () => {
       setError(null);
       setSuccess(null);
-      const result = await action();
-      if (result.error) {
-        setError(result.error);
-        return;
+      try {
+        const result = await action();
+        if (result.error) {
+          setError(result.error);
+          return;
+        }
+        setSuccess(result.success);
+        if (clearFile) {
+          clearFileInput();
+        }
+        router.refresh();
+      } catch {
+        // Transport/network failures must not become a Next.js runtime overlay.
+        setError(UNEXPECTED_ACTION_ERROR);
+        if (clearFile) {
+          clearFileInput();
+        }
       }
-      setSuccess(result.success);
-      if (clearFile && fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-      router.refresh();
     });
+  }
+
+  function onImageSelected(file: File): void {
+    // Client UX gate — does not replace server-side validation.
+    const gate = gateProductImageBeforeUpload(file);
+    if (!gate.proceed) {
+      setSuccess(null);
+      setError(gate.error);
+      clearFileInput();
+      return;
+    }
+
+    const formData = new FormData();
+    formData.set("image", file);
+    run(() => upsertAction(merchantId, productId, formData), true);
   }
 
   return (
@@ -102,9 +135,7 @@ export function ProductImageEditor({
               if (!file) {
                 return;
               }
-              const formData = new FormData();
-              formData.set("image", file);
-              run(() => upsertAction(merchantId, productId, formData), true);
+              onImageSelected(file);
             }}
           />
         </label>

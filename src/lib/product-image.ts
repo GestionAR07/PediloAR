@@ -55,7 +55,7 @@ export function validateProductImageFile(input: {
   if (input.sizeBytes > PRODUCT_IMAGE_MAX_BYTES) {
     return {
       code: "TOO_LARGE",
-      message: "La imagen supera el máximo de 5 MB.",
+      message: "La imagen no puede superar los 5 MB.",
     };
   }
 

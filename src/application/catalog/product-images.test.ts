@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { PRODUCT_IMAGE_MAX_BYTES } from "@/lib/product-image";
 import { AuthzError } from "@/server/auth/errors";
 import {
   deleteProductImage,
@@ -65,6 +66,25 @@ describe("upsertProductImage", () => {
       deps,
     );
     expect(result.ok).toBe(false);
+    expect(deps.uploadObject).not.toHaveBeenCalled();
+  });
+
+  it("rejects >5 MB on the server even if the client skipped checks", async () => {
+    const deps = baseDeps();
+    const result = await upsertProductImage(
+      MERCHANT_A,
+      PROD_A,
+      {
+        mimeType: "image/jpeg",
+        sizeBytes: PRODUCT_IMAGE_MAX_BYTES + 1,
+        bytes: Buffer.from("pretend-large"),
+      },
+      deps,
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.message).toBe("La imagen no puede superar los 5 MB.");
+    }
     expect(deps.uploadObject).not.toHaveBeenCalled();
   });
 

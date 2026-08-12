@@ -19,6 +19,7 @@ import {
 } from "@/application/catalog/wiring";
 import { productEditPath } from "@/lib/catalog-product-feedback";
 import { getProductAvailabilityToggleSuccessMessage } from "@/lib/product-availability-presentation";
+import { validateProductImageFile } from "@/lib/product-image";
 import { isAuthzError } from "@/server/auth/errors";
 import type { CatalogActionState } from "./action-state";
 
@@ -357,6 +358,15 @@ export async function upsertProductImageAction(
         error: "Seleccioná un archivo de imagen.",
         success: null,
       };
+    }
+
+    // Reject before buffering bytes — do not trust client-only checks.
+    const earlyValidation = validateProductImageFile({
+      mimeType: file.type,
+      sizeBytes: file.size,
+    });
+    if (earlyValidation) {
+      return { error: earlyValidation.message, success: null };
     }
 
     const bytes = Buffer.from(await file.arrayBuffer());
