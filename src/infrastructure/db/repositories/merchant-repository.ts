@@ -1,6 +1,7 @@
 import "server-only";
 
 import { and, asc, count, desc, eq } from "drizzle-orm";
+import type { MerchantStatus } from "@/domain/merchant/enums";
 import { getDb } from "../client";
 import {
   cities,
@@ -37,6 +38,9 @@ export type MerchantDetailRecord = {
   merchantDeliveryEnabled: boolean;
   platformDeliveryEnabled: boolean;
   preparationMinutes: number;
+  acceptingOrders: boolean;
+  pausedUntil: Date | null;
+  cityTimezone: string;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -130,6 +134,9 @@ export async function findMerchantDetailById(
       merchantDeliveryEnabled: merchants.merchantDeliveryEnabled,
       platformDeliveryEnabled: merchants.platformDeliveryEnabled,
       preparationMinutes: merchants.preparationMinutes,
+      acceptingOrders: merchants.acceptingOrders,
+      pausedUntil: merchants.pausedUntil,
+      cityTimezone: cities.timezone,
       createdAt: merchants.createdAt,
       updatedAt: merchants.updatedAt,
     })
@@ -165,6 +172,9 @@ export async function findMerchantDetailForMember(
       merchantDeliveryEnabled: merchants.merchantDeliveryEnabled,
       platformDeliveryEnabled: merchants.platformDeliveryEnabled,
       preparationMinutes: merchants.preparationMinutes,
+      acceptingOrders: merchants.acceptingOrders,
+      pausedUntil: merchants.pausedUntil,
+      cityTimezone: cities.timezone,
       createdAt: merchants.createdAt,
       updatedAt: merchants.updatedAt,
       role: merchantUsers.role,
@@ -235,6 +245,60 @@ export async function insertMerchantDraft(
     throw new Error("Merchant inserted but not found");
   }
   return detail;
+}
+
+export async function findMerchantOperationalState(
+  merchantId: string,
+): Promise<{
+  id: string;
+  status: MerchantStatus;
+  acceptingOrders: boolean;
+  pausedUntil: Date | null;
+} | null> {
+  const db = getDb();
+  const rows = await db
+    .select({
+      id: merchants.id,
+      status: merchants.status,
+      acceptingOrders: merchants.acceptingOrders,
+      pausedUntil: merchants.pausedUntil,
+    })
+    .from(merchants)
+    .where(eq(merchants.id, merchantId))
+    .limit(1);
+  const row = rows[0];
+  if (!row) {
+    return null;
+  }
+  return {
+    ...row,
+    status: row.status as MerchantStatus,
+  };
+}
+
+export async function setMerchantOperationalState(
+  merchantId: string,
+  state: { acceptingOrders: boolean; pausedUntil: Date | null },
+): Promise<{
+  id: string;
+  acceptingOrders: boolean;
+  pausedUntil: Date | null;
+} | null> {
+  const db = getDb();
+  const rows = await db
+    .update(merchants)
+    .set({
+      acceptingOrders: state.acceptingOrders,
+      pausedUntil: state.pausedUntil,
+      updatedAt: new Date(),
+    })
+    .where(eq(merchants.id, merchantId))
+    .returning({
+      id: merchants.id,
+      acceptingOrders: merchants.acceptingOrders,
+      pausedUntil: merchants.pausedUntil,
+    });
+  return rows[0] ?? null;
 }
 
 export async function listMembershipSummariesForUser(userId: string): Promise<

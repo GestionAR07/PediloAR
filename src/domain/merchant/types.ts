@@ -34,6 +34,10 @@ export type Merchant = {
    */
   platformDeliveryEnabled: boolean;
   preparationMinutes: number;
+  /** Manual + temporary order intake flags (effective only when status is ACTIVE). */
+  acceptingOrders: boolean;
+  /** Temporary pause end instant (UTC). Expired values are ignored by derived rules. */
+  pausedUntil: Date | null;
 };
 
 export type MerchantUser = {

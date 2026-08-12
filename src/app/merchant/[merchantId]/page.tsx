@@ -4,6 +4,16 @@ import { logoutAction } from "@/app/login/actions";
 import { isAuthzError } from "@/server/auth/errors";
 import { requireMerchantMembership } from "@/server/auth/authorization";
 import { findMerchantDetailForMember } from "@/infrastructure/db/repositories/merchant-repository";
+import { getMerchantOperationalStatus } from "@/domain/merchant/operational-availability";
+import type { MerchantStatus } from "@/domain/merchant/enums";
+import { formatInstantAsLocalTime } from "@/lib/format-local-time";
+import { getMerchantOperationalPresentation } from "@/lib/merchant-operational-presentation";
+import {
+  pauseMerchantOrdersManualAction,
+  pauseMerchantOrdersTemporaryAction,
+  resumeMerchantOrdersAction,
+} from "./actions";
+import { MerchantOrderStatusPanel } from "./merchant-order-status-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +46,24 @@ async function loadMerchant(merchantId: string) {
 export default async function MerchantDetailPage({ params }: PageProps) {
   const { merchantId } = await params;
   const { user, membership, merchant } = await loadMerchant(merchantId);
+  const now = new Date();
+  const operationalStatus = getMerchantOperationalStatus(
+    {
+      status: merchant.status as MerchantStatus,
+      acceptingOrders: merchant.acceptingOrders,
+      pausedUntil: merchant.pausedUntil,
+    },
+    now,
+  );
+  const resumesAtLabel =
+    merchant.pausedUntil && operationalStatus === "TEMPORARILY_PAUSED"
+      ? formatInstantAsLocalTime(merchant.pausedUntil, merchant.cityTimezone)
+      : null;
+  const presentation = getMerchantOperationalPresentation({
+    operationalStatus,
+    merchantStatus: merchant.status as MerchantStatus,
+    resumesAtLabel,
+  });
 
   return (
     <main className="flex flex-1 flex-col gap-6 border-t border-border pt-10">
@@ -53,6 +81,15 @@ export default async function MerchantDetailPage({ params }: PageProps) {
         </h1>
         <p className="text-sm text-muted">Panel operativo del comercio.</p>
       </header>
+
+      <MerchantOrderStatusPanel
+        merchantId={merchantId}
+        operationalStatus={operationalStatus}
+        presentation={presentation}
+        pauseTemporaryAction={pauseMerchantOrdersTemporaryAction}
+        pauseManualAction={pauseMerchantOrdersManualAction}
+        resumeAction={resumeMerchantOrdersAction}
+      />
 
       <nav className="text-sm">
         <Link

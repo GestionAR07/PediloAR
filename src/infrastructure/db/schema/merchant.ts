@@ -6,6 +6,7 @@ import {
   integer,
   pgTable,
   text,
+  timestamp,
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
@@ -46,6 +47,13 @@ export const merchants = pgTable(
       .notNull()
       .default(false),
     preparationMinutes: integer("preparation_minutes").notNull().default(30),
+    /** Merchant-controlled order intake switch (independent of status). */
+    acceptingOrders: boolean("accepting_orders").notNull().default(true),
+    /** Temporary pause end instant (timestamptz). Null when not temporarily paused. */
+    pausedUntil: timestamp("paused_until", {
+      withTimezone: true,
+      mode: "date",
+    }),
     createdAt: createdAtColumn(),
     updatedAt: updatedAtColumn(),
   },

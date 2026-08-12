@@ -124,12 +124,9 @@ describe("catalog management security static checks", () => {
 });
 
 describe("merchant temporary availability diagnosis", () => {
-  it("documents that SUSPENDED is administrative — no pause field yet", () => {
+  it("documents operational availability fields on merchants", () => {
     const merchantSchema = read("src/infrastructure/db/schema/merchant.ts");
-    expect(merchantSchema).toContain("DRAFT");
-    expect(merchantSchema).toContain("ACTIVE");
-    expect(merchantSchema).toContain("SUSPENDED");
-    expect(merchantSchema).not.toContain("temporarily_paused");
-    expect(merchantSchema).not.toContain("accepting_orders");
+    expect(merchantSchema).toContain("acceptingOrders");
+    expect(merchantSchema).toContain("pausedUntil");
   });
 });
