@@ -3,12 +3,10 @@
 1. Fundación técnica — **completada**
 2. Dominio y datos
    - 2A Dominio puro — **completada**
-   - 2B Persistencia — **completada** (`CORE_PERSISTENCE_SCHEMA_VALIDATED` en marketplace-rawson-dev)
-3. Auth + admin + onboarding
-   - **3A Auth foundation + authz baseline** ← _actual_
-   - 3B Assisted merchant onboarding + owner invitations
-4. Catálogo
-5. Storefront
+   - 2B Persistencia — **completada**
+3. Auth + admin + onboarding — **completada**
+4. Catálogo + imágenes — **completada** (4B)
+5. Storefront / discovery — **en curso** (`PUBLIC_STOREFRONT_DISCOVERY_READY_MANUAL_VALIDATION_PENDING`)
 6. Carrito + checkout
 7. Operación de pedidos
 8. Hardening / PWA

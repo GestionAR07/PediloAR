@@ -6,7 +6,7 @@ import "@/styles/globals.css";
 export const metadata: Metadata = {
   title: APP_NAME,
   description:
-    "Infraestructura digital para el comercio local de Rawson y Playa Unión.",
+    "Marketplace local para pedir en comercios de Rawson y Playa Unión.",
 };
 
 export default function RootLayout({

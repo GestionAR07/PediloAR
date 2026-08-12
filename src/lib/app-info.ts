@@ -4,7 +4,7 @@
  */
 export const APP_NAME = "Marketplace Rawson";
 
-export const APP_TAGLINE = "Base técnica operativa";
+export const APP_TAGLINE = "Pedí cerca en Rawson y Playa Unión";
 
 export const APP_SERVICE_AREA = "Rawson · Playa Unión";
 

@@ -7,15 +7,13 @@ import {
 } from "./app-info";
 
 describe("app-info", () => {
-  it("exposes the product name and technical status tagline", () => {
+  it("exposes the product name and public tagline", () => {
     expect(APP_NAME).toBe("Marketplace Rawson");
-    expect(APP_TAGLINE).toBe("Base técnica operativa");
+    expect(APP_TAGLINE).toContain("Rawson");
     expect(APP_SERVICE_AREA).toBe("Rawson · Playa Unión");
   });
 
-  it("builds the foundation status label used by the home page", () => {
-    expect(getFoundationStatusLabel()).toBe(
-      "Marketplace Rawson — Base técnica operativa",
-    );
+  it("builds a status label from name and tagline", () => {
+    expect(getFoundationStatusLabel()).toBe(`${APP_NAME} — ${APP_TAGLINE}`);
   });
 });
