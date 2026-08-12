@@ -51,10 +51,17 @@ export default async function MerchantDetailPage({ params }: PageProps) {
         <h1 className="text-2xl font-semibold tracking-tight">
           {merchant.name}
         </h1>
-        <p className="text-sm text-muted">
-          Panel operativo mínimo (sin catálogo ni pedidos).
-        </p>
+        <p className="text-sm text-muted">Panel operativo del comercio.</p>
       </header>
+
+      <nav className="text-sm">
+        <Link
+          href={`/merchant/${merchantId}/catalog`}
+          className="inline-flex rounded-md border border-border px-4 py-3 font-medium text-accent underline-offset-4 hover:underline"
+        >
+          Gestionar catálogo →
+        </Link>
+      </nav>
 
       <dl className="space-y-2 text-sm">
         <div>
