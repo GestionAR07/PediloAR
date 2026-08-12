@@ -15,6 +15,7 @@ import {
   updateOptionGroupApp,
   updateProductApp,
 } from "@/application/catalog/wiring";
+import { productEditPath } from "@/lib/catalog-product-feedback";
 import { isAuthzError } from "@/server/auth/errors";
 import type { CatalogActionState } from "./action-state";
 
@@ -172,7 +173,7 @@ export async function createProductAction(
     }
     throw error instanceof Error ? error : new Error("Error al crear producto");
   }
-  redirect(`/merchant/${merchantId}/catalog/products/${productId}`);
+  redirect(productEditPath(merchantId, productId, "created"));
 }
 
 export async function updateProductAction(
@@ -207,9 +208,9 @@ export async function updateProductAction(
     throw error instanceof Error
       ? error
       : new Error("Error al actualizar producto");
-  } finally {
-    revalidateCatalog(merchantId, `/products/${productId}`);
   }
+  revalidateCatalog(merchantId, `/products/${productId}`);
+  redirect(productEditPath(merchantId, productId, "saved"));
 }
 
 export async function toggleProductAvailabilityAction(

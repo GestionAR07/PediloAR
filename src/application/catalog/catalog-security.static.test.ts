@@ -43,6 +43,38 @@ describe("catalog management security static checks", () => {
     expect(page).toContain("formatMerchantCategoryLabel");
   });
 
+  it("create product redirects to edit with created feedback", () => {
+    const actions = read("src/app/merchant/[merchantId]/catalog/actions.ts");
+    expect(actions).toContain(
+      'productEditPath(merchantId, productId, "created")',
+    );
+  });
+
+  it("update product redirects to edit with saved feedback", () => {
+    const actions = read("src/app/merchant/[merchantId]/catalog/actions.ts");
+    expect(actions).toContain(
+      'productEditPath(merchantId, productId, "saved")',
+    );
+  });
+
+  it("new product form uses create submit label", () => {
+    const page = read(
+      "src/app/merchant/[merchantId]/catalog/products/new/page.tsx",
+    );
+    expect(page).toContain('mode="create"');
+    expect(page).toContain("Nuevo producto");
+  });
+
+  it("edit product page shows edit context and save feedback", () => {
+    const page = read(
+      "src/app/merchant/[merchantId]/catalog/products/[productId]/page.tsx",
+    );
+    expect(page).toContain("Editar producto");
+    expect(page).toContain('mode="edit"');
+    expect(page).toContain("ProductSaveFeedback");
+    expect(page).toContain("parseProductSaveFeedback");
+  });
+
   it("deactivating category does not touch products in use case layer", () => {
     const categories = read("src/application/catalog/categories.ts");
     expect(categories).not.toContain("updateProduct");

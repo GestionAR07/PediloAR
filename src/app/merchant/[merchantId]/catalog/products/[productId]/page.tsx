@@ -9,6 +9,10 @@ import {
   listOptionGroupsForProduct,
 } from "@/infrastructure/db/repositories/catalog-repository";
 import { findMerchantDetailForMember } from "@/infrastructure/db/repositories/merchant-repository";
+import {
+  parseProductSaveFeedback,
+  productEditPath,
+} from "@/lib/catalog-product-feedback";
 import { formatMerchantCategoryLabel } from "@/lib/format-category-label";
 import { formatMoneyCentsArs } from "@/lib/format-money";
 import { moneyCents } from "@/domain/money/money-cents";
@@ -19,11 +23,14 @@ import {
   updateOptionGroupAction,
   updateProductAction,
 } from "../../actions";
+import { ProductFormSubmitButton } from "../../product-form-submit-button";
+import { ProductSaveFeedback } from "../../product-save-feedback";
 
 export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{ merchantId: string; productId: string }>;
+  searchParams: Promise<{ created?: string; saved?: string }>;
 };
 
 async function loadPage(merchantId: string, productId: string) {
@@ -54,8 +61,13 @@ async function loadPage(merchantId: string, productId: string) {
   }
 }
 
-export default async function EditProductPage({ params }: PageProps) {
+export default async function EditProductPage({
+  params,
+  searchParams,
+}: PageProps) {
   const { merchantId, productId } = await params;
+  const query = await searchParams;
+  const feedback = parseProductSaveFeedback(query);
   const { merchant, product } = await loadPage(merchantId, productId);
   const categories = await listMerchantCategories(merchantId);
   const selectableCategories = categories.filter(
@@ -89,10 +101,18 @@ export default async function EditProductPage({ params }: PageProps) {
           </Link>
         </p>
         <h1 className="text-2xl font-semibold tracking-tight">
-          {product.name}
+          Editar producto
         </h1>
+        <p className="text-base font-medium">{product.name}</p>
         <p className="text-sm text-muted">{merchant.name}</p>
       </header>
+
+      {feedback ? (
+        <ProductSaveFeedback
+          kind={feedback}
+          cleanPath={productEditPath(merchantId, productId)}
+        />
+      ) : null}
 
       <section className="grid max-w-xl gap-4">
         <h2 className="text-sm font-medium">Datos del producto</h2>
@@ -186,12 +206,7 @@ export default async function EditProductPage({ params }: PageProps) {
             Disponible para venta
           </label>
 
-          <button
-            type="submit"
-            className="w-fit rounded-md border border-border px-4 py-2 text-sm"
-          >
-            Guardar producto
-          </button>
+          <ProductFormSubmitButton mode="edit" />
         </form>
       </section>
 

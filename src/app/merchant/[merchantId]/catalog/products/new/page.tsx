@@ -5,6 +5,7 @@ import { requireMerchantMembership } from "@/server/auth/authorization";
 import { listActiveMerchantCategories } from "@/infrastructure/db/repositories/catalog-repository";
 import { findMerchantDetailForMember } from "@/infrastructure/db/repositories/merchant-repository";
 import { createProductAction } from "../../actions";
+import { ProductFormSubmitButton } from "../../product-form-submit-button";
 
 export const dynamic = "force-dynamic";
 
@@ -153,12 +154,7 @@ export default async function NewProductPage({ params }: PageProps) {
           Disponible para venta (por defecto sí)
         </label>
 
-        <button
-          type="submit"
-          className="w-fit rounded-md border border-border px-4 py-2 text-sm"
-        >
-          Crear producto
-        </button>
+        <ProductFormSubmitButton mode="create" />
       </form>
     </main>
   );
