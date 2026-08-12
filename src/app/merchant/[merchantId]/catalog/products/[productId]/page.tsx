@@ -16,13 +16,8 @@ import {
 import { formatMerchantCategoryLabel } from "@/lib/format-category-label";
 import { formatMoneyCentsArs } from "@/lib/format-money";
 import { moneyCents } from "@/domain/money/money-cents";
-import {
-  createOptionChoiceAction,
-  createOptionGroupAction,
-  updateOptionChoiceAction,
-  updateOptionGroupAction,
-  updateProductAction,
-} from "../../actions";
+import { updateProductAction } from "../../actions";
+import { OptionGroupsSection } from "../../option-groups-section";
 import { ProductFormSubmitButton } from "../../product-form-submit-button";
 import { ProductSaveFeedback } from "../../product-save-feedback";
 
@@ -83,11 +78,6 @@ export default async function EditProductPage({
   }
 
   const boundUpdate = updateProductAction.bind(null, merchantId, productId);
-  const boundCreateGroup = createOptionGroupAction.bind(
-    null,
-    merchantId,
-    productId,
-  );
 
   return (
     <main className="flex flex-1 flex-col gap-8 border-t border-border pt-10">
@@ -210,174 +200,12 @@ export default async function EditProductPage({
         </form>
       </section>
 
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium">Grupos de opciones</h2>
-
-        {groups.map((group) => {
-          const groupChoices = choicesByGroup.get(group.id) ?? [];
-          const boundUpdateGroup = updateOptionGroupAction.bind(
-            null,
-            merchantId,
-            group.id,
-          );
-
-          return (
-            <div
-              key={group.id}
-              className="rounded-lg border border-border bg-white/50 p-4"
-            >
-              <form action={boundUpdateGroup} className="mb-4 grid gap-3">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <input
-                    name="name"
-                    defaultValue={group.name}
-                    className="rounded-md border border-border bg-white px-3 py-2 text-sm"
-                  />
-                  <select
-                    name="selectionMode"
-                    defaultValue={group.selectionMode}
-                    className="rounded-md border border-border bg-white px-3 py-2 text-sm"
-                  >
-                    <option value="SINGLE">Una opción (SINGLE)</option>
-                    <option value="MULTIPLE">Varias (MULTIPLE)</option>
-                    <option value="QUANTITY">Cantidades (QUANTITY)</option>
-                  </select>
-                  <input
-                    name="minSelections"
-                    type="number"
-                    min={0}
-                    defaultValue={group.minSelections}
-                    className="rounded-md border border-border bg-white px-3 py-2 text-sm"
-                  />
-                  <input
-                    name="maxSelections"
-                    type="number"
-                    min={0}
-                    defaultValue={group.maxSelections}
-                    className="rounded-md border border-border bg-white px-3 py-2 text-sm"
-                  />
-                </div>
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    name="active"
-                    defaultChecked={group.active}
-                  />
-                  Grupo activo
-                </label>
-                <button
-                  type="submit"
-                  className="w-fit rounded-md border border-border px-3 py-2 text-sm"
-                >
-                  Guardar grupo
-                </button>
-              </form>
-
-              <ul className="mb-3 space-y-2">
-                {groupChoices.map((choice) => {
-                  const boundUpdateChoice = updateOptionChoiceAction.bind(
-                    null,
-                    merchantId,
-                    choice.id,
-                  );
-                  return (
-                    <li key={choice.id}>
-                      <form
-                        action={boundUpdateChoice}
-                        className="flex flex-col gap-2 sm:flex-row sm:items-center"
-                      >
-                        <input
-                          name="name"
-                          defaultValue={choice.name}
-                          className="flex-1 rounded-md border border-border bg-white px-3 py-2 text-sm"
-                        />
-                        <input
-                          name="priceDeltaInput"
-                          defaultValue={formatMoneyCentsArs(
-                            moneyCents(choice.priceDeltaCents),
-                          ).replace("$", "")}
-                          className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm sm:w-32"
-                        />
-                        <label className="flex items-center gap-2 text-sm">
-                          <input
-                            type="checkbox"
-                            name="active"
-                            defaultChecked={choice.active}
-                          />
-                          Activa
-                        </label>
-                        <button
-                          type="submit"
-                          className="rounded-md border border-border px-3 py-2 text-sm"
-                        >
-                          Guardar
-                        </button>
-                      </form>
-                    </li>
-                  );
-                })}
-              </ul>
-
-              <form
-                action={createOptionChoiceAction.bind(
-                  null,
-                  merchantId,
-                  group.id,
-                )}
-                className="flex flex-col gap-2 sm:flex-row"
-              >
-                <input type="hidden" name="groupId" value={group.id} />
-                <input
-                  name="name"
-                  placeholder="Nueva opción"
-                  required
-                  className="flex-1 rounded-md border border-border bg-white px-3 py-2 text-sm"
-                />
-                <input
-                  name="priceDeltaInput"
-                  placeholder="Delta $"
-                  defaultValue="0"
-                  className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm sm:w-32"
-                />
-                <button
-                  type="submit"
-                  className="rounded-md border border-border px-3 py-2 text-sm"
-                >
-                  + Opción
-                </button>
-              </form>
-            </div>
-          );
-        })}
-
-        <form
-          action={boundCreateGroup}
-          className="grid max-w-xl gap-3 rounded-lg border border-border bg-white/50 p-4"
-        >
-          <h3 className="text-sm font-medium">Nuevo grupo</h3>
-          <input
-            name="name"
-            placeholder="Tamaño / Extras / Sabores"
-            required
-            className="rounded-md border border-border bg-white px-3 py-2 text-sm"
-          />
-          <select
-            name="selectionMode"
-            defaultValue="SINGLE"
-            className="rounded-md border border-border bg-white px-3 py-2 text-sm"
-          >
-            <option value="SINGLE">Una opción (SINGLE)</option>
-            <option value="MULTIPLE">Varias (MULTIPLE)</option>
-            <option value="QUANTITY">Cantidades (QUANTITY)</option>
-          </select>
-          <button
-            type="submit"
-            className="w-fit rounded-md border border-border px-3 py-2 text-sm"
-          >
-            Crear grupo
-          </button>
-        </form>
-      </section>
+      <OptionGroupsSection
+        merchantId={merchantId}
+        productId={productId}
+        groups={groups}
+        choicesByGroup={choicesByGroup}
+      />
     </main>
   );
 }
