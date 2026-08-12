@@ -34,14 +34,23 @@ import {
   nextOptionGroupSortOrder,
   nextProductSortOrder,
   setProductAvailability,
+  setProductImagePath,
   swapCategorySortOrder,
   updateMerchantCategory,
   updateOptionChoice,
   updateOptionGroup,
   updateProduct,
 } from "@/infrastructure/db/repositories/catalog-repository";
+import {
+  deleteProductImageObject,
+  uploadProductImageObject,
+} from "@/infrastructure/storage/product-images";
 import { isUniqueViolation } from "@/infrastructure/db/pg-errors";
 import { requireMerchantRole } from "@/server/auth/authorization";
+import {
+  deleteProductImage as deleteProductImageUseCase,
+  upsertProductImage as upsertProductImageUseCase,
+} from "@/application/catalog/product-images";
 
 async function requireCatalogAccess(merchantId: string): Promise<void> {
   await requireMerchantRole(merchantId, CATALOG_ALLOWED_ROLES);
@@ -85,6 +94,16 @@ function optionDeps() {
     updateOptionGroup,
     insertOptionChoice,
     updateOptionChoice,
+  };
+}
+
+function productImageDeps() {
+  return {
+    requireCatalogAccess,
+    findProductById,
+    setProductImagePath,
+    uploadObject: uploadProductImageObject,
+    deleteObject: deleteProductImageObject,
   };
 }
 
@@ -178,4 +197,24 @@ export async function updateOptionChoiceApp(
   input: Parameters<typeof updateOptionChoiceUseCase>[2],
 ) {
   return updateOptionChoiceUseCase(merchantId, choiceId, input, optionDeps());
+}
+
+export async function upsertProductImageApp(
+  merchantId: string,
+  productId: string,
+  file: Parameters<typeof upsertProductImageUseCase>[2],
+) {
+  return upsertProductImageUseCase(
+    merchantId,
+    productId,
+    file,
+    productImageDeps(),
+  );
+}
+
+export async function deleteProductImageApp(
+  merchantId: string,
+  productId: string,
+) {
+  return deleteProductImageUseCase(merchantId, productId, productImageDeps());
 }

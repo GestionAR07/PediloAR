@@ -32,6 +32,7 @@ export type ProductDeps = CatalogAuthDeps & {
     stockMode: string;
     stockQuantity: number | null;
     sortOrder: number;
+    imagePath: string | null;
   } | null>;
   nextProductSortOrder: (
     merchantId: string,
@@ -100,6 +101,7 @@ function buildProductDraft(input: {
     stockMode: input.stockMode,
     stockQuantity: input.stockQuantity,
     sortOrder: input.sortOrder,
+    imagePath: null,
   };
 }
 
@@ -381,6 +383,7 @@ export async function updateProduct(
         ? (patch.stockQuantity as number | null)
         : existing.stockQuantity,
     sortOrder: existing.sortOrder,
+    imagePath: existing.imagePath ?? null,
   };
 
   try {
@@ -451,6 +454,7 @@ export async function toggleProductAvailability(
     available: nextAvailable,
     priceCents: moneyCents(existing.priceCents),
     stockMode: existing.stockMode as StockMode,
+    imagePath: existing.imagePath ?? null,
   });
 
   return ok({

@@ -21,6 +21,7 @@ function baseProduct(overrides: Partial<Product> = {}): Product {
     stockMode: "NOT_TRACKED",
     stockQuantity: null,
     sortOrder: 0,
+    imagePath: null,
     ...overrides,
   };
 }

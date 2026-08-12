@@ -16,9 +16,15 @@ import {
 import { formatMerchantCategoryLabel } from "@/lib/format-category-label";
 import { formatMoneyCentsArs } from "@/lib/format-money";
 import { moneyCents } from "@/domain/money/money-cents";
-import { updateProductAction } from "../../actions";
+import { createProductImageSignedUrl } from "@/infrastructure/storage/product-images";
+import {
+  deleteProductImageAction,
+  updateProductAction,
+  upsertProductImageAction,
+} from "../../actions";
 import { OptionGroupsSection } from "../../option-groups-section";
 import { ProductFormSubmitButton } from "../../product-form-submit-button";
+import { ProductImageEditor } from "../../product-image-editor";
 import { ProductSaveFeedback } from "../../product-save-feedback";
 
 export const dynamic = "force-dynamic";
@@ -78,6 +84,9 @@ export default async function EditProductPage({
   }
 
   const boundUpdate = updateProductAction.bind(null, merchantId, productId);
+  const imageUrl = product.imagePath
+    ? await createProductImageSignedUrl(product.imagePath)
+    : null;
 
   return (
     <main className="flex flex-1 flex-col gap-8 border-t border-border pt-10">
@@ -103,6 +112,14 @@ export default async function EditProductPage({
           cleanPath={productEditPath(merchantId, productId)}
         />
       ) : null}
+
+      <ProductImageEditor
+        merchantId={merchantId}
+        productId={productId}
+        imageUrl={imageUrl}
+        upsertAction={upsertProductImageAction}
+        deleteAction={deleteProductImageAction}
+      />
 
       <section className="grid max-w-xl gap-4">
         <h2 className="text-sm font-medium">Datos del producto</h2>

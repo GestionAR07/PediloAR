@@ -22,6 +22,13 @@
       "when": 1786546030234,
       "tag": "0002_fat_warlock",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786549461177,
+      "tag": "0003_needy_shocker",
+      "breakpoints": true
     }
   ]
 }

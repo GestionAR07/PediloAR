@@ -46,6 +46,8 @@ export type Product = {
   /** Required when stockMode is TRACKED; ignored conceptually when NOT_TRACKED. */
   stockQuantity: number | null;
   sortOrder: number;
+  /** Object path in Storage bucket; null when no image. Never a signed URL. */
+  imagePath: string | null;
 };
 
 export type ProductOptionGroup = {

@@ -11,8 +11,10 @@ import { formatMoneyCentsArs } from "@/lib/format-money";
 import { formatMerchantCategoryLabel } from "@/lib/format-category-label";
 import { getMerchantProductAvailabilityStatus } from "@/lib/product-availability-presentation";
 import { moneyCents } from "@/domain/money/money-cents";
+import { createProductImageSignedUrls } from "@/infrastructure/storage/product-images";
 import { toggleProductAvailabilityAction } from "./actions";
 import { ProductAvailabilityToggle } from "./product-availability-toggle";
+import { ProductImageThumbnail } from "./product-image-thumbnail";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +65,11 @@ export default async function CatalogPage({ params, searchParams }: PageProps) {
           ? false
           : undefined,
   });
+  const signedUrls = await createProductImageSignedUrls(
+    products
+      .map((product) => product.imagePath)
+      .filter((path): path is string => Boolean(path)),
+  );
 
   return (
     <main className="flex flex-1 flex-col gap-6 border-t border-border pt-10">
@@ -170,37 +177,47 @@ export default async function CatalogPage({ params, searchParams }: PageProps) {
                 className="rounded-lg border border-border bg-white/50 p-4"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="space-y-1">
-                    <p className="font-medium">{product.name}</p>
-                    <p className="text-sm text-muted">
-                      {formatMerchantCategoryLabel(
-                        product.categoryName,
-                        product.categoryActive,
-                      )}{" "}
-                      · {formatMoneyCentsArs(moneyCents(product.priceCents))}
-                    </p>
-                    <p className="text-sm">
-                      <span
-                        className={
-                          status.operationallyAvailable
-                            ? "text-accent"
-                            : "text-muted"
-                        }
-                      >
-                        {status.label}
-                      </span>
-                      {status.detail && (
-                        <span className="text-muted"> · {status.detail}</span>
-                      )}
-                      {product.optionGroupCount > 0 && (
-                        <span className="text-muted">
-                          {" "}
-                          · {product.optionGroupCount} grupo
-                          {product.optionGroupCount === 1 ? "" : "s"} de
-                          opciones
+                  <div className="flex gap-3">
+                    <ProductImageThumbnail
+                      name={product.name}
+                      imageUrl={
+                        product.imagePath
+                          ? (signedUrls.get(product.imagePath) ?? null)
+                          : null
+                      }
+                    />
+                    <div className="space-y-1">
+                      <p className="font-medium">{product.name}</p>
+                      <p className="text-sm text-muted">
+                        {formatMerchantCategoryLabel(
+                          product.categoryName,
+                          product.categoryActive,
+                        )}{" "}
+                        · {formatMoneyCentsArs(moneyCents(product.priceCents))}
+                      </p>
+                      <p className="text-sm">
+                        <span
+                          className={
+                            status.operationallyAvailable
+                              ? "text-accent"
+                              : "text-muted"
+                          }
+                        >
+                          {status.label}
                         </span>
-                      )}
-                    </p>
+                        {status.detail && (
+                          <span className="text-muted"> · {status.detail}</span>
+                        )}
+                        {product.optionGroupCount > 0 && (
+                          <span className="text-muted">
+                            {" "}
+                            · {product.optionGroupCount} grupo
+                            {product.optionGroupCount === 1 ? "" : "s"} de
+                            opciones
+                          </span>
+                        )}
+                      </p>
+                    </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {product.active && (

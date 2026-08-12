@@ -116,6 +116,8 @@ export const products = pgTable(
     stockMode: text("stock_mode").notNull().default("NOT_TRACKED"),
     stockQuantity: integer("stock_quantity"),
     sortOrder: integer("sort_order").notNull().default(0),
+    /** Storage object path in bucket product-images; never a signed URL. */
+    imagePath: text("image_path"),
     createdAt: createdAtColumn(),
     updatedAt: updatedAtColumn(),
   },

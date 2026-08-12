@@ -25,6 +25,7 @@ const existingProduct = {
   stockMode: "NOT_TRACKED",
   stockQuantity: null,
   sortOrder: 0,
+  imagePath: null,
 };
 
 function categoryLookup(id: string): { id: string; active: boolean } | null {

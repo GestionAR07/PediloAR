@@ -8,12 +8,14 @@ import {
   createOptionGroupApp,
   createProductApp,
   deleteMerchantCategoryApp,
+  deleteProductImageApp,
   reorderMerchantCategoryApp,
   toggleProductAvailabilityApp,
   updateMerchantCategoryApp,
   updateOptionChoiceApp,
   updateOptionGroupApp,
   updateProductApp,
+  upsertProductImageApp,
 } from "@/application/catalog/wiring";
 import { productEditPath } from "@/lib/catalog-product-feedback";
 import { getProductAvailabilityToggleSuccessMessage } from "@/lib/product-availability-presentation";
@@ -340,5 +342,53 @@ export async function updateOptionChoiceAction(
       : new Error("Error al actualizar opción");
   } finally {
     revalidateCatalog(merchantId);
+  }
+}
+
+export async function upsertProductImageAction(
+  merchantId: string,
+  productId: string,
+  formData: FormData,
+): Promise<CatalogActionState> {
+  try {
+    const file = formData.get("image");
+    if (!(file instanceof File)) {
+      return {
+        error: "Seleccioná un archivo de imagen.",
+        success: null,
+      };
+    }
+
+    const bytes = Buffer.from(await file.arrayBuffer());
+    const result = await upsertProductImageApp(merchantId, productId, {
+      mimeType: file.type,
+      sizeBytes: file.size,
+      bytes,
+    });
+
+    if (!result.ok) {
+      return { error: result.error.message, success: null };
+    }
+
+    revalidateCatalog(merchantId, `/products/${productId}`);
+    return { error: null, success: "Imagen guardada." };
+  } catch (error) {
+    return mapAuthzFailure(error);
+  }
+}
+
+export async function deleteProductImageAction(
+  merchantId: string,
+  productId: string,
+): Promise<CatalogActionState> {
+  try {
+    const result = await deleteProductImageApp(merchantId, productId);
+    if (!result.ok) {
+      return { error: result.error.message, success: null };
+    }
+    revalidateCatalog(merchantId, `/products/${productId}`);
+    return { error: null, success: "Imagen eliminada." };
+  } catch (error) {
+    return mapAuthzFailure(error);
   }
 }

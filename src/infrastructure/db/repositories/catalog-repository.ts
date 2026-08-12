@@ -30,6 +30,7 @@ export type ProductRecord = {
   stockMode: string;
   stockQuantity: number | null;
   sortOrder: number;
+  imagePath: string | null;
 };
 
 export type ProductListRow = ProductRecord & {
@@ -273,6 +274,7 @@ export async function listProductsForMerchant(
       stockMode: products.stockMode,
       stockQuantity: products.stockQuantity,
       sortOrder: products.sortOrder,
+      imagePath: products.imagePath,
       categoryName: merchantCategories.name,
       categoryActive: merchantCategories.active,
       optionGroupCount: optionCounts.optionGroupCount,
@@ -305,6 +307,7 @@ export async function listProductsForMerchant(
     stockMode: row.stockMode,
     stockQuantity: row.stockQuantity,
     sortOrder: row.sortOrder,
+    imagePath: row.imagePath,
     categoryName: row.categoryName,
     categoryActive: row.categoryActive,
     optionGroupCount: Number(row.optionGroupCount ?? 0),
@@ -329,6 +332,7 @@ export async function findProductById(
       stockMode: products.stockMode,
       stockQuantity: products.stockQuantity,
       sortOrder: products.sortOrder,
+      imagePath: products.imagePath,
     })
     .from(products)
     .where(and(eq(products.id, productId), eq(products.merchantId, merchantId)))
@@ -397,6 +401,7 @@ export async function insertProduct(input: {
       stockMode: products.stockMode,
       stockQuantity: products.stockQuantity,
       sortOrder: products.sortOrder,
+      imagePath: products.imagePath,
     });
 
   const row = inserted[0];
@@ -457,6 +462,42 @@ export async function updateProduct(
       stockMode: products.stockMode,
       stockQuantity: products.stockQuantity,
       sortOrder: products.sortOrder,
+      imagePath: products.imagePath,
+    });
+
+  const row = updated[0];
+  if (!row) {
+    return null;
+  }
+  return { ...row, priceCents: Number(row.priceCents) };
+}
+
+export async function setProductImagePath(
+  merchantId: string,
+  productId: string,
+  imagePath: string | null,
+): Promise<ProductRecord | null> {
+  const db = getDb();
+  const updated = await db
+    .update(products)
+    .set({
+      imagePath,
+      updatedAt: new Date(),
+    })
+    .where(and(eq(products.id, productId), eq(products.merchantId, merchantId)))
+    .returning({
+      id: products.id,
+      merchantId: products.merchantId,
+      merchantCategoryId: products.merchantCategoryId,
+      name: products.name,
+      description: products.description,
+      priceCents: products.priceCents,
+      active: products.active,
+      available: products.available,
+      stockMode: products.stockMode,
+      stockQuantity: products.stockQuantity,
+      sortOrder: products.sortOrder,
+      imagePath: products.imagePath,
     });
 
   const row = updated[0];
