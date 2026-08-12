@@ -101,6 +101,26 @@ describe("catalog management security static checks", () => {
       /CREATE POLICY[\s\S]*products[\s\S]*USING\s*\(\s*true\s*\)/,
     );
   });
+
+  it("catalog list uses operational availability presentation", () => {
+    const page = read("src/app/merchant/[merchantId]/catalog/page.tsx");
+    expect(page).toContain("getMerchantProductAvailabilityStatus");
+    expect(page).toContain("Pausados (no disponibles)");
+  });
+
+  it("availability toggle uses pause/resume sale copy", () => {
+    const toggle = read(
+      "src/app/merchant/[merchantId]/catalog/product-availability-toggle.tsx",
+    );
+    expect(toggle).toContain("getProductAvailabilityToggleLabel");
+    expect(toggle).not.toContain("Marcar sin stock");
+  });
+
+  it("domain exposes operational availability helper", () => {
+    const product = read("src/domain/catalog/product.ts");
+    expect(product).toContain("isProductOperationallyAvailable");
+    expect(product).toContain("isProductSellable");
+  });
 });
 
 describe("merchant temporary availability diagnosis", () => {

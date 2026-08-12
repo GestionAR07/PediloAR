@@ -9,6 +9,7 @@ import {
 import { findMerchantDetailForMember } from "@/infrastructure/db/repositories/merchant-repository";
 import { formatMoneyCentsArs } from "@/lib/format-money";
 import { formatMerchantCategoryLabel } from "@/lib/format-category-label";
+import { getMerchantProductAvailabilityStatus } from "@/lib/product-availability-presentation";
 import { moneyCents } from "@/domain/money/money-cents";
 import { toggleProductAvailabilityAction } from "./actions";
 import { ProductAvailabilityToggle } from "./product-availability-toggle";
@@ -135,7 +136,7 @@ export default async function CatalogPage({ params, searchParams }: PageProps) {
           >
             <option value="">Todas</option>
             <option value="yes">Disponible</option>
-            <option value="no">Sin stock / no disponible</option>
+            <option value="no">Pausados (no disponibles)</option>
           </select>
         </label>
         <div className="sm:col-span-3">
@@ -161,14 +162,7 @@ export default async function CatalogPage({ params, searchParams }: PageProps) {
       ) : (
         <ul className="space-y-3">
           {products.map((product) => {
-            const trackedOut =
-              product.stockMode === "TRACKED" &&
-              (product.stockQuantity ?? 0) === 0;
-            const statusLabel = !product.active
-              ? "Inactivo"
-              : product.available && !trackedOut
-                ? "Disponible"
-                : "Sin stock";
+            const status = getMerchantProductAvailabilityStatus(product);
 
             return (
               <li
@@ -188,18 +182,15 @@ export default async function CatalogPage({ params, searchParams }: PageProps) {
                     <p className="text-sm">
                       <span
                         className={
-                          statusLabel === "Disponible"
+                          status.operationallyAvailable
                             ? "text-accent"
                             : "text-muted"
                         }
                       >
-                        {statusLabel}
+                        {status.label}
                       </span>
-                      {product.stockMode === "TRACKED" && (
-                        <span className="text-muted">
-                          {" "}
-                          · Stock: {product.stockQuantity ?? 0}
-                        </span>
+                      {status.detail && (
+                        <span className="text-muted"> · {status.detail}</span>
                       )}
                       {product.optionGroupCount > 0 && (
                         <span className="text-muted">

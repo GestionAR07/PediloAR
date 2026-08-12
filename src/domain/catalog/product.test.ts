@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { moneyCents } from "../money/money-cents";
 import { DomainError } from "../shared/errors";
-import { assertProduct, isProductSellable } from "./product";
+import {
+  assertProduct,
+  isProductOperationallyAvailable,
+  isProductSellable,
+} from "./product";
 import type { Product } from "./types";
 
 function baseProduct(overrides: Partial<Product> = {}): Product {
@@ -57,6 +61,48 @@ describe("product", () => {
     expect(
       isProductSellable(
         baseProduct({ stockMode: "TRACKED", stockQuantity: 0 }),
+      ),
+    ).toBe(false);
+  });
+
+  it("active=false is not operationally available", () => {
+    expect(
+      isProductOperationallyAvailable(baseProduct({ active: false })),
+    ).toBe(false);
+  });
+
+  it("NOT_TRACKED with available=true is operationally available", () => {
+    expect(isProductOperationallyAvailable(baseProduct())).toBe(true);
+  });
+
+  it("TRACKED with stock and available=true is operationally available", () => {
+    expect(
+      isProductOperationallyAvailable(
+        baseProduct({ stockMode: "TRACKED", stockQuantity: 5 }),
+      ),
+    ).toBe(true);
+  });
+
+  it("TRACKED with stock=0 and available=true is not operationally available", () => {
+    expect(
+      isProductOperationallyAvailable(
+        baseProduct({
+          stockMode: "TRACKED",
+          stockQuantity: 0,
+          available: true,
+        }),
+      ),
+    ).toBe(false);
+  });
+
+  it("TRACKED with stock but available=false is not operationally available", () => {
+    expect(
+      isProductOperationallyAvailable(
+        baseProduct({
+          stockMode: "TRACKED",
+          stockQuantity: 10,
+          available: false,
+        }),
       ),
     ).toBe(false);
   });

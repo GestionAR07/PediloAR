@@ -3,6 +3,7 @@ import {
   createOptionChoice,
   createOptionGroup,
   updateOptionChoice,
+  updateOptionGroup,
   type OptionDeps,
 } from "./options";
 
@@ -116,6 +117,21 @@ describe("createOptionChoice", () => {
     const result = await createOptionChoice(
       MERCHANT_A,
       { groupId: GROUP_OTHER, name: "X" },
+      deps,
+    );
+    expect(result.ok).toBe(false);
+  });
+});
+
+describe("updateOptionGroup cross injection", () => {
+  it("rejects unknown group in merchant scope", async () => {
+    const deps = baseDeps({
+      findOptionGroupById: vi.fn(async () => null),
+    });
+    const result = await updateOptionGroup(
+      MERCHANT_A,
+      GROUP_OTHER,
+      { name: "Hack" },
       deps,
     );
     expect(result.ok).toBe(false);

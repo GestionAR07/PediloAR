@@ -1,6 +1,7 @@
 import {
   assertProduct,
   assertProductStock,
+  isProductOperationallyAvailable,
   isProductSellable,
 } from "@/domain/catalog/product";
 import type { StockMode } from "@/domain/catalog/enums";
@@ -459,4 +460,8 @@ export async function toggleProductAvailability(
   });
 }
 
-export { assertProductStock, isProductSellable };
+export {
+  assertProductStock,
+  isProductOperationallyAvailable,
+  isProductSellable,
+};

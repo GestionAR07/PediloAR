@@ -50,13 +50,15 @@ export function assertProduct(product: Product): void {
 }
 
 /**
- * A product can be sold only when active, available, and (if tracked) in stock.
- * Concurrent reservation / TRACKED decrement at checkout is transactional
- * server work (application + persistence) — not simulated here.
+ * Effective sellability from catalog flags alone (no category, hours, or merchant pause).
+ * `available` is the merchant's manual sale switch; TRACKED stock is inventory.
  */
-export function isProductSellable(product: Product): boolean {
-  assertProduct(product);
-
+export function isProductOperationallyAvailable(
+  product: Pick<
+    Product,
+    "active" | "available" | "stockMode" | "stockQuantity"
+  >,
+): boolean {
   if (!product.active || !product.available) {
     return false;
   }
@@ -66,4 +68,14 @@ export function isProductSellable(product: Product): boolean {
   }
 
   return true;
+}
+
+/**
+ * A product can be sold only when active, available, and (if tracked) in stock.
+ * Concurrent reservation / TRACKED decrement at checkout is transactional
+ * server work (application + persistence) — not simulated here.
+ */
+export function isProductSellable(product: Product): boolean {
+  assertProduct(product);
+  return isProductOperationallyAvailable(product);
 }

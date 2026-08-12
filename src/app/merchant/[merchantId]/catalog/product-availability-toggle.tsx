@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
+import { getProductAvailabilityToggleLabel } from "@/lib/product-availability-presentation";
 import type { CatalogActionState } from "./action-state";
 
 type Props = {
@@ -39,7 +40,7 @@ export function ProductAvailabilityToggle({
           : "border border-accent/30 bg-accent/10 text-accent"
       }`}
     >
-      {pending ? "..." : available ? "Marcar sin stock" : "Marcar disponible"}
+      {pending ? "..." : getProductAvailabilityToggleLabel(available)}
     </button>
   );
 }

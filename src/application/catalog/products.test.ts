@@ -265,6 +265,29 @@ describe("updateProduct category assignment", () => {
     );
     expect(result.ok).toBe(false);
   });
+
+  it("does not auto-toggle available when stock changes", async () => {
+    const deps = baseDeps({
+      findProductById: vi.fn(async () => ({
+        ...existingProduct,
+        stockMode: "TRACKED",
+        stockQuantity: 5,
+        available: true,
+      })),
+    });
+    const result = await updateProduct(
+      MERCHANT_A,
+      PROD_A,
+      { stockQuantity: 0 },
+      deps,
+    );
+    expect(result.ok).toBe(true);
+    expect(deps.updateProduct).toHaveBeenCalledWith(
+      MERCHANT_A,
+      PROD_A,
+      expect.not.objectContaining({ available: expect.anything() }),
+    );
+  });
 });
 
 describe("toggleProductAvailability", () => {

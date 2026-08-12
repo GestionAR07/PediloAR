@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   defaultBoundsForNewOptionGroup,
+  getAdvancedBoundsHint,
   getOptionModePresentation,
   OPTION_MODE_PRESENTATIONS,
 } from "./option-mode-presentation";
@@ -41,6 +42,13 @@ describe("defaultBoundsForNewOptionGroup", () => {
       minSelections: 1,
       maxSelections: 24,
     });
+  });
+
+  it("explains QUANTITY bounds as total units across varieties", () => {
+    expect(getAdvancedBoundsHint("QUANTITY")).toContain(
+      "cantidad total de unidades",
+    );
+    expect(getAdvancedBoundsHint("QUANTITY")).toContain("12 / 12");
   });
 });
 

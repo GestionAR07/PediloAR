@@ -65,7 +65,7 @@ export function getAdvancedBoundsHint(mode: string): string {
     case "MULTIPLE":
       return "Mínimo y máximo de extras o agregados que el cliente puede elegir.";
     case "QUANTITY":
-      return "Mínimo y máximo de unidades totales entre todas las variedades (ej.: 12 en una docena).";
+      return "Mínimo y máximo indican la cantidad total de unidades que el cliente debe distribuir entre las variedades. Docena fija: 12 / 12. Combo flexible de hasta 24: 1 / 24.";
     default:
       return "Límites de selección para este grupo.";
   }

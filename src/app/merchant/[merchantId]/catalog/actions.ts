@@ -16,6 +16,7 @@ import {
   updateProductApp,
 } from "@/application/catalog/wiring";
 import { productEditPath } from "@/lib/catalog-product-feedback";
+import { getProductAvailabilityToggleSuccessMessage } from "@/lib/product-availability-presentation";
 import { isAuthzError } from "@/server/auth/errors";
 import type { CatalogActionState } from "./action-state";
 
@@ -225,7 +226,9 @@ export async function toggleProductAvailabilityAction(
     revalidateCatalog(merchantId);
     return {
       error: null,
-      success: result.value.available ? "Disponible" : "Sin stock",
+      success: getProductAvailabilityToggleSuccessMessage(
+        result.value.available,
+      ),
     };
   } catch (error) {
     return mapAuthzFailure(error);
