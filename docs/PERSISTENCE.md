@@ -42,6 +42,8 @@ MARKETPLACE_DEV_PROJECT_REF=
 
 Ese valor es el project ref exacto del proyecto Supabase DEV (`https://<ref>.supabase.co`). Vive solo en `.env.local` (ignorado por git). Sin ese match exacto el harness aborta antes de cualquier write. No forma parte de `npm test` / `npm run build`.
 
+Se ejecuta con Node `--conditions=react-server` para que el paquete `server-only` resuelva su export vacío (el mismo que usa React Server Components), no con un stub custom.
+
 ## IDs
 
 UUID generados en PostgreSQL (`gen_random_uuid()` vía `defaultRandom()` de Drizzle).

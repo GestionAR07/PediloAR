@@ -16,6 +16,18 @@ describe("real order lifecycle harness guards", () => {
     expect(pkg.scripts.test).toBe("vitest run");
     expect(pkg.scripts.test).not.toContain("validate-real-order-lifecycle");
     expect(pkg.scripts.build).not.toContain("validate-real-order-lifecycle");
+    expect(pkg.scripts["validate:real-order-lifecycle"]).toContain(
+      "--conditions=react-server",
+    );
+    expect(pkg.scripts["validate:real-order-lifecycle"]).toContain(
+      "--import tsx",
+    );
+    expect(pkg.scripts["validate:real-order-lifecycle"]).not.toContain(
+      "stub-server-only",
+    );
+    expect(fs.existsSync(path.join(root, "scripts/stub-server-only.mjs"))).toBe(
+      false,
+    );
 
     const vitest = read("vitest.config.ts");
     expect(vitest).toContain('include: ["src/**/*.{test,spec}.{ts,tsx}"]');

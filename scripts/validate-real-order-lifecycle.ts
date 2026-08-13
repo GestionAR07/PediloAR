@@ -10,7 +10,10 @@
  * Never logs DATABASE_URL, secret keys, tokens, or the project ref.
  *
  * PowerShell (from repo root):
- *   npx tsx --import ./scripts/stub-server-only.mjs scripts/validate-real-order-lifecycle.ts --confirm REAL_ORDER_LIFECYCLE_DEV
+ *   npm run validate:real-order-lifecycle -- --confirm REAL_ORDER_LIFECYCLE_DEV
+ *
+ * Node must use --conditions=react-server so `server-only` resolves to its
+ * empty export instead of throwing (see package.json script).
  */
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";

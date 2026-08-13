@@ -14,7 +14,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:check": "drizzle-kit check",
-    "validate:real-order-lifecycle": "node --import ./scripts/stub-server-only.mjs --import tsx scripts/validate-real-order-lifecycle.ts"
+    "validate:real-order-lifecycle": "node --conditions=react-server --import tsx scripts/validate-real-order-lifecycle.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",
