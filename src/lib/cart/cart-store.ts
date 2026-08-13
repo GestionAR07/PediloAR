@@ -1,10 +1,26 @@
-import { emptyCart, type Cart } from "@/domain/cart/types";
+import {
+  CART_SCHEMA_VERSION,
+  isCartEmpty,
+  type Cart,
+} from "@/domain/cart/types";
 import {
   readCartFromLocalStorage,
   writeCartToLocalStorage,
 } from "@/lib/cart/storage";
 
+/**
+ * Referentially stable empty cart for SSR / useSyncExternalStore.
+ * Must never be mutated in place.
+ */
+export const EMPTY_CART: Cart = {
+  version: CART_SCHEMA_VERSION,
+  merchantId: "",
+  merchantNameSnapshot: "",
+  lines: [],
+};
+
 let memoryCart: Cart | null = null;
+let hydratedFromStorage = false;
 const listeners = new Set<() => void>();
 
 function emit(): void {
@@ -13,18 +29,29 @@ function emit(): void {
   }
 }
 
+function normalizeCart(cart: Cart): Cart {
+  return isCartEmpty(cart) ? EMPTY_CART : cart;
+}
+
+/** Test / isolation helper — not used by production UI. */
+export function resetCartStoreForTests(): void {
+  memoryCart = null;
+  hydratedFromStorage = false;
+}
+
 export function getCartSnapshot(): Cart {
   if (typeof window === "undefined") {
-    return emptyCart();
+    return EMPTY_CART;
   }
-  if (memoryCart == null) {
-    memoryCart = readCartFromLocalStorage(window.localStorage);
+  if (!hydratedFromStorage) {
+    memoryCart = normalizeCart(readCartFromLocalStorage(window.localStorage));
+    hydratedFromStorage = true;
   }
-  return memoryCart;
+  return memoryCart ?? EMPTY_CART;
 }
 
 export function getServerCartSnapshot(): Cart {
-  return emptyCart();
+  return EMPTY_CART;
 }
 
 export function subscribeCart(listener: () => void): () => void {
@@ -35,9 +62,14 @@ export function subscribeCart(listener: () => void): () => void {
 }
 
 export function setCartSnapshot(next: Cart): void {
-  memoryCart = next;
+  const normalized = normalizeCart(next);
+  if (Object.is(memoryCart, normalized)) {
+    return;
+  }
+  memoryCart = normalized;
+  hydratedFromStorage = true;
   if (typeof window !== "undefined") {
-    writeCartToLocalStorage(window.localStorage, next);
+    writeCartToLocalStorage(window.localStorage, normalized);
   }
   emit();
 }

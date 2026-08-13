@@ -21,8 +21,8 @@ import {
   calculateCartBadgeCount,
   calculateCartTotalCents,
 } from "@/domain/cart/pricing";
-import { emptyCart } from "@/domain/cart/types";
 import {
+  EMPTY_CART,
   getCartSnapshot,
   getServerCartSnapshot,
   setCartSnapshot,
@@ -106,7 +106,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const confirmReplaceAndAdd = useCallback((pending: PendingAdd) => {
     const outcome = replaceCartWithProduct(toAddInput(pending));
-    setCartSnapshot(outcome.ok ? outcome.cart : emptyCart());
+    setCartSnapshot(outcome.ok ? outcome.cart : EMPTY_CART);
   }, []);
 
   const setLineQuantity = useCallback(
