@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CartProvider } from "@/components/cart/cart-provider";
 import { SiteShell } from "@/components/layout/site-shell";
 import { APP_NAME } from "@/lib/app-info";
 import "@/styles/globals.css";
@@ -17,7 +18,9 @@ export default function RootLayout({
   return (
     <html lang="es-AR">
       <body className="antialiased">
-        <SiteShell>{children}</SiteShell>
+        <CartProvider>
+          <SiteShell>{children}</SiteShell>
+        </CartProvider>
       </body>
     </html>
   );

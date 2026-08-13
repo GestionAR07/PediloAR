@@ -45,12 +45,18 @@ export type PublicPaymentMethodView = {
 export type PublicOptionChoiceView = {
   id: string;
   name: string;
+  /** Integer cents delta for configurator pricing (buyer-safe). */
+  priceDeltaCents: number;
   priceDeltaLabel: string | null;
 };
 
 export type PublicOptionGroupView = {
   id: string;
   name: string;
+  /** Domain mode for interactive selection — not shown as jargon in UI. */
+  selectionMode: "SINGLE" | "MULTIPLE" | "QUANTITY" | string;
+  minSelections: number;
+  maxSelections: number;
   modeLabel: string;
   hint: string;
   choices: PublicOptionChoiceView[];
@@ -62,9 +68,15 @@ export type PublicProductCard = {
   description: string;
   categoryId: string;
   categoryName: string;
+  /** Integer cents base price for local cart estimates. */
+  priceCents: number;
   priceLabel: string;
   sellable: boolean;
+  /** True when product is sellable and merchant is accepting orders. */
+  canAddToCart: boolean;
   statusLabel: string | null;
+  stockMode: string;
+  stockQuantity: number | null;
   imageUrl: string | null;
   hasOptions: boolean;
   optionGroups: PublicOptionGroupView[];

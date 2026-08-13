@@ -6,11 +6,9 @@ import {
 
 describe("public option copy", () => {
   it("uses customer-friendly mode labels", () => {
-    expect(getPublicOptionGroupModeLabel("SINGLE")).toBe("Elegir una opción");
-    expect(getPublicOptionGroupModeLabel("MULTIPLE")).toBe("Elegir varias");
-    expect(getPublicOptionGroupModeLabel("QUANTITY")).toBe(
-      "Variedades por unidad",
-    );
+    expect(getPublicOptionGroupModeLabel("SINGLE")).toBe("Elegí una opción");
+    expect(getPublicOptionGroupModeLabel("MULTIPLE")).toBe("Elegí varias");
+    expect(getPublicOptionGroupModeLabel("QUANTITY")).toBe("Variedades");
   });
 
   it("explains fixed QUANTITY dozen without raw min/max jargon", () => {

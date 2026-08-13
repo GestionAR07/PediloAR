@@ -200,6 +200,7 @@ export async function getPublicMerchantCatalog(
       .map((choice) => ({
         id: choice.id,
         name: choice.name,
+        priceDeltaCents: choice.priceDeltaCents,
         priceDeltaLabel:
           choice.priceDeltaCents === 0
             ? null
@@ -209,6 +210,9 @@ export async function getPublicMerchantCatalog(
     const view: PublicOptionGroupView = {
       id: group.id,
       name: group.name,
+      selectionMode: group.selectionMode,
+      minSelections: group.minSelections,
+      maxSelections: group.maxSelections,
       modeLabel: getPublicOptionGroupModeLabel(group.selectionMode),
       hint: getPublicOptionGroupHint({
         selectionMode: group.selectionMode,
@@ -223,6 +227,8 @@ export async function getPublicMerchantCatalog(
     groupsByProduct.set(group.productId, list);
   }
 
+  const merchantAcceptingOrders = availability.tone === "available";
+
   const productCards: PublicProductCard[] = visibleProducts.map((product) => {
     const purchase = getPublicProductPurchasePresentation(product);
     const groups = groupsByProduct.get(product.id) ?? [];
@@ -232,9 +238,15 @@ export async function getPublicMerchantCatalog(
       description: product.description,
       categoryId: product.merchantCategoryId,
       categoryName: product.categoryName,
+      priceCents: product.priceCents,
       priceLabel: formatMoneyCentsArs(moneyCents(product.priceCents)),
       sellable: purchase.sellable,
-      statusLabel: purchase.statusLabel,
+      canAddToCart: purchase.sellable && merchantAcceptingOrders,
+      statusLabel:
+        purchase.statusLabel ??
+        (!merchantAcceptingOrders ? availability.label : null),
+      stockMode: product.stockMode,
+      stockQuantity: product.stockQuantity,
       imageUrl: product.imagePath
         ? (signedUrls.get(product.imagePath) ?? null)
         : null,

@@ -139,6 +139,8 @@ export default async function PublicMerchantPage({
       <section className="space-y-3">
         <h2 className="text-lg font-semibold tracking-tight">Catálogo</h2>
         <MerchantCatalogClient
+          merchantId={merchant.id}
+          merchantName={merchant.name}
           categories={merchant.categories}
           products={merchant.products}
         />

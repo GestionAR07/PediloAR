@@ -143,7 +143,12 @@ describe("getPublicMerchantCatalog", () => {
     expect(coke.optionGroups[0]?.hint).toBe(
       "Elegí 12 unidades entre estas variedades.",
     );
-    expect(coke.optionGroups[0]?.modeLabel).toBe("Variedades por unidad");
+    expect(coke.optionGroups[0]?.modeLabel).toBe("Variedades");
+    expect(coke.priceCents).toBe(250000);
+    expect(coke.canAddToCart).toBe(true);
+    expect(coke.optionGroups[0]?.selectionMode).toBe("QUANTITY");
+    expect(coke.optionGroups[0]?.minSelections).toBe(12);
+    expect(coke.optionGroups[0]?.maxSelections).toBe(12);
   });
 
   it("uses signed URLs without persisting them on the product path", async () => {
