@@ -36,6 +36,12 @@ export type PrepareOrderInput = {
   } | null;
   paymentMethodCode: string;
   idempotencyKey: string;
+  /**
+   * Fingerprint of the authoritative quote the customer reviewed.
+   * Compared after prepareOrder; never used as a price authority.
+   * Ignored on idempotent replay of an existing Order.
+   */
+  expectedQuoteFingerprint?: string | null;
   lines: PrepareOrderLineInput[];
 };
 
@@ -66,6 +72,8 @@ export type CheckoutMerchantRecord = {
   platformDeliveryEnabled: boolean;
   acceptingOrders: boolean;
   pausedUntil: Date | null;
+  /** Present when loaded from persistence; omitted in some test doubles. */
+  preparationMinutes?: number;
 };
 
 export type CheckoutProductRecord = {

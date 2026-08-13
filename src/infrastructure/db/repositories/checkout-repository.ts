@@ -43,6 +43,7 @@ export async function findMerchantForCheckout(
       platformDeliveryEnabled: merchants.platformDeliveryEnabled,
       acceptingOrders: merchants.acceptingOrders,
       pausedUntil: merchants.pausedUntil,
+      preparationMinutes: merchants.preparationMinutes,
     })
     .from(merchants)
     .innerJoin(cities, eq(cities.id, merchants.cityId))

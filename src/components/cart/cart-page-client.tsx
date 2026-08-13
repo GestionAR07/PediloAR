@@ -146,6 +146,12 @@ export function CartPageClient() {
           Total estimado según el catálogo actual. El checkout recalculará
           precios y disponibilidad.
         </p>
+        <Link
+          href="/checkout"
+          className="inline-flex min-h-11 w-full items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-white"
+        >
+          Continuar
+        </Link>
         <button
           type="button"
           onClick={() => clear()}

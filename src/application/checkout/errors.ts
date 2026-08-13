@@ -1,6 +1,10 @@
+import type { CheckoutReview } from "./checkout-review";
+
 export type CheckoutApplicationError = {
   code: string;
   message: string;
+  /** Present when the live quote changed after the client reviewed it. */
+  review?: CheckoutReview;
 };
 
 export const CHECKOUT_ERROR_CODES = {
@@ -23,6 +27,8 @@ export const CHECKOUT_ERROR_CODES = {
   CONTACT_INVALID: "CONTACT_INVALID",
   IDEMPOTENCY_KEY_INVALID: "IDEMPOTENCY_KEY_INVALID",
   IDEMPOTENCY_CONFLICT: "IDEMPOTENCY_CONFLICT",
+  CHECKOUT_REVIEW_REQUIRED: "CHECKOUT_REVIEW_REQUIRED",
+  CHECKOUT_PAYLOAD_INVALID: "CHECKOUT_PAYLOAD_INVALID",
   ORDER_PERSISTENCE_FAILED: "ORDER_PERSISTENCE_FAILED",
   ORDER_NOT_FOUND: "ORDER_NOT_FOUND",
   ORDER_ALREADY_CANCELED: "ORDER_ALREADY_CANCELED",
@@ -37,6 +43,7 @@ export type CheckoutErrorCode =
 export function checkoutError(
   code: CheckoutErrorCode,
   message: string,
+  review?: CheckoutReview,
 ): CheckoutApplicationError {
-  return { code, message };
+  return review ? { code, message, review } : { code, message };
 }

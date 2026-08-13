@@ -1,8 +1,10 @@
 import "server-only";
 
+import { getCheckoutConfiguration } from "@/application/checkout/configuration";
 import { placeOrder } from "@/application/checkout/place-order";
 import { cancelOrder } from "@/application/checkout/cancel-order";
 import { prepareOrder } from "@/application/checkout/prepare-order";
+import { reviewCheckout } from "@/application/checkout/review-checkout";
 import type {
   CancelOrderInput,
   PrepareOrderInput,
@@ -39,6 +41,17 @@ function prepareDeps() {
  */
 export async function prepareOrderApp(input: PrepareOrderInput) {
   return prepareOrder(input, prepareDeps());
+}
+
+export async function getCheckoutConfigurationApp(merchantId: string) {
+  return getCheckoutConfiguration(merchantId, prepareDeps());
+}
+
+/**
+ * Read-only authoritative review. Does not persist Orders.
+ */
+export async function reviewCheckoutApp(input: PrepareOrderInput) {
+  return reviewCheckout(input, prepareDeps());
 }
 
 /**

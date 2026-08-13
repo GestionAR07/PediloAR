@@ -3,8 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import type { PublicZoneOption } from "@/application/storefront/types";
-
-const STORAGE_KEY = "mr.public.zoneId";
+import { readPublicZoneId, writePublicZoneId } from "@/lib/public-zone-storage";
 
 type Props = {
   zones: PublicZoneOption[];
@@ -16,16 +15,12 @@ export function ZonePicker({ zones, selectedZoneId }: Props) {
 
   useEffect(() => {
     if (selectedZoneId) {
-      try {
-        window.localStorage.setItem(STORAGE_KEY, selectedZoneId);
-      } catch {
-        // ignore storage failures
-      }
+      writePublicZoneId(window.localStorage, selectedZoneId);
       return;
     }
 
     try {
-      const stored = window.localStorage.getItem(STORAGE_KEY);
+      const stored = readPublicZoneId(window.localStorage);
       if (stored && zones.some((zone) => zone.id === stored)) {
         router.replace(`/?zone=${encodeURIComponent(stored)}`);
       }
@@ -35,11 +30,7 @@ export function ZonePicker({ zones, selectedZoneId }: Props) {
   }, [router, selectedZoneId, zones]);
 
   function selectZone(zoneId: string): void {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, zoneId);
-    } catch {
-      // ignore
-    }
+    writePublicZoneId(window.localStorage, zoneId);
     router.push(`/?zone=${encodeURIComponent(zoneId)}`);
   }
 

@@ -12,6 +12,7 @@ import {
   canonicalIntentFromRequest,
 } from "./intent-fingerprint";
 import { prepareOrder } from "./prepare-order";
+import { buildQuoteFingerprint, toCheckoutReview } from "./checkout-review";
 import type {
   PersistedCheckoutOrder,
   PersistPreparedOrderResult,
@@ -33,8 +34,9 @@ export type PlaceOrderDeps = PrepareOrderDeps & {
 function fail(
   code: (typeof CHECKOUT_ERROR_CODES)[keyof typeof CHECKOUT_ERROR_CODES],
   message: string,
+  review?: ReturnType<typeof toCheckoutReview>,
 ): Result<PlacedOrderResult, CheckoutApplicationError> {
-  return err(checkoutError(code, message));
+  return err(checkoutError(code, message, review));
 }
 
 function replayOrConflict(
@@ -89,6 +91,18 @@ export async function placeOrder(
   const prepared = await prepareOrder(input, deps);
   if (!prepared.ok) {
     return prepared;
+  }
+
+  const expected = input.expectedQuoteFingerprint?.trim() ?? "";
+  if (expected) {
+    const current = buildQuoteFingerprint(prepared.value);
+    if (current !== expected) {
+      return fail(
+        CHECKOUT_ERROR_CODES.CHECKOUT_REVIEW_REQUIRED,
+        "El pedido cambió desde la última revisión. Revisá los datos actualizados antes de confirmar.",
+        toCheckoutReview(prepared.value),
+      );
+    }
   }
 
   const persisted = await deps.persistPreparedOrder(prepared.value);

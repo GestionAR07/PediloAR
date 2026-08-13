@@ -27,6 +27,8 @@ import { DomainError } from "@/domain/shared/errors";
 import { CHECKOUT_ERROR_CODES, checkoutError } from "./errors";
 import { cancelOrder } from "./cancel-order";
 import { placeOrder, type PlaceOrderDeps } from "./place-order";
+import { prepareOrder } from "./prepare-order";
+import { buildQuoteFingerprint } from "./checkout-review";
 import type {
   CancelOrderCommand,
   CancelOrderPersistResult,
@@ -1940,5 +1942,241 @@ describe("open-order stock integrity", () => {
     expect(
       hasOpen && live.stockMode === "NOT_TRACKED" && live.stockQuantity === 3,
     ).toBe(false);
+  });
+});
+
+describe("placeOrder quote fingerprint", () => {
+  it("creates an Order when the expected fingerprint matches", async () => {
+    const world = new MemoryCheckout();
+    const deps = world.deps();
+    const input = pickupInput();
+    const prepared = await prepareOrder(input, deps);
+    expect(prepared.ok).toBe(true);
+    if (!prepared.ok) return;
+    const result = await placeOrder(
+      {
+        ...input,
+        expectedQuoteFingerprint: buildQuoteFingerprint(prepared.value),
+      },
+      deps,
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.replayed).toBe(false);
+    expect(world.orders.size).toBe(1);
+  });
+
+  it("requires a new review when the live price changes", async () => {
+    const world = new MemoryCheckout();
+    const deps = world.deps();
+    const input = pickupInput();
+    const prepared = await prepareOrder(input, deps);
+    expect(prepared.ok).toBe(true);
+    if (!prepared.ok) return;
+    const fingerprint = buildQuoteFingerprint(prepared.value);
+    world.catalogProducts = [simpleProduct({ priceCents: 200000 })];
+    const result = await placeOrder(
+      { ...input, expectedQuoteFingerprint: fingerprint },
+      deps,
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe(
+      CHECKOUT_ERROR_CODES.CHECKOUT_REVIEW_REQUIRED,
+    );
+    expect(result.error.review?.totalCents).toBe(200000);
+    expect(world.orders.size).toBe(0);
+  });
+
+  it("requires a new review when the delivery fee changes", async () => {
+    const world = new MemoryCheckout();
+    const deps = world.deps();
+    const input = deliveryInput();
+    const prepared = await prepareOrder(input, deps);
+    expect(prepared.ok).toBe(true);
+    if (!prepared.ok) return;
+    const fingerprint = buildQuoteFingerprint(prepared.value);
+    world.zones = [{ ...deliveryZone(), deliveryFeeCents: 44000 }];
+    const result = await placeOrder(
+      { ...input, expectedQuoteFingerprint: fingerprint },
+      deps,
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe(
+      CHECKOUT_ERROR_CODES.CHECKOUT_REVIEW_REQUIRED,
+    );
+    expect(result.error.review?.deliveryFeeCents).toBe(44000);
+    expect(world.orders.size).toBe(0);
+  });
+
+  it("requires a new review when payment instructions change", async () => {
+    const world = new MemoryCheckout();
+    const deps = world.deps();
+    const input = pickupInput();
+    const prepared = await prepareOrder(input, deps);
+    expect(prepared.ok).toBe(true);
+    if (!prepared.ok) return;
+    const fingerprint = buildQuoteFingerprint(prepared.value);
+    world.payments = [
+      { ...cashPayment(), instructions: "Nuevo alias" },
+      transferPayment(),
+    ];
+    const result = await placeOrder(
+      { ...input, expectedQuoteFingerprint: fingerprint },
+      deps,
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe(
+      CHECKOUT_ERROR_CODES.CHECKOUT_REVIEW_REQUIRED,
+    );
+    expect(result.error.review?.payment.instructions).toBe("Nuevo alias");
+    expect(world.orders.size).toBe(0);
+  });
+
+  it("does not create an Order when stock is insufficient after review", async () => {
+    const world = new MemoryCheckout();
+    world.catalogProducts = [trackedProduct({ stockQuantity: 5 })];
+    world.writeProducts = world.catalogProducts;
+    const deps = world.deps();
+    const input = pickupInput({
+      lines: [{ productId: PROD_TRACKED_ID, quantity: 2 }],
+    });
+    const prepared = await prepareOrder(input, deps);
+    expect(prepared.ok).toBe(true);
+    if (!prepared.ok) return;
+    world.catalogProducts = [trackedProduct({ stockQuantity: 1 })];
+    world.writeProducts = world.catalogProducts;
+    const result = await placeOrder(
+      {
+        ...input,
+        expectedQuoteFingerprint: buildQuoteFingerprint(prepared.value),
+      },
+      deps,
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe(CHECKOUT_ERROR_CODES.INSUFFICIENT_STOCK);
+    expect(world.orders.size).toBe(0);
+  });
+
+  it("does not create an Order when the merchant is paused after review", async () => {
+    const world = new MemoryCheckout();
+    const deps = world.deps();
+    const input = pickupInput();
+    const prepared = await prepareOrder(input, deps);
+    expect(prepared.ok).toBe(true);
+    if (!prepared.ok) return;
+    world.catalogMerchant = merchant({ acceptingOrders: false });
+    world.writeMerchant = world.catalogMerchant;
+    const result = await placeOrder(
+      {
+        ...input,
+        expectedQuoteFingerprint: buildQuoteFingerprint(prepared.value),
+      },
+      deps,
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe(CHECKOUT_ERROR_CODES.MERCHANT_NOT_ACCEPTING);
+    expect(world.orders.size).toBe(0);
+  });
+
+  it("does not create an Order when a product becomes unavailable after review", async () => {
+    const world = new MemoryCheckout();
+    const deps = world.deps();
+    const input = pickupInput();
+    const prepared = await prepareOrder(input, deps);
+    expect(prepared.ok).toBe(true);
+    if (!prepared.ok) return;
+    world.catalogProducts = [simpleProduct({ available: false })];
+    world.writeProducts = world.catalogProducts;
+    const result = await placeOrder(
+      {
+        ...input,
+        expectedQuoteFingerprint: buildQuoteFingerprint(prepared.value),
+      },
+      deps,
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe(CHECKOUT_ERROR_CODES.PRODUCT_NOT_SELLABLE);
+    expect(world.orders.size).toBe(0);
+  });
+
+  it("replays an existing Order even if the live price later changed", async () => {
+    const world = new MemoryCheckout();
+    const deps = world.deps();
+    const input = pickupInput();
+    const prepared = await prepareOrder(input, deps);
+    expect(prepared.ok).toBe(true);
+    if (!prepared.ok) return;
+    const fingerprint = buildQuoteFingerprint(prepared.value);
+    const first = await placeOrder(
+      { ...input, expectedQuoteFingerprint: fingerprint },
+      deps,
+    );
+    expect(first.ok).toBe(true);
+    world.catalogProducts = [simpleProduct({ priceCents: 880000 })];
+    const second = await placeOrder(
+      { ...input, expectedQuoteFingerprint: "stale-or-wrong-fingerprint" },
+      deps,
+    );
+    expect(second.ok).toBe(true);
+    if (!first.ok || !second.ok) return;
+    expect(second.value.replayed).toBe(true);
+    expect(second.value.orderId).toBe(first.value.orderId);
+    expect(second.value.totalCents).toBe(first.value.totalCents);
+    expect(world.orders.size).toBe(1);
+  });
+
+  it("replays an existing Order even if tracked stock is now 0", async () => {
+    const world = new MemoryCheckout();
+    world.catalogProducts = [trackedProduct({ stockQuantity: 1 })];
+    world.writeProducts = world.catalogProducts;
+    const deps = world.deps();
+    const input = pickupInput({
+      lines: [{ productId: PROD_TRACKED_ID, quantity: 1 }],
+    });
+    const prepared = await prepareOrder(input, deps);
+    expect(prepared.ok).toBe(true);
+    if (!prepared.ok) return;
+    const first = await placeOrder(
+      {
+        ...input,
+        expectedQuoteFingerprint: buildQuoteFingerprint(prepared.value),
+      },
+      deps,
+    );
+    expect(first.ok).toBe(true);
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(0);
+    const second = await placeOrder(
+      {
+        ...input,
+        expectedQuoteFingerprint: buildQuoteFingerprint(prepared.value),
+      },
+      deps,
+    );
+    expect(second.ok).toBe(true);
+    if (!first.ok || !second.ok) return;
+    expect(second.value.replayed).toBe(true);
+    expect(world.orders.size).toBe(1);
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(0);
+  });
+
+  it("rejects the same key with a different intent", async () => {
+    const world = new MemoryCheckout();
+    const deps = world.deps();
+    const first = await placeOrder(pickupInput(), deps);
+    expect(first.ok).toBe(true);
+    const second = await placeOrder(
+      pickupInput({ paymentMethodCode: "TRANSFER" }),
+      deps,
+    );
+    expect(second.ok).toBe(false);
+    if (second.ok) return;
+    expect(second.error.code).toBe(CHECKOUT_ERROR_CODES.IDEMPOTENCY_CONFLICT);
+    expect(world.orders.size).toBe(1);
   });
 });
