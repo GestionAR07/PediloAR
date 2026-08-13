@@ -3,7 +3,11 @@ import type {
   MerchantStatus,
   PaymentMethodCode,
 } from "@/domain/merchant/enums";
-import type { FulfillmentMethod } from "@/domain/order/enums";
+import type {
+  CancelReason,
+  FulfillmentMethod,
+  OrderActorType,
+} from "@/domain/order/enums";
 import type { IdempotencyKey } from "@/domain/shared/ids";
 import type { CheckoutApplicationError } from "./errors";
 
@@ -214,6 +218,36 @@ export type PersistedCheckoutOrder = {
 export type PersistPreparedOrderResult =
   | { status: "created"; order: Omit<PlacedOrderResult, "replayed"> }
   | { status: "unique_violation" }
+  | { status: "rejected"; error: CheckoutApplicationError };
+
+export type CancelOrderInput = {
+  orderId: string;
+  actor: {
+    type: string;
+    id?: string | null;
+  };
+  reason: string;
+};
+
+export type CanceledOrderResult = {
+  orderId: string;
+  previousStatus: string;
+  status: "CANCELED";
+  restoredTrackedQuantity: number;
+  deliveryCanceled: boolean;
+};
+
+export type CancelOrderCommand = {
+  orderId: string;
+  actorType: OrderActorType;
+  actorId: string | null;
+  reason: CancelReason;
+  now: Date;
+};
+
+export type CancelOrderPersistResult =
+  | { status: "canceled"; result: CanceledOrderResult }
+  | { status: "already_canceled"; orderId: string }
   | { status: "rejected"; error: CheckoutApplicationError };
 
 export type PrepareOrderDeps = {

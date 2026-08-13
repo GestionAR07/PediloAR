@@ -19,12 +19,16 @@ describe("checkout order persistence static checks", () => {
     expect(repo).toContain("isUniqueViolation");
     expect(repo).toContain("fromStatus: null");
     expect(repo).toContain('toStatus: "PENDING"');
+    expect(repo).toContain("cancelOrderInTransaction");
+    expect(repo).toContain('.for("update")');
+    expect(repo).toContain("sql`${products.stockQuantity} + ${quantity}`");
     expect(repo).not.toContain("db:push");
   });
 
   it("does not expose placeOrder as a public Server Action", () => {
     const wiring = read("src/application/checkout/wiring.ts");
     expect(wiring).toContain("placeOrderApp");
+    expect(wiring).toContain("cancelOrderApp");
     expect(wiring).toContain("server-only");
     expect(wiring).not.toContain('"use server"');
   });

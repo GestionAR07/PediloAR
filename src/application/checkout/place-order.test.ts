@@ -1,10 +1,21 @@
 import { describe, expect, it, vi } from "vitest";
+import {
+  isDeliveryTerminalStatus,
+  transitionDeliveryStatus,
+} from "@/domain/delivery/transitions";
+import type { DeliveryStatus } from "@/domain/delivery/enums";
 import { isMerchantOperationallyAcceptingOrders } from "@/domain/merchant/operational-availability";
 import { moneyCents } from "@/domain/money/money-cents";
+import { canCancelOrder } from "@/domain/order/cancellation";
+import type { OrderStatus } from "@/domain/order/enums";
 import { assertOrderDeliveryCompatibility } from "@/domain/order/fulfillment-compat";
+import { transitionOrderStatus } from "@/domain/order/transitions";
 import { CHECKOUT_ERROR_CODES, checkoutError } from "./errors";
+import { cancelOrder } from "./cancel-order";
 import { placeOrder, type PlaceOrderDeps } from "./place-order";
 import type {
+  CancelOrderCommand,
+  CancelOrderPersistResult,
   CheckoutDeliveryZoneRecord,
   CheckoutMerchantRecord,
   CheckoutOptionChoiceRecord,
@@ -49,6 +60,14 @@ type StoredItem = {
   }>;
 };
 
+type StoredEvent = {
+  fromStatus: string | null;
+  toStatus: string;
+  actorType: string;
+  actorId: string | null;
+  reason: string | null;
+};
+
 type StoredOrder = {
   aggregate: PersistedCheckoutOrder;
   items: StoredItem[];
@@ -58,12 +77,15 @@ type StoredOrder = {
     actorType: "CUSTOMER";
     actorId: string | null;
   };
+  events: StoredEvent[];
   delivery: {
     provider: "MERCHANT";
-    status: "PENDING";
+    status: string;
     feeCents: number;
     estimatedMinutes: number;
   } | null;
+  canceledBy?: string;
+  cancelReason?: string;
 };
 
 function merchant(
@@ -262,7 +284,14 @@ class MemoryCheckout {
   payments: CheckoutPaymentMethodRecord[];
   zones: CheckoutDeliveryZoneRecord[];
   orders = new Map<string, StoredOrder>();
-  failNext: "item" | "option" | "delivery" | null = null;
+  failNext:
+    | "item"
+    | "option"
+    | "delivery"
+    | "restock"
+    | "cancel-event"
+    | "cancel-delivery"
+    | null = null;
 
   constructor() {
     const m = merchant();
@@ -501,15 +530,17 @@ class MemoryCheckout {
     };
 
     this.writeProducts = nextProducts;
+    const createEvent = {
+      fromStatus: null,
+      toStatus: "PENDING" as const,
+      actorType: "CUSTOMER" as const,
+      actorId: prepared.customerUserId,
+    };
     this.orders.set(prepared.idempotencyKey, {
       aggregate,
       items,
-      event: {
-        fromStatus: null,
-        toStatus: "PENDING",
-        actorType: "CUSTOMER",
-        actorId: prepared.customerUserId,
-      },
+      event: createEvent,
+      events: [{ ...createEvent, reason: null }],
       delivery,
     });
 
@@ -521,6 +552,227 @@ class MemoryCheckout {
         merchantId: prepared.merchantId,
         totalCents: moneyCents(prepared.totalCents),
         fulfillmentMethod: prepared.fulfillmentMethod,
+      },
+    };
+  }
+
+  findByOrderId(orderId: string): StoredOrder | null {
+    return (
+      [...this.orders.values()].find(
+        (row) => row.aggregate.orderId === orderId,
+      ) ?? null
+    );
+  }
+
+  setOrderStatus(orderId: string, status: string): void {
+    const stored = this.findByOrderId(orderId);
+    if (stored) {
+      stored.aggregate.status = status;
+    }
+  }
+
+  setDeliveryStatus(orderId: string, status: string): void {
+    const stored = this.findByOrderId(orderId);
+    if (stored?.delivery) {
+      stored.delivery.status = status;
+    }
+  }
+
+  nullifyProductIds(orderId: string): void {
+    const stored = this.findByOrderId(orderId);
+    if (!stored) return;
+    stored.items = stored.items.map((item) => ({ ...item, productId: "" }));
+    stored.aggregate.lines = stored.aggregate.lines.map((line) => ({
+      ...line,
+      productId: null,
+    }));
+  }
+
+  cancelDeps() {
+    return {
+      now: () => NOW,
+      cancelOrderInTransaction: async (command: CancelOrderCommand) =>
+        this.cancel(command),
+    };
+  }
+
+  cancel(command: CancelOrderCommand): CancelOrderPersistResult {
+    const entry = [...this.orders.entries()].find(
+      ([, row]) => row.aggregate.orderId === command.orderId,
+    );
+    if (!entry) {
+      return {
+        status: "rejected",
+        error: checkoutError(
+          CHECKOUT_ERROR_CODES.ORDER_NOT_FOUND,
+          "El pedido no existe.",
+        ),
+      };
+    }
+    const [key, stored] = entry;
+    if (stored.aggregate.status === "CANCELED") {
+      return { status: "already_canceled", orderId: stored.aggregate.orderId };
+    }
+
+    if (stored.delivery?.status === "DELIVERED") {
+      return {
+        status: "rejected",
+        error: checkoutError(
+          CHECKOUT_ERROR_CODES.DELIVERY_STATE_CONFLICT,
+          "No se puede cancelar un pedido cuya entrega ya fue completada.",
+        ),
+      };
+    }
+
+    const policy = canCancelOrder({
+      actor: command.actorType,
+      orderStatus: stored.aggregate.status as OrderStatus,
+      delivery: stored.delivery
+        ? { status: stored.delivery.status as DeliveryStatus }
+        : null,
+      cancelReason: command.reason,
+    });
+    if (!policy.ok) {
+      const code = policy.error.code;
+      if (code === "ORDER_CANCEL_DELIVERY_IN_TRANSIT") {
+        return {
+          status: "rejected",
+          error: checkoutError(
+            CHECKOUT_ERROR_CODES.DELIVERY_STATE_CONFLICT,
+            "No se puede cancelar el pedido mientras el envío está en curso.",
+          ),
+        };
+      }
+      return {
+        status: "rejected",
+        error: checkoutError(
+          CHECKOUT_ERROR_CODES.ORDER_NOT_CANCELABLE,
+          "No se puede cancelar el pedido.",
+        ),
+      };
+    }
+
+    const transition = transitionOrderStatus(
+      stored.aggregate.status as OrderStatus,
+      "CANCELED",
+    );
+    if (!transition.ok) {
+      return {
+        status: "rejected",
+        error: checkoutError(
+          CHECKOUT_ERROR_CODES.ORDER_NOT_CANCELABLE,
+          "No se puede cancelar el pedido.",
+        ),
+      };
+    }
+
+    const nextProducts = structuredClone(this.writeProducts);
+    const demand = new Map<string, number>();
+    for (const item of stored.items) {
+      if (!item.productId) {
+        continue;
+      }
+      demand.set(
+        item.productId,
+        (demand.get(item.productId) ?? 0) + item.quantity,
+      );
+    }
+
+    let restoredTrackedQuantity = 0;
+    for (const [productId, quantity] of demand) {
+      const live = nextProducts.find((row) => row.id === productId);
+      if (!live || live.stockMode !== "TRACKED" || live.stockQuantity == null) {
+        continue;
+      }
+      live.stockQuantity += quantity;
+      restoredTrackedQuantity += quantity;
+    }
+
+    if (this.failNext === "restock") {
+      this.failNext = null;
+      return {
+        status: "rejected",
+        error: checkoutError(
+          CHECKOUT_ERROR_CODES.ORDER_PERSISTENCE_FAILED,
+          "No se pudo restaurar el stock.",
+        ),
+      };
+    }
+
+    if (this.failNext === "cancel-event") {
+      this.failNext = null;
+      return {
+        status: "rejected",
+        error: checkoutError(
+          CHECKOUT_ERROR_CODES.ORDER_PERSISTENCE_FAILED,
+          "No se pudo registrar el evento.",
+        ),
+      };
+    }
+
+    let deliveryCanceled = false;
+    const nextDelivery = stored.delivery ? { ...stored.delivery } : null;
+    if (nextDelivery && nextDelivery.status !== "DELIVERED") {
+      if (!isDeliveryTerminalStatus(nextDelivery.status as DeliveryStatus)) {
+        if (this.failNext === "cancel-delivery") {
+          this.failNext = null;
+          return {
+            status: "rejected",
+            error: checkoutError(
+              CHECKOUT_ERROR_CODES.DELIVERY_STATE_CONFLICT,
+              "No se pudo cancelar el envío.",
+            ),
+          };
+        }
+        const moved = transitionDeliveryStatus(
+          nextDelivery.provider,
+          nextDelivery.status as DeliveryStatus,
+          "CANCELED",
+        );
+        if (!moved.ok) {
+          return {
+            status: "rejected",
+            error: checkoutError(
+              CHECKOUT_ERROR_CODES.DELIVERY_STATE_CONFLICT,
+              "No se puede cancelar el envío asociado.",
+            ),
+          };
+        }
+        nextDelivery.status = "CANCELED";
+        deliveryCanceled = true;
+      }
+    }
+
+    const previousStatus = stored.aggregate.status;
+    const nextStored: StoredOrder = {
+      ...stored,
+      aggregate: { ...stored.aggregate, status: "CANCELED" },
+      delivery: nextDelivery,
+      canceledBy: command.actorType,
+      cancelReason: command.reason,
+      events: [
+        ...stored.events,
+        {
+          fromStatus: previousStatus,
+          toStatus: "CANCELED",
+          actorType: command.actorType,
+          actorId: command.actorId,
+          reason: command.reason,
+        },
+      ],
+    };
+
+    this.writeProducts = nextProducts;
+    this.orders.set(key, nextStored);
+
+    return {
+      status: "canceled",
+      result: {
+        orderId: stored.aggregate.orderId,
+        previousStatus,
+        status: "CANCELED",
+        restoredTrackedQuantity,
+        deliveryCanceled,
       },
     };
   }
@@ -930,5 +1182,511 @@ describe("placeOrder merchant/product write races", () => {
     if (result.ok) return;
     expect(result.error.code).toBe(CHECKOUT_ERROR_CODES.PRODUCT_NOT_SELLABLE);
     expect(world.orders.size).toBe(0);
+  });
+});
+
+const customerCancel = {
+  actor: { type: "CUSTOMER" as const, id: null },
+  reason: "CUSTOMER_REQUEST",
+};
+
+const merchantCancel = {
+  actor: { type: "MERCHANT_USER" as const, id: "merchant-user-1" },
+  reason: "OUT_OF_STOCK",
+};
+
+describe("cancelOrder restock", () => {
+  it("restores TRACKED stock for a PENDING order", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(
+      pickupInput({ lines: [{ productId: PROD_TRACKED_ID, quantity: 2 }] }),
+      world.deps(),
+    );
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(3);
+
+    const canceled = await cancelOrder(
+      { orderId: placed.value.orderId, ...customerCancel },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(true);
+    if (!canceled.ok) return;
+    expect(canceled.value.status).toBe("CANCELED");
+    expect(canceled.value.previousStatus).toBe("PENDING");
+    expect(canceled.value.restoredTrackedQuantity).toBe(2);
+    expect(canceled.value.deliveryCanceled).toBe(false);
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(5);
+    expect(world.onlyOrder().aggregate.status).toBe("CANCELED");
+  });
+
+  it("restores TRACKED stock for an ACCEPTED order", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(
+      pickupInput({ lines: [{ productId: PROD_TRACKED_ID, quantity: 2 }] }),
+      world.deps(),
+    );
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    world.setOrderStatus(placed.value.orderId, "ACCEPTED");
+
+    const canceled = await cancelOrder(
+      { orderId: placed.value.orderId, ...merchantCancel },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(true);
+    if (!canceled.ok) return;
+    expect(canceled.value.previousStatus).toBe("ACCEPTED");
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(5);
+  });
+
+  it("restores every TRACKED item", async () => {
+    const world = new MemoryCheckout();
+    world.catalogProducts = [
+      trackedProduct({ stockQuantity: 5 }),
+      trackedProduct({
+        id: PROD_TRACKED_B_ID,
+        name: "Otro",
+        stockQuantity: 4,
+      }),
+    ];
+    world.writeProducts = world.catalogProducts;
+    const placed = await placeOrder(
+      pickupInput({
+        lines: [
+          { productId: PROD_TRACKED_ID, quantity: 2 },
+          { productId: PROD_TRACKED_B_ID, quantity: 1 },
+        ],
+      }),
+      world.deps(),
+    );
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    const canceled = await cancelOrder(
+      { orderId: placed.value.orderId, ...customerCancel },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(true);
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(5);
+    expect(world.productStock(PROD_TRACKED_B_ID)).toBe(4);
+  });
+
+  it("restores aggregate quantity for the same product on multiple lines", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(
+      pickupInput({
+        lines: [
+          { productId: PROD_TRACKED_ID, quantity: 1 },
+          { productId: PROD_TRACKED_ID, quantity: 2 },
+        ],
+      }),
+      world.deps(),
+    );
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(2);
+    const canceled = await cancelOrder(
+      { orderId: placed.value.orderId, ...customerCancel },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(true);
+    if (!canceled.ok) return;
+    expect(canceled.value.restoredTrackedQuantity).toBe(3);
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(5);
+  });
+
+  it("does not restore when the live product is no longer TRACKED", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(
+      pickupInput({ lines: [{ productId: PROD_TRACKED_ID, quantity: 2 }] }),
+      world.deps(),
+    );
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    const live = world.writeProducts.find((row) => row.id === PROD_TRACKED_ID)!;
+    live.stockMode = "NOT_TRACKED";
+    const canceled = await cancelOrder(
+      { orderId: placed.value.orderId, ...customerCancel },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(true);
+    if (!canceled.ok) return;
+    expect(canceled.value.restoredTrackedQuantity).toBe(0);
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(3);
+  });
+
+  it("does not modify NOT_TRACKED stock", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(pickupInput(), world.deps());
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    await cancelOrder(
+      { orderId: placed.value.orderId, ...customerCancel },
+      world.cancelDeps(),
+    );
+    expect(world.productStock(PROD_SIMPLE_ID)).toBeNull();
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(5);
+  });
+
+  it("restores stock for inactive TRACKED products", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(
+      pickupInput({ lines: [{ productId: PROD_TRACKED_ID, quantity: 2 }] }),
+      world.deps(),
+    );
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    const live = world.writeProducts.find((row) => row.id === PROD_TRACKED_ID)!;
+    live.active = false;
+    const canceled = await cancelOrder(
+      { orderId: placed.value.orderId, ...customerCancel },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(true);
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(5);
+  });
+
+  it("restores stock for unavailable TRACKED products", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(
+      pickupInput({ lines: [{ productId: PROD_TRACKED_ID, quantity: 2 }] }),
+      world.deps(),
+    );
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    const live = world.writeProducts.find((row) => row.id === PROD_TRACKED_ID)!;
+    live.available = false;
+    await cancelOrder(
+      { orderId: placed.value.orderId, ...customerCancel },
+      world.cancelDeps(),
+    );
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(5);
+  });
+
+  it("cancels when product_id is null and skips restock", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(
+      pickupInput({ lines: [{ productId: PROD_TRACKED_ID, quantity: 2 }] }),
+      world.deps(),
+    );
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(3);
+    world.nullifyProductIds(placed.value.orderId);
+
+    const canceled = await cancelOrder(
+      { orderId: placed.value.orderId, ...customerCancel },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(true);
+    if (!canceled.ok) return;
+    expect(canceled.value.restoredTrackedQuantity).toBe(0);
+    expect(world.onlyOrder().aggregate.status).toBe("CANCELED");
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(3);
+  });
+
+  it("restores line quantity, not QUANTITY option units", async () => {
+    const world = new MemoryCheckout();
+    world.catalogProducts = [
+      empanadasProduct({ stockMode: "TRACKED", stockQuantity: 10 }),
+    ];
+    world.writeProducts = world.catalogProducts;
+    const placed = await placeOrder(
+      pickupInput({
+        lines: [
+          {
+            productId: PROD_EMPANADAS_ID,
+            quantity: 3,
+            groups: [
+              { groupId: GROUP_SABORES_ID, selections: dozenSelections },
+            ],
+          },
+        ],
+      }),
+      world.deps(),
+    );
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    expect(world.productStock(PROD_EMPANADAS_ID)).toBe(7);
+    const canceled = await cancelOrder(
+      { orderId: placed.value.orderId, ...customerCancel },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(true);
+    if (!canceled.ok) return;
+    expect(canceled.value.restoredTrackedQuantity).toBe(3);
+    expect(world.productStock(PROD_EMPANADAS_ID)).toBe(10);
+  });
+});
+
+describe("cancelOrder rollback", () => {
+  it("rolls back status when restock fails", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(
+      pickupInput({ lines: [{ productId: PROD_TRACKED_ID, quantity: 2 }] }),
+      world.deps(),
+    );
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    world.failNext = "restock";
+    const canceled = await cancelOrder(
+      { orderId: placed.value.orderId, ...customerCancel },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(false);
+    expect(world.onlyOrder().aggregate.status).toBe("PENDING");
+    expect(world.onlyOrder().events).toHaveLength(1);
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(3);
+  });
+
+  it("rolls back status and restock when event insert fails", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(
+      pickupInput({ lines: [{ productId: PROD_TRACKED_ID, quantity: 2 }] }),
+      world.deps(),
+    );
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    world.failNext = "cancel-event";
+    const canceled = await cancelOrder(
+      { orderId: placed.value.orderId, ...customerCancel },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(false);
+    expect(world.onlyOrder().aggregate.status).toBe("PENDING");
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(3);
+    expect(world.onlyOrder().events).toHaveLength(1);
+  });
+
+  it("rolls back everything when Delivery cancel fails", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(
+      deliveryInput({ lines: [{ productId: PROD_TRACKED_ID, quantity: 1 }] }),
+      world.deps(),
+    );
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    world.failNext = "cancel-delivery";
+    const canceled = await cancelOrder(
+      { orderId: placed.value.orderId, ...customerCancel },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(false);
+    expect(world.onlyOrder().aggregate.status).toBe("PENDING");
+    expect(world.onlyOrder().delivery?.status).toBe("PENDING");
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(4);
+  });
+});
+
+describe("cancelOrder exactly once", () => {
+  it("restores stock once and rejects a second cancel", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(
+      pickupInput({ lines: [{ productId: PROD_TRACKED_ID, quantity: 2 }] }),
+      world.deps(),
+    );
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    const first = await cancelOrder(
+      { orderId: placed.value.orderId, ...customerCancel },
+      world.cancelDeps(),
+    );
+    const second = await cancelOrder(
+      { orderId: placed.value.orderId, ...customerCancel },
+      world.cancelDeps(),
+    );
+    expect(first.ok).toBe(true);
+    expect(second.ok).toBe(false);
+    if (second.ok) return;
+    expect(second.error.code).toBe(CHECKOUT_ERROR_CODES.ORDER_ALREADY_CANCELED);
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(5);
+    expect(
+      world.onlyOrder().events.filter((event) => event.toStatus === "CANCELED"),
+    ).toHaveLength(1);
+  });
+
+  it("serializes a concurrent second cancel as already canceled", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(
+      pickupInput({ lines: [{ productId: PROD_TRACKED_ID, quantity: 2 }] }),
+      world.deps(),
+    );
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    const [a, b] = await Promise.all([
+      cancelOrder(
+        { orderId: placed.value.orderId, ...customerCancel },
+        world.cancelDeps(),
+      ),
+      cancelOrder(
+        { orderId: placed.value.orderId, ...customerCancel },
+        world.cancelDeps(),
+      ),
+    ]);
+    const outcomes = [a, b];
+    expect(outcomes.filter((row) => row.ok)).toHaveLength(1);
+    expect(
+      outcomes.filter(
+        (row) =>
+          !row.ok &&
+          row.error.code === CHECKOUT_ERROR_CODES.ORDER_ALREADY_CANCELED,
+      ),
+    ).toHaveLength(1);
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(5);
+    expect(
+      world.onlyOrder().events.filter((event) => event.toStatus === "CANCELED"),
+    ).toHaveLength(1);
+  });
+});
+
+describe("cancelOrder delivery", () => {
+  it("does not touch Delivery on pickup", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(pickupInput(), world.deps());
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    const canceled = await cancelOrder(
+      { orderId: placed.value.orderId, ...customerCancel },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(true);
+    if (!canceled.ok) return;
+    expect(canceled.value.deliveryCanceled).toBe(false);
+    expect(world.onlyOrder().delivery).toBeNull();
+  });
+
+  it("cancels a PENDING merchant Delivery", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(deliveryInput(), world.deps());
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    const canceled = await cancelOrder(
+      { orderId: placed.value.orderId, ...customerCancel },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(true);
+    if (!canceled.ok) return;
+    expect(canceled.value.deliveryCanceled).toBe(true);
+    expect(world.onlyOrder().delivery?.status).toBe("CANCELED");
+  });
+
+  it("rejects cancel while merchant Delivery is IN_TRANSIT", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(deliveryInput(), world.deps());
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    world.setOrderStatus(placed.value.orderId, "READY");
+    world.setDeliveryStatus(placed.value.orderId, "IN_TRANSIT");
+    const canceled = await cancelOrder(
+      { orderId: placed.value.orderId, ...merchantCancel },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(false);
+    if (canceled.ok) return;
+    expect(canceled.error.code).toBe(
+      CHECKOUT_ERROR_CODES.DELIVERY_STATE_CONFLICT,
+    );
+    expect(world.onlyOrder().aggregate.status).toBe("READY");
+    expect(world.onlyOrder().delivery?.status).toBe("IN_TRANSIT");
+  });
+
+  it("rejects cancel when Delivery is already DELIVERED", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(deliveryInput(), world.deps());
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    world.setOrderStatus(placed.value.orderId, "READY");
+    world.setDeliveryStatus(placed.value.orderId, "DELIVERED");
+    const canceled = await cancelOrder(
+      { orderId: placed.value.orderId, ...merchantCancel },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(false);
+    if (canceled.ok) return;
+    expect(canceled.error.code).toBe(
+      CHECKOUT_ERROR_CODES.DELIVERY_STATE_CONFLICT,
+    );
+    expect(world.onlyOrder().delivery?.status).toBe("DELIVERED");
+  });
+});
+
+describe("cancelOrder completed and validation", () => {
+  it("does not cancel or restock a COMPLETED order", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(
+      pickupInput({ lines: [{ productId: PROD_TRACKED_ID, quantity: 2 }] }),
+      world.deps(),
+    );
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    world.setOrderStatus(placed.value.orderId, "COMPLETED");
+    const canceled = await cancelOrder(
+      { orderId: placed.value.orderId, ...merchantCancel },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(false);
+    if (canceled.ok) return;
+    expect(canceled.error.code).toBe(CHECKOUT_ERROR_CODES.ORDER_NOT_CANCELABLE);
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(3);
+    expect(world.onlyOrder().aggregate.status).toBe("COMPLETED");
+  });
+
+  it("rejects an invalid cancel reason before writing", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(pickupInput(), world.deps());
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    const canceled = await cancelOrder(
+      {
+        orderId: placed.value.orderId,
+        actor: { type: "CUSTOMER" },
+        reason: "   ",
+      },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(false);
+    if (canceled.ok) return;
+    expect(canceled.error.code).toBe(
+      CHECKOUT_ERROR_CODES.INVALID_CANCEL_REASON,
+    );
+    expect(world.onlyOrder().aggregate.status).toBe("PENDING");
+  });
+
+  it("rejects a missing order", async () => {
+    const world = new MemoryCheckout();
+    const canceled = await cancelOrder(
+      {
+        orderId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        ...customerCancel,
+      },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(false);
+    if (canceled.ok) return;
+    expect(canceled.error.code).toBe(CHECKOUT_ERROR_CODES.ORDER_NOT_FOUND);
+  });
+});
+
+describe("placeOrder + cancelOrder stock symmetry", () => {
+  it("returns stock to the original quantity and ignores a second cancel", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(
+      pickupInput({ lines: [{ productId: PROD_TRACKED_ID, quantity: 2 }] }),
+      world.deps(),
+    );
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(3);
+    const canceled = await cancelOrder(
+      { orderId: placed.value.orderId, ...customerCancel },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(true);
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(5);
+    await cancelOrder(
+      { orderId: placed.value.orderId, ...customerCancel },
+      world.cancelDeps(),
+    );
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(5);
   });
 });

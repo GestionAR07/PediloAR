@@ -1,9 +1,14 @@
 import "server-only";
 
 import { placeOrder } from "@/application/checkout/place-order";
+import { cancelOrder } from "@/application/checkout/cancel-order";
 import { prepareOrder } from "@/application/checkout/prepare-order";
-import type { PrepareOrderInput } from "@/application/checkout/types";
+import type {
+  CancelOrderInput,
+  PrepareOrderInput,
+} from "@/application/checkout/types";
 import {
+  cancelOrderInTransaction,
   findOrderByIdempotencyKey,
   persistPreparedOrderInTransaction,
 } from "@/infrastructure/db/repositories/checkout-order-repository";
@@ -46,5 +51,15 @@ export async function placeOrderApp(input: PrepareOrderInput) {
     findOrderByIdempotencyKey,
     persistPreparedOrder: (prepared) =>
       persistPreparedOrderInTransaction(prepared, deps.now()),
+  });
+}
+
+/**
+ * Transactional order cancellation + TRACKED restock. Not a public Server Action.
+ */
+export async function cancelOrderApp(input: CancelOrderInput) {
+  return cancelOrder(input, {
+    now: () => new Date(),
+    cancelOrderInTransaction,
   });
 }

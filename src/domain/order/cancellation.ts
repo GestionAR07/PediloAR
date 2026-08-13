@@ -1,7 +1,12 @@
 import type { Delivery } from "../delivery/types";
 import { DomainError } from "../shared/errors";
 import { err, ok, type Result } from "../shared/result";
-import type { CancelReason, OrderActorType, OrderStatus } from "./enums";
+import {
+  CANCEL_REASONS,
+  type CancelReason,
+  type OrderActorType,
+  type OrderStatus,
+} from "./enums";
 import { isOrderTerminalStatus } from "./transitions";
 
 /**
@@ -120,4 +125,38 @@ export function assertCanCancelOrder(context: CancelOrderContext): void {
   if (!result.ok) {
     throw result.error;
   }
+}
+
+/**
+ * Controlled cancel reasons only — matches orders.cancel_reason CHECK.
+ */
+export function parseCancelReason(
+  raw: string,
+): Result<CancelReason, DomainError> {
+  if (typeof raw !== "string") {
+    return err(
+      new DomainError(
+        "ORDER_CANCEL_REASON_INVALID",
+        "Cancel reason must be a string",
+      ),
+    );
+  }
+
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    return err(
+      new DomainError("ORDER_CANCEL_REASON_EMPTY", "Cancel reason is required"),
+    );
+  }
+
+  if (!CANCEL_REASONS.includes(trimmed as CancelReason)) {
+    return err(
+      new DomainError(
+        "ORDER_CANCEL_REASON_INVALID",
+        "Cancel reason is not a controlled value",
+      ),
+    );
+  }
+
+  return ok(trimmed as CancelReason);
 }

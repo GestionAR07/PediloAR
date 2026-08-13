@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canCancelOrder } from "./cancellation";
+import { canCancelOrder, parseCancelReason } from "./cancellation";
 import type { OrderActorType, OrderStatus } from "./enums";
 
 describe("order cancellation policy", () => {
@@ -138,5 +138,21 @@ describe("order cancellation policy", () => {
       delivery: { status: "PENDING" },
     });
     expect(pendingDelivery.ok).toBe(true);
+  });
+});
+
+describe("parseCancelReason", () => {
+  it("accepts controlled reasons after trim", () => {
+    const result = parseCancelReason("  OUT_OF_STOCK  ");
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value).toBe("OUT_OF_STOCK");
+    }
+  });
+
+  it("rejects empty or unknown reasons", () => {
+    expect(parseCancelReason("").ok).toBe(false);
+    expect(parseCancelReason("   ").ok).toBe(false);
+    expect(parseCancelReason("rejected by merchant").ok).toBe(false);
   });
 });

@@ -67,7 +67,7 @@ function replayOrConflict(
  * retry does not fail after the first attempt already decremented stock.
  *
  * TRACKED stock is decremented when the PENDING order is created.
- * Cancel/restock is a later lifecycle requirement and is not implemented here.
+ * Cancel restores TRACKED stock exactly once (see cancelOrder).
  */
 export async function placeOrder(
   input: PrepareOrderInput,

@@ -7,13 +7,23 @@ import {
   type CheckoutApplicationError,
 } from "@/application/checkout/errors";
 import type {
+  CancelOrderCommand,
+  CancelOrderPersistResult,
   PersistedCheckoutOrder,
   PersistPreparedOrderResult,
   PreparedOrder,
 } from "@/application/checkout/types";
 import { isMerchantOperationallyAcceptingOrders } from "@/domain/merchant/operational-availability";
 import { moneyCents } from "@/domain/money/money-cents";
+import { canCancelOrder } from "@/domain/order/cancellation";
+import type { OrderStatus } from "@/domain/order/enums";
 import { assertOrderDeliveryCompatibility } from "@/domain/order/fulfillment-compat";
+import { transitionOrderStatus } from "@/domain/order/transitions";
+import {
+  transitionDeliveryStatus,
+  isDeliveryTerminalStatus,
+} from "@/domain/delivery/transitions";
+import type { DeliveryProvider, DeliveryStatus } from "@/domain/delivery/enums";
 import { isUniqueViolation } from "../pg-errors";
 import { getDb } from "../client";
 import {
@@ -444,6 +454,236 @@ export async function persistPreparedOrderInTransaction(
       error: checkoutError(
         CHECKOUT_ERROR_CODES.ORDER_PERSISTENCE_FAILED,
         "No se pudo crear el pedido.",
+      ),
+    };
+  }
+}
+
+const PG_INT_MAX = 2_147_483_647;
+
+function mapCancelPolicyError(code: string): CheckoutApplicationError {
+  if (code === "ORDER_CANCEL_DELIVERY_IN_TRANSIT") {
+    return checkoutError(
+      CHECKOUT_ERROR_CODES.DELIVERY_STATE_CONFLICT,
+      "No se puede cancelar el pedido mientras el envío está en curso.",
+    );
+  }
+  if (code === "ORDER_CANCEL_SYSTEM_REASON_REQUIRED") {
+    return checkoutError(
+      CHECKOUT_ERROR_CODES.INVALID_CANCEL_REASON,
+      "El motivo de cancelación no es válido.",
+    );
+  }
+  return checkoutError(
+    CHECKOUT_ERROR_CODES.ORDER_NOT_CANCELABLE,
+    "No se puede cancelar el pedido.",
+  );
+}
+
+/**
+ * Cancels an Order inside one transaction.
+ * SELECT FOR UPDATE serializes concurrent cancels so TRACKED restock happens once.
+ *
+ * Live product restock: only when product_id is present and stock_mode is still
+ * TRACKED. There is no historical stock_mode snapshot on order_items.
+ */
+export async function cancelOrderInTransaction(
+  command: CancelOrderCommand,
+): Promise<CancelOrderPersistResult> {
+  const db = getDb();
+
+  try {
+    return await db.transaction(async (tx) => {
+      const orderRows = await tx
+        .select({
+          id: orders.id,
+          status: orders.status,
+          fulfillmentMethod: orders.fulfillmentMethod,
+        })
+        .from(orders)
+        .where(eq(orders.id, command.orderId))
+        .for("update")
+        .limit(1);
+
+      const order = orderRows[0];
+      if (!order) {
+        reject(CHECKOUT_ERROR_CODES.ORDER_NOT_FOUND, "El pedido no existe.");
+      }
+
+      if (order.status === "CANCELED") {
+        return {
+          status: "already_canceled" as const,
+          orderId: order.id,
+        };
+      }
+
+      const itemRows = await tx
+        .select({
+          productId: orderItems.productId,
+          quantity: orderItems.quantity,
+        })
+        .from(orderItems)
+        .where(eq(orderItems.orderId, order.id));
+
+      const deliveryRows = await tx
+        .select({
+          id: deliveries.id,
+          provider: deliveries.provider,
+          status: deliveries.status,
+        })
+        .from(deliveries)
+        .where(eq(deliveries.orderId, order.id))
+        .limit(1);
+      const delivery = deliveryRows[0] ?? null;
+
+      if (delivery?.status === "DELIVERED") {
+        reject(
+          CHECKOUT_ERROR_CODES.DELIVERY_STATE_CONFLICT,
+          "No se puede cancelar un pedido cuya entrega ya fue completada.",
+        );
+      }
+
+      const policy = canCancelOrder({
+        actor: command.actorType,
+        orderStatus: order.status as OrderStatus,
+        delivery: delivery
+          ? { status: delivery.status as DeliveryStatus }
+          : null,
+        cancelReason: command.reason,
+      });
+      if (!policy.ok) {
+        throw new CheckoutTxError(mapCancelPolicyError(policy.error.code));
+      }
+
+      const transition = transitionOrderStatus(
+        order.status as OrderStatus,
+        "CANCELED",
+      );
+      if (!transition.ok) {
+        throw new CheckoutTxError(mapCancelPolicyError(transition.error.code));
+      }
+
+      const previousStatus = order.status as OrderStatus;
+
+      await tx
+        .update(orders)
+        .set({
+          status: "CANCELED",
+          canceledAt: command.now,
+          canceledBy: command.actorType,
+          cancelReason: command.reason,
+          updatedAt: command.now,
+        })
+        .where(eq(orders.id, order.id));
+
+      const demand = new Map<string, number>();
+      for (const item of itemRows) {
+        if (!item.productId) {
+          continue;
+        }
+        demand.set(
+          item.productId,
+          (demand.get(item.productId) ?? 0) + item.quantity,
+        );
+      }
+
+      let restoredTrackedQuantity = 0;
+      for (const [productId, quantity] of demand) {
+        const liveRows = await tx
+          .select({
+            id: products.id,
+            stockMode: products.stockMode,
+            stockQuantity: products.stockQuantity,
+          })
+          .from(products)
+          .where(eq(products.id, productId))
+          .limit(1);
+        const live = liveRows[0];
+        if (
+          !live ||
+          live.stockMode !== "TRACKED" ||
+          live.stockQuantity == null
+        ) {
+          continue;
+        }
+        if (live.stockQuantity + quantity > PG_INT_MAX) {
+          reject(
+            CHECKOUT_ERROR_CODES.ORDER_PERSISTENCE_FAILED,
+            "No se pudo restaurar el stock.",
+          );
+        }
+
+        const updated = await tx
+          .update(products)
+          .set({
+            stockQuantity: sql`${products.stockQuantity} + ${quantity}`,
+            updatedAt: command.now,
+          })
+          .where(
+            and(eq(products.id, productId), eq(products.stockMode, "TRACKED")),
+          )
+          .returning({ id: products.id });
+
+        if (updated.length > 0) {
+          restoredTrackedQuantity += quantity;
+        }
+      }
+
+      let deliveryCanceled = false;
+      if (delivery && delivery.status !== "DELIVERED") {
+        if (!isDeliveryTerminalStatus(delivery.status as DeliveryStatus)) {
+          const nextDelivery = transitionDeliveryStatus(
+            delivery.provider as DeliveryProvider,
+            delivery.status as DeliveryStatus,
+            "CANCELED",
+          );
+          if (!nextDelivery.ok) {
+            reject(
+              CHECKOUT_ERROR_CODES.DELIVERY_STATE_CONFLICT,
+              "No se puede cancelar el envío asociado.",
+            );
+          }
+          await tx
+            .update(deliveries)
+            .set({
+              status: "CANCELED",
+              updatedAt: command.now,
+            })
+            .where(eq(deliveries.id, delivery.id));
+          deliveryCanceled = true;
+        }
+      }
+
+      await tx.insert(orderEvents).values({
+        orderId: order.id,
+        fromStatus: previousStatus,
+        toStatus: "CANCELED",
+        actorType: command.actorType,
+        actorId: command.actorId,
+        reason: command.reason,
+      });
+
+      return {
+        status: "canceled" as const,
+        result: {
+          orderId: order.id,
+          previousStatus,
+          status: "CANCELED" as const,
+          restoredTrackedQuantity,
+          deliveryCanceled,
+        },
+      };
+    });
+  } catch (error) {
+    const checkout = checkoutErrorFromUnknown(error);
+    if (checkout) {
+      return { status: "rejected", error: checkout };
+    }
+    return {
+      status: "rejected",
+      error: checkoutError(
+        CHECKOUT_ERROR_CODES.ORDER_PERSISTENCE_FAILED,
+        "No se pudo cancelar el pedido.",
       ),
     };
   }
