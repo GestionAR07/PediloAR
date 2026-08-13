@@ -91,12 +91,18 @@ export default async function MerchantDetailPage({ params }: PageProps) {
         resumeAction={resumeMerchantOrdersAction}
       />
 
-      <nav className="text-sm">
+      <nav className="flex flex-col gap-2 text-sm sm:flex-row">
         <Link
           href={`/merchant/${merchantId}/catalog`}
           className="inline-flex rounded-md border border-border px-4 py-3 font-medium text-accent underline-offset-4 hover:underline"
         >
           Gestionar catálogo →
+        </Link>
+        <Link
+          href={`/merchant/${merchantId}/payment-methods`}
+          className="inline-flex rounded-md border border-border px-4 py-3 font-medium text-accent underline-offset-4 hover:underline"
+        >
+          Medios de pago →
         </Link>
       </nav>
 

@@ -99,7 +99,7 @@ function baseDeps(): GetPublicMerchantCatalogDeps {
     ]),
     listDeliveryZones: vi.fn(async () => []),
     listPaymentMethods: vi.fn(async () => [
-      { label: "Efectivo", instructions: "" },
+      { code: "CASH", label: "Efectivo", instructions: "" },
     ]),
     listOpeningIntervals: vi.fn(async () => []),
     createSignedUrls: vi.fn(async (paths: readonly string[]) => {
@@ -170,5 +170,31 @@ describe("getPublicMerchantCatalog", () => {
     const page = await getPublicMerchantCatalog(MERCHANT, ZONE, deps);
     const noImage = page!.products.find((p) => p.name === "Sin stock")!;
     expect(noImage.imageUrl).toBeNull();
+  });
+
+  it("exposes payment method code for checkout without internals", async () => {
+    const deps = baseDeps();
+    deps.listPaymentMethods = vi.fn(async () => [
+      {
+        code: "TRANSFER",
+        label: "Transferencia",
+        instructions: "Alias COMERCIO.MP",
+      },
+    ]);
+    const page = await getPublicMerchantCatalog(MERCHANT, ZONE, deps);
+    expect(page!.paymentMethods).toEqual([
+      {
+        code: "TRANSFER",
+        label: "Transferencia",
+        instructions: "Alias COMERCIO.MP",
+      },
+    ]);
+    expect(Object.keys(page!.paymentMethods[0]!).sort()).toEqual([
+      "code",
+      "instructions",
+      "label",
+    ]);
+    const serialized = JSON.stringify(page!.paymentMethods);
+    expect(serialized).not.toMatch(/createdAt|updatedAt|merchantId|sortOrder/);
   });
 });

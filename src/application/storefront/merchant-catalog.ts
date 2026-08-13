@@ -86,6 +86,7 @@ export type CatalogDeliveryRecord = {
 };
 
 export type CatalogPaymentRecord = {
+  code: string;
   label: string;
   instructions: string;
 };
@@ -284,6 +285,7 @@ export async function getPublicMerchantCatalog(
         : null,
     }),
     paymentMethods: payments.map((method) => ({
+      code: method.code,
       label: method.label,
       instructions: method.instructions.trim() ? method.instructions : null,
     })),

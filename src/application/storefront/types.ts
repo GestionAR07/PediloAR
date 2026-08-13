@@ -38,6 +38,7 @@ export type PublicDiscoveryResult = {
 };
 
 export type PublicPaymentMethodView = {
+  code: string;
   label: string;
   instructions: string | null;
 };

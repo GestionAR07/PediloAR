@@ -124,7 +124,7 @@ export default async function PublicMerchantPage({
             <ul className="flex flex-wrap gap-2">
               {merchant.paymentMethods.map((method) => (
                 <li
-                  key={method.label}
+                  key={method.code}
                   className="rounded-full border border-border bg-white/70 px-3 py-1 text-xs"
                   title={method.instructions ?? undefined}
                 >

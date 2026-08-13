@@ -17,6 +17,8 @@ describe("merchant back navigation", () => {
     // Single-membership resolver still lives on /merchant index.
     expect(page).not.toMatch(/href=["']\/merchant["']/);
     expect(page).toContain("Gestionar catálogo");
+    expect(page).toContain("Medios de pago");
+    expect(page).toContain("href={`/merchant/${merchantId}/payment-methods`}");
   });
 
   it("catalog returns to the merchant dashboard", () => {
@@ -32,6 +34,13 @@ describe("merchant back navigation", () => {
     );
     expect(page).toContain("← Catálogo");
     expect(page).toContain("href={`/merchant/${merchantId}/catalog`}");
+  });
+
+  it("payment methods returns to the merchant dashboard", () => {
+    const page = read("src/app/merchant/[merchantId]/payment-methods/page.tsx");
+    expect(page).toContain("← Mi comercio");
+    expect(page).toContain("href={`/merchant/${merchantId}`}");
+    expect(page).toContain("Medios de pago");
   });
 
   it("merchant index still auto-resolves a single membership", () => {

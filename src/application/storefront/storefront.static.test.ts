@@ -24,6 +24,17 @@ describe("public storefront static checks", () => {
     expect(page).not.toContain("requireMerchantMembership");
   });
 
+  it("public payment method view includes code for future checkout", () => {
+    const types = read("src/application/storefront/types.ts");
+    expect(types).toContain("export type PublicPaymentMethodView");
+    expect(types).toMatch(
+      /export type PublicPaymentMethodView = \{[\s\S]*code: string;/,
+    );
+    expect(types).not.toMatch(
+      /export type PublicPaymentMethodView = \{[\s\S]*createdAt/,
+    );
+  });
+
   it("wiring never exposes secret key to clients and uses signed URL helper", () => {
     const wiring = read("src/application/storefront/wiring.ts");
     expect(wiring).toContain('import "server-only"');
