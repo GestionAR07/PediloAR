@@ -120,6 +120,19 @@ export function markAttemptUnknown(
   };
 }
 
+export function clearAttemptQuote(
+  current: CheckoutAttemptState,
+): CheckoutAttemptState {
+  if (current.phase === "unknown") {
+    return current;
+  }
+  return {
+    ...current,
+    quoteFingerprint: null,
+    phase: "form",
+  };
+}
+
 export function readCheckoutAttempt(
   storage: Pick<Storage, "getItem"> | null | undefined,
 ): CheckoutAttemptState | null {

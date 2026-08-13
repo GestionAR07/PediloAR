@@ -26,11 +26,17 @@ import {
   reviewCheckoutAction,
 } from "@/app/checkout/actions";
 import {
+  clearAttemptQuote,
   createIdempotencyKey,
   markAttemptReviewed,
-  markAttemptUnknown,
   resolveAttemptForSignature,
 } from "@/lib/checkout/session";
+import {
+  applyCheckoutActionFailure,
+  applyUnknownNetworkOutcome,
+  canShowAuthoritativeReview,
+  canShowConfirmButton,
+} from "@/lib/checkout/review-invalidation";
 import {
   getCheckoutAttemptSnapshot,
   getCheckoutSuccessSnapshot,
@@ -251,14 +257,21 @@ export function CheckoutPageClient() {
         numberValue.trim().length > 0)) &&
     Boolean(paymentValue);
 
-  const reviewIsCurrent =
-    review != null &&
-    attempt.quoteFingerprint === review.quoteFingerprint &&
-    attempt.requestSignature === signature &&
-    attempt.phase !== "unknown";
-
-  const canConfirm =
-    reviewIsCurrent && !confirming && !reviewing && attempt.phase !== "unknown";
+  const showAuthoritativeReview = canShowAuthoritativeReview({
+    review,
+    attempt,
+    errorCode,
+    requestSignature: signature,
+  });
+  const showConfirm = canShowConfirmButton({
+    review,
+    attempt,
+    errorCode,
+    merchantAccepting: Boolean(config?.merchant.acceptingOrders),
+    requestInFlight: false,
+    requestSignature: signature,
+  });
+  const canConfirm = showConfirm && !confirming && !reviewing;
 
   function buildDraft(fingerprint: string | null): CheckoutFormDraft {
     return {
@@ -266,6 +279,22 @@ export function CheckoutPageClient() {
       idempotencyKey: attempt.idempotencyKey,
       expectedQuoteFingerprint: fingerprint,
     };
+  }
+
+  function applyReviewSlice(slice: {
+    review: typeof review;
+    attempt: typeof attempt;
+    error: string | null;
+    errorCode: string | null;
+    clearFrozen: boolean;
+  }): void {
+    setReview(slice.review);
+    setCheckoutAttempt(slice.attempt);
+    setError(slice.error);
+    setErrorCode(slice.errorCode);
+    if (slice.clearFrozen) {
+      setFrozenCheckoutDraft(null);
+    }
   }
 
   async function handleReview(): Promise<void> {
@@ -279,23 +308,20 @@ export function CheckoutPageClient() {
         draft: buildDraft(null),
       });
       if (!result.ok) {
-        setError(result.message);
-        setErrorCode(result.code);
-        if (result.review) {
-          setReview(result.review);
-          setCheckoutAttempt(
-            markAttemptReviewed(attempt, result.review.quoteFingerprint),
-          );
-        } else {
-          setReview(null);
-        }
+        applyReviewSlice(
+          applyCheckoutActionFailure({ review, attempt }, result),
+        );
         return;
       }
+      setError(null);
+      setErrorCode(null);
       setReview(result.review);
       setCheckoutAttempt(
         markAttemptReviewed(attempt, result.review.quoteFingerprint),
       );
     } catch {
+      setReview(null);
+      setCheckoutAttempt(clearAttemptQuote(attempt));
       setError("No pudimos revisar el pedido. Reintentá.");
       setErrorCode(null);
     } finally {
@@ -316,17 +342,9 @@ export function CheckoutPageClient() {
     try {
       const result = await placeOrderAction({ cart, draft });
       if (!result.ok) {
-        setError(result.message);
-        setErrorCode(result.code);
-        if (
-          result.code === CHECKOUT_ERROR_CODES.CHECKOUT_REVIEW_REQUIRED &&
-          result.review
-        ) {
-          setReview(result.review);
-          setCheckoutAttempt(
-            markAttemptReviewed(attempt, result.review.quoteFingerprint),
-          );
-        }
+        applyReviewSlice(
+          applyCheckoutActionFailure({ review, attempt }, result),
+        );
         return;
       }
       const merchantName =
@@ -342,9 +360,7 @@ export function CheckoutPageClient() {
       clear();
       setReview(null);
     } catch {
-      setCheckoutAttempt(markAttemptUnknown(attempt));
-      setError("No pudimos confirmar la respuesta del servidor.");
-      setErrorCode("NETWORK_UNKNOWN");
+      applyReviewSlice(applyUnknownNetworkOutcome({ review, attempt }));
     } finally {
       confirmLock.current = false;
       setConfirming(false);
@@ -708,7 +724,7 @@ export function CheckoutPageClient() {
             </p>
           </section>
 
-          {reviewIsCurrent && review ? (
+          {showAuthoritativeReview && review ? (
             <section className="space-y-3 rounded-xl border border-border bg-white/70 p-4">
               <h2 className="text-lg font-semibold">Revisión del pedido</h2>
               <p className="text-sm font-medium">{review.merchantName}</p>
@@ -813,7 +829,7 @@ export function CheckoutPageClient() {
               >
                 {reviewing ? "Revisando…" : "Revisar pedido"}
               </button>
-              {reviewIsCurrent ? (
+              {showConfirm ? (
                 <button
                   type="button"
                   onClick={() => void handleConfirm()}

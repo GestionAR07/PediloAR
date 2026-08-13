@@ -5,6 +5,7 @@ import {
   markAttemptUnknown,
   parseCheckoutAttempt,
   resolveAttemptForSignature,
+  clearAttemptQuote,
 } from "./session";
 
 describe("checkout attempt lifecycle", () => {
@@ -53,5 +54,19 @@ describe("checkout attempt lifecycle", () => {
     );
     expect(parsed?.idempotencyKey).toBe("abc");
     expect(createIdempotencyKey(() => "uuid-1")).toBe("uuid-1");
+  });
+
+  it("clears a quote fingerprint without dropping an unknown retry", () => {
+    const reviewed = markAttemptReviewed(
+      resolveAttemptForSignature(null, "sig-a", () => "key-1"),
+      "fp-1",
+    );
+    const cleared = clearAttemptQuote(reviewed);
+    expect(cleared.quoteFingerprint).toBeNull();
+    expect(cleared.phase).toBe("form");
+    expect(cleared.idempotencyKey).toBe("key-1");
+    expect(clearAttemptQuote(markAttemptUnknown(reviewed)).phase).toBe(
+      "unknown",
+    );
   });
 });

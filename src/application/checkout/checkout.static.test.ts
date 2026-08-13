@@ -48,8 +48,9 @@ describe("public checkout static checks", () => {
     const page = read("src/components/checkout/checkout-page-client.tsx");
     expect(page).toContain("Revisar pedido");
     expect(page).toContain("Confirmar pedido");
-    expect(page).toContain("reviewIsCurrent");
-    expect(page).toContain("canConfirm");
+    expect(page).toContain("showAuthoritativeReview");
+    expect(page).toContain("canShowConfirmButton");
+    expect(page).toContain("applyCheckoutActionFailure");
     expect(page).toContain("setReview(null)");
     expect(page).toContain("confirmLock");
     expect(page).toContain("Confirmando pedido…");
@@ -65,11 +66,12 @@ describe("public checkout static checks", () => {
     const clearIndex = page.indexOf("clear();");
     expect(successIndex).toBeGreaterThan(0);
     expect(clearIndex).toBeGreaterThan(successIndex);
-    expect(page).toContain("markAttemptUnknown");
+    expect(page).toContain("applyUnknownNetworkOutcome");
     expect(page).toContain("No pudimos confirmar la respuesta del servidor.");
     expect(page).toContain("Reintentar confirmación");
-    expect(page).toContain("CHECKOUT_REVIEW_REQUIRED");
+    expect(page).toContain("applyCheckoutActionFailure");
     expect(page).not.toMatch(/clear\(\);\s*setError/);
+    expect(page).toContain("{showConfirm ? (");
   });
 
   it("does not expose a public guest order GET or SQL in the UI", () => {
@@ -102,6 +104,19 @@ describe("public checkout static checks", () => {
       scripts: Record<string, string>;
     };
     expect(pkg.scripts.test).not.toContain("validate-real-order-lifecycle");
+  });
+
+  it("clears stale reviews on invalidating action failures", () => {
+    const page = read("src/components/checkout/checkout-page-client.tsx");
+    const invalidation = read("src/lib/checkout/review-invalidation.ts");
+    expect(invalidation).toContain("PRODUCT_NOT_SELLABLE");
+    expect(invalidation).toContain("INSUFFICIENT_STOCK");
+    expect(invalidation).toContain("CHECKOUT_REVIEW_REQUIRED");
+    expect(invalidation).toContain("clearAttemptQuote");
+    expect(page).toContain("applyCheckoutActionFailure");
+    expect(page).toContain("showAuthoritativeReview");
+    expect(page).toContain("{showConfirm ? (");
+    expect(page).not.toContain("reviewIsCurrent");
   });
 
   it("keeps application wiring server-only and not a Server Action", () => {
