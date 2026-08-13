@@ -5,6 +5,7 @@ import type {
 } from "@/domain/merchant/enums";
 import type { FulfillmentMethod } from "@/domain/order/enums";
 import type { IdempotencyKey } from "@/domain/shared/ids";
+import type { CheckoutApplicationError } from "./errors";
 
 /**
  * Untrusted checkout payload. Price/name snapshots from the browser are ignored
@@ -171,9 +172,49 @@ export type PreparedOrder = {
   /**
    * Canonical intent of IDs/quantities/contact/fulfillment that 6B.3 can
    * reconstruct from persisted order snapshots (no new schema column).
+   * PICKUP customerZoneId is not included.
    */
   intentFingerprint: string;
 };
+
+export type PlacedOrderResult = {
+  orderId: string;
+  status: "PENDING";
+  merchantId: string;
+  totalCents: MoneyCents;
+  fulfillmentMethod: FulfillmentMethod;
+  replayed: boolean;
+};
+
+export type PersistedCheckoutOrder = {
+  orderId: string;
+  status: string;
+  merchantId: string;
+  totalCents: number;
+  fulfillmentMethod: string;
+  customerNameSnapshot: string;
+  customerPhoneSnapshot: string;
+  paymentMethodCode: string;
+  deliveryZoneId: string | null;
+  deliveryStreet: string | null;
+  deliveryNumber: string | null;
+  deliveryFloorApartment: string | null;
+  deliveryReference: string | null;
+  lines: Array<{
+    productId: string | null;
+    quantity: number;
+    options: Array<{
+      optionGroupId: string | null;
+      optionChoiceId: string | null;
+      quantity: number;
+    }>;
+  }>;
+};
+
+export type PersistPreparedOrderResult =
+  | { status: "created"; order: Omit<PlacedOrderResult, "replayed"> }
+  | { status: "unique_violation" }
+  | { status: "rejected"; error: CheckoutApplicationError };
 
 export type PrepareOrderDeps = {
   now: () => Date;

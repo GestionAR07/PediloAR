@@ -1,7 +1,12 @@
 import "server-only";
 
+import { placeOrder } from "@/application/checkout/place-order";
 import { prepareOrder } from "@/application/checkout/prepare-order";
 import type { PrepareOrderInput } from "@/application/checkout/types";
+import {
+  findOrderByIdempotencyKey,
+  persistPreparedOrderInTransaction,
+} from "@/infrastructure/db/repositories/checkout-order-repository";
 import {
   findMerchantForCheckout,
   listDeliveryZonesForCheckout,
@@ -11,12 +16,8 @@ import {
   listProductsByIdsForCheckout,
 } from "@/infrastructure/db/repositories/checkout-repository";
 
-/**
- * Read-only wiring for authoritative order preparation.
- * Does not persist Orders and is not a public Server Action.
- */
-export async function prepareOrderApp(input: PrepareOrderInput) {
-  return prepareOrder(input, {
+function prepareDeps() {
+  return {
     now: () => new Date(),
     findMerchantById: findMerchantForCheckout,
     listProductsByIds: listProductsByIdsForCheckout,
@@ -24,5 +25,26 @@ export async function prepareOrderApp(input: PrepareOrderInput) {
     listOptionChoicesForGroups: listOptionChoicesForGroupsCheckout,
     listPaymentMethodsForMerchant: listPaymentMethodsForCheckout,
     listDeliveryZonesForMerchant: listDeliveryZonesForCheckout,
+  };
+}
+
+/**
+ * Read-only wiring for authoritative order preparation.
+ * Does not persist Orders and is not a public Server Action.
+ */
+export async function prepareOrderApp(input: PrepareOrderInput) {
+  return prepareOrder(input, prepareDeps());
+}
+
+/**
+ * Transactional order placement. Not a public Server Action.
+ */
+export async function placeOrderApp(input: PrepareOrderInput) {
+  const deps = prepareDeps();
+  return placeOrder(input, {
+    ...deps,
+    findOrderByIdempotencyKey,
+    persistPreparedOrder: (prepared) =>
+      persistPreparedOrderInTransaction(prepared, deps.now()),
   });
 }
