@@ -14,6 +14,7 @@ import {
 } from "@/application/catalog/options";
 import {
   createProduct as createProductUseCase,
+  deleteProduct as deleteProductUseCase,
   toggleProductAvailability as toggleProductAvailabilityUseCase,
   updateProduct as updateProductUseCase,
 } from "@/application/catalog/products";
@@ -21,6 +22,7 @@ import { CATALOG_ALLOWED_ROLES } from "@/application/catalog/types";
 import {
   countProductsInCategory,
   deleteMerchantCategory,
+  deleteProduct,
   findMerchantCategoryById,
   findOptionChoiceById,
   findOptionGroupById,
@@ -33,6 +35,7 @@ import {
   nextOptionChoiceSortOrder,
   nextOptionGroupSortOrder,
   nextProductSortOrder,
+  productHasOpenNonTerminalOrders,
   setProductAvailability,
   setProductImagePath,
   swapCategorySortOrder,
@@ -79,6 +82,8 @@ function productDeps() {
     insertProduct,
     updateProduct,
     setProductAvailability,
+    productHasOpenNonTerminalOrders,
+    deleteProduct,
   };
 }
 
@@ -167,6 +172,14 @@ export async function toggleProductAvailabilityApp(
   productId: string,
 ) {
   return toggleProductAvailabilityUseCase(merchantId, productId, productDeps());
+}
+
+/**
+ * Hard-delete a Product. Blocked while non-terminal Orders reference it.
+ * Not a public storefront Server Action.
+ */
+export async function deleteProductApp(merchantId: string, productId: string) {
+  return deleteProductUseCase(merchantId, productId, productDeps());
 }
 
 export async function createOptionGroupApp(

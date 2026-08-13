@@ -1,7 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
+import {
+  DELETE_BLOCKED_BY_OPEN_ORDERS_MESSAGE,
+  PRODUCT_HAS_OPEN_ORDERS,
+  STOCK_MODE_BLOCKED_BY_OPEN_ORDERS_MESSAGE,
+} from "@/domain/catalog/open-order-integrity";
+import type { OrderStatus } from "@/domain/order/enums";
+import { isOrderNonTerminalStatus } from "@/domain/order/transitions";
 import { AuthzError } from "@/server/auth/errors";
 import {
   createProduct,
+  deleteProduct,
   toggleProductAvailability,
   updateProduct,
   type ProductDeps,
@@ -52,6 +60,8 @@ function baseDeps(overrides: Partial<ProductDeps> = {}): ProductDeps {
       id: PROD_A,
       available: false,
     })),
+    productHasOpenNonTerminalOrders: vi.fn(async () => false),
+    deleteProduct: vi.fn(async () => ({ id: PROD_A })),
     ...overrides,
   };
 }
@@ -288,6 +298,229 @@ describe("updateProduct category assignment", () => {
       PROD_A,
       expect.not.objectContaining({ available: expect.anything() }),
     );
+  });
+});
+
+const OPEN_STATUSES = [
+  "PENDING",
+  "ACCEPTED",
+  "PREPARING",
+  "READY",
+] as const satisfies readonly OrderStatus[];
+
+const TERMINAL_STATUSES = [
+  "COMPLETED",
+  "CANCELED",
+] as const satisfies readonly OrderStatus[];
+
+const MERCHANT_B = "99999999-9999-4999-8999-999999999999";
+
+function depsWithOrders(
+  rows: Array<{ merchantId: string; productId: string; status: OrderStatus }>,
+  overrides: Partial<ProductDeps> = {},
+): ProductDeps {
+  return baseDeps({
+    findProductById: vi.fn(async (merchantId, productId) => {
+      if (merchantId !== MERCHANT_A || productId !== PROD_A) {
+        return null;
+      }
+      return {
+        ...existingProduct,
+        stockMode: "TRACKED",
+        stockQuantity: 5,
+      };
+    }),
+    productHasOpenNonTerminalOrders: vi.fn(async (merchantId, productId) =>
+      rows.some(
+        (row) =>
+          row.merchantId === merchantId &&
+          row.productId === productId &&
+          isOrderNonTerminalStatus(row.status),
+      ),
+    ),
+    ...overrides,
+  });
+}
+
+describe("updateProduct open-order stock integrity", () => {
+  for (const status of OPEN_STATUSES) {
+    it(`rejects stock_mode change when an Order is ${status}`, async () => {
+      const deps = depsWithOrders([
+        { merchantId: MERCHANT_A, productId: PROD_A, status },
+      ]);
+      const result = await updateProduct(
+        MERCHANT_A,
+        PROD_A,
+        { stockMode: "NOT_TRACKED" },
+        deps,
+      );
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe(PRODUCT_HAS_OPEN_ORDERS);
+        expect(result.error.message).toBe(
+          STOCK_MODE_BLOCKED_BY_OPEN_ORDERS_MESSAGE,
+        );
+      }
+      expect(deps.updateProduct).not.toHaveBeenCalled();
+    });
+  }
+
+  for (const status of TERMINAL_STATUSES) {
+    it(`allows stock_mode change when Orders are only ${status}`, async () => {
+      const deps = depsWithOrders([
+        { merchantId: MERCHANT_A, productId: PROD_A, status },
+      ]);
+      const result = await updateProduct(
+        MERCHANT_A,
+        PROD_A,
+        { stockMode: "NOT_TRACKED" },
+        deps,
+      );
+      expect(result.ok).toBe(true);
+      expect(deps.updateProduct).toHaveBeenCalled();
+    });
+  }
+
+  it("allows available=false while an Order is open", async () => {
+    const deps = depsWithOrders([
+      { merchantId: MERCHANT_A, productId: PROD_A, status: "PENDING" },
+    ]);
+    const result = await updateProduct(
+      MERCHANT_A,
+      PROD_A,
+      { available: false },
+      deps,
+    );
+    expect(result.ok).toBe(true);
+    expect(deps.productHasOpenNonTerminalOrders).not.toHaveBeenCalled();
+  });
+
+  it("allows active=false while an Order is open", async () => {
+    const deps = depsWithOrders([
+      { merchantId: MERCHANT_A, productId: PROD_A, status: "PENDING" },
+    ]);
+    const result = await updateProduct(
+      MERCHANT_A,
+      PROD_A,
+      { active: false },
+      deps,
+    );
+    expect(result.ok).toBe(true);
+    expect(deps.productHasOpenNonTerminalOrders).not.toHaveBeenCalled();
+  });
+
+  it("does not run the open-order check when stock_mode is unchanged", async () => {
+    const deps = depsWithOrders([
+      { merchantId: MERCHANT_A, productId: PROD_A, status: "PENDING" },
+    ]);
+    const result = await updateProduct(
+      MERCHANT_A,
+      PROD_A,
+      { stockMode: "TRACKED", stockQuantity: 4 },
+      deps,
+    );
+    expect(result.ok).toBe(true);
+    expect(deps.productHasOpenNonTerminalOrders).not.toHaveBeenCalled();
+    expect(deps.updateProduct).toHaveBeenCalledWith(
+      MERCHANT_A,
+      PROD_A,
+      expect.not.objectContaining({ stockMode: expect.anything() }),
+    );
+  });
+
+  it("does not leak another merchant's open Orders", async () => {
+    const deps = depsWithOrders([
+      { merchantId: MERCHANT_B, productId: PROD_A, status: "PENDING" },
+    ]);
+    const result = await updateProduct(
+      MERCHANT_A,
+      PROD_A,
+      { stockMode: "NOT_TRACKED" },
+      deps,
+    );
+    expect(result.ok).toBe(true);
+  });
+
+  it("rejects NOT_TRACKED to TRACKED while an Order is open", async () => {
+    const deps = depsWithOrders(
+      [{ merchantId: MERCHANT_A, productId: PROD_A, status: "READY" }],
+      {
+        findProductById: vi.fn(async () => ({
+          ...existingProduct,
+          stockMode: "NOT_TRACKED",
+          stockQuantity: null,
+        })),
+      },
+    );
+    const result = await updateProduct(
+      MERCHANT_A,
+      PROD_A,
+      { stockMode: "TRACKED", stockQuantity: 5 },
+      deps,
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe(PRODUCT_HAS_OPEN_ORDERS);
+    }
+  });
+
+  it("rejects a foreign-merchant product as not found", async () => {
+    const hasOpen = vi.fn(async () => true);
+    const deps = baseDeps({
+      findProductById: vi.fn(async () => null),
+      productHasOpenNonTerminalOrders: hasOpen,
+    });
+    const result = await updateProduct(
+      MERCHANT_A,
+      PROD_OTHER,
+      { stockMode: "NOT_TRACKED" },
+      deps,
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("PRODUCT_NOT_FOUND");
+    }
+    expect(hasOpen).not.toHaveBeenCalled();
+  });
+});
+
+describe("deleteProduct open-order stock integrity", () => {
+  it("rejects hard delete while an Order is open", async () => {
+    const deps = depsWithOrders([
+      { merchantId: MERCHANT_A, productId: PROD_A, status: "PENDING" },
+    ]);
+    const result = await deleteProduct(MERCHANT_A, PROD_A, deps);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe(PRODUCT_HAS_OPEN_ORDERS);
+      expect(result.error.message).toBe(DELETE_BLOCKED_BY_OPEN_ORDERS_MESSAGE);
+    }
+    expect(deps.deleteProduct).not.toHaveBeenCalled();
+  });
+
+  it("allows hard delete when Orders are only terminal", async () => {
+    const deps = depsWithOrders([
+      { merchantId: MERCHANT_A, productId: PROD_A, status: "COMPLETED" },
+      { merchantId: MERCHANT_A, productId: PROD_A, status: "CANCELED" },
+    ]);
+    const result = await deleteProduct(MERCHANT_A, PROD_A, deps);
+    expect(result.ok).toBe(true);
+    expect(deps.deleteProduct).toHaveBeenCalledWith(MERCHANT_A, PROD_A);
+  });
+
+  it("rejects a foreign-merchant product as not found", async () => {
+    const hasOpen = vi.fn(async () => true);
+    const deps = baseDeps({
+      findProductById: vi.fn(async () => null),
+      productHasOpenNonTerminalOrders: hasOpen,
+    });
+    const result = await deleteProduct(MERCHANT_A, PROD_OTHER, deps);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("PRODUCT_NOT_FOUND");
+    }
+    expect(hasOpen).not.toHaveBeenCalled();
+    expect(deps.deleteProduct).not.toHaveBeenCalled();
   });
 });
 

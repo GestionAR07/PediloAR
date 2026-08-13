@@ -21,6 +21,7 @@ describe("checkout order persistence static checks", () => {
     expect(repo).toContain('toStatus: "PENDING"');
     expect(repo).toContain("cancelOrderInTransaction");
     expect(repo).toContain('.for("update")');
+    expect(repo).toContain("orderBy(asc(products.id))");
     expect(repo).toContain("sql`${products.stockQuantity} + ${quantity}`");
     expect(repo).not.toContain("db:push");
   });

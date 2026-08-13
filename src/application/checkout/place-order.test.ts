@@ -1,5 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  deleteProduct as deleteProductUseCase,
+  updateProduct as updateProductUseCase,
+  type ProductDeps,
+} from "@/application/catalog/products";
+import {
+  DELETE_BLOCKED_BY_OPEN_ORDERS_MESSAGE,
+  PRODUCT_HAS_OPEN_ORDERS,
+  STOCK_MODE_BLOCKED_BY_OPEN_ORDERS_MESSAGE,
+} from "@/domain/catalog/open-order-integrity";
+import {
   isDeliveryTerminalStatus,
   transitionDeliveryStatus,
 } from "@/domain/delivery/transitions";
@@ -9,7 +19,11 @@ import { moneyCents } from "@/domain/money/money-cents";
 import { canCancelOrder } from "@/domain/order/cancellation";
 import type { OrderStatus } from "@/domain/order/enums";
 import { assertOrderDeliveryCompatibility } from "@/domain/order/fulfillment-compat";
-import { transitionOrderStatus } from "@/domain/order/transitions";
+import {
+  isOrderNonTerminalStatus,
+  transitionOrderStatus,
+} from "@/domain/order/transitions";
+import { DomainError } from "@/domain/shared/errors";
 import { CHECKOUT_ERROR_CODES, checkoutError } from "./errors";
 import { cancelOrder } from "./cancel-order";
 import { placeOrder, type PlaceOrderDeps } from "./place-order";
@@ -292,6 +306,7 @@ class MemoryCheckout {
     | "cancel-event"
     | "cancel-delivery"
     | null = null;
+  private work: Promise<void> = Promise.resolve();
 
   constructor() {
     const m = merchant();
@@ -333,7 +348,9 @@ class MemoryCheckout {
       listPaymentMethodsForMerchant: vi.fn(async () => this.payments),
       listDeliveryZonesForMerchant: vi.fn(async () => this.zones),
       findOrderByIdempotencyKey: vi.fn(async (key) => this.findByKey(key)),
-      persistPreparedOrder: vi.fn(async (prepared) => this.persist(prepared)),
+      persistPreparedOrder: vi.fn(async (prepared) =>
+        this.enqueue(() => this.persist(prepared)),
+      ),
       ...overrides,
     };
   }
@@ -586,6 +603,136 @@ class MemoryCheckout {
       ...line,
       productId: null,
     }));
+  }
+
+  enqueue<T>(fn: () => T | Promise<T>): Promise<T> {
+    const run = this.work.then(async () => fn());
+    this.work = run.then(
+      () => undefined,
+      () => undefined,
+    );
+    return run;
+  }
+
+  hasOpenNonTerminalOrders(merchantId: string, productId: string): boolean {
+    return [...this.orders.values()].some(
+      (stored) =>
+        stored.aggregate.merchantId === merchantId &&
+        isOrderNonTerminalStatus(stored.aggregate.status as OrderStatus) &&
+        stored.items.some((item) => item.productId === productId),
+    );
+  }
+
+  catalogDeps(): ProductDeps {
+    return {
+      requireCatalogAccess: vi.fn(async () => undefined),
+      findMerchantCategoryById: vi.fn(async () => null),
+      findProductById: vi.fn(async (merchantId, productId) => {
+        const product = this.writeProducts.find(
+          (row) => row.id === productId && row.merchantId === merchantId,
+        );
+        if (!product) {
+          return null;
+        }
+        return {
+          id: product.id,
+          merchantCategoryId: "22222222-2222-4222-8222-222222222222",
+          name: product.name,
+          description: "",
+          priceCents: product.priceCents,
+          active: product.active,
+          available: product.available,
+          stockMode: product.stockMode,
+          stockQuantity: product.stockQuantity,
+          sortOrder: product.sortOrder,
+          imagePath: null,
+        };
+      }),
+      nextProductSortOrder: vi.fn(async () => 0),
+      insertProduct: vi.fn(async () => ({
+        id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      })),
+      updateProduct: vi.fn(async (merchantId, productId, patch) =>
+        this.enqueue(() =>
+          this.applyProductPatch(merchantId, productId, patch),
+        ),
+      ),
+      setProductAvailability: vi.fn(async () => null),
+      productHasOpenNonTerminalOrders: vi.fn(async (merchantId, productId) =>
+        this.hasOpenNonTerminalOrders(merchantId, productId),
+      ),
+      deleteProduct: vi.fn(async (merchantId, productId) =>
+        this.enqueue(() => this.deleteProductRow(merchantId, productId)),
+      ),
+    };
+  }
+
+  applyProductPatch(
+    merchantId: string,
+    productId: string,
+    patch: Record<string, unknown>,
+  ): { id: string } | null {
+    const live = this.writeProducts.find(
+      (row) => row.id === productId && row.merchantId === merchantId,
+    );
+    if (!live) {
+      return null;
+    }
+    if (
+      patch.stockMode !== undefined &&
+      patch.stockMode !== live.stockMode &&
+      this.hasOpenNonTerminalOrders(merchantId, productId)
+    ) {
+      throw new DomainError(
+        PRODUCT_HAS_OPEN_ORDERS,
+        STOCK_MODE_BLOCKED_BY_OPEN_ORDERS_MESSAGE,
+      );
+    }
+    if (typeof patch.stockMode === "string") {
+      live.stockMode = patch.stockMode;
+    }
+    if ("stockQuantity" in patch) {
+      live.stockQuantity = patch.stockQuantity as number | null;
+    }
+    if (typeof patch.active === "boolean") {
+      live.active = patch.active;
+    }
+    if (typeof patch.available === "boolean") {
+      live.available = patch.available;
+    }
+    const catalog = this.catalogProducts.find((row) => row.id === productId);
+    if (catalog) {
+      catalog.stockMode = live.stockMode;
+      catalog.stockQuantity = live.stockQuantity;
+      catalog.active = live.active;
+      catalog.available = live.available;
+    }
+    return { id: live.id };
+  }
+
+  deleteProductRow(
+    merchantId: string,
+    productId: string,
+  ): { id: string } | null {
+    const live = this.writeProducts.find(
+      (row) => row.id === productId && row.merchantId === merchantId,
+    );
+    if (!live) {
+      return null;
+    }
+    if (this.hasOpenNonTerminalOrders(merchantId, productId)) {
+      throw new DomainError(
+        PRODUCT_HAS_OPEN_ORDERS,
+        DELETE_BLOCKED_BY_OPEN_ORDERS_MESSAGE,
+      );
+    }
+    this.writeProducts = this.writeProducts.filter(
+      (row) => row.id !== productId,
+    );
+    this.catalogProducts = this.catalogProducts.filter(
+      (row) => row.id !== productId,
+    );
+    return { id: productId };
   }
 
   cancelDeps() {
@@ -1688,5 +1835,110 @@ describe("placeOrder + cancelOrder stock symmetry", () => {
       world.cancelDeps(),
     );
     expect(world.productStock(PROD_TRACKED_ID)).toBe(5);
+  });
+});
+
+describe("open-order stock integrity", () => {
+  it("rejects TRACKED to NOT_TRACKED while a PENDING Order holds stock", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(
+      pickupInput({ lines: [{ productId: PROD_TRACKED_ID, quantity: 2 }] }),
+      world.deps(),
+    );
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(3);
+    const changed = await updateProductUseCase(
+      MERCHANT_ID,
+      PROD_TRACKED_ID,
+      { stockMode: "NOT_TRACKED" },
+      world.catalogDeps(),
+    );
+    expect(changed.ok).toBe(false);
+    if (!changed.ok) {
+      expect(changed.error.code).toBe(PRODUCT_HAS_OPEN_ORDERS);
+    }
+    expect(
+      world.writeProducts.find((row) => row.id === PROD_TRACKED_ID)?.stockMode,
+    ).toBe("TRACKED");
+    const canceled = await cancelOrder(
+      { orderId: placed.value.orderId, ...customerCancel },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(true);
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(5);
+    await cancelOrder(
+      { orderId: placed.value.orderId, ...customerCancel },
+      world.cancelDeps(),
+    );
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(5);
+  });
+
+  it("rejects hard delete while an Order is open and allows it after cancel", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(
+      pickupInput({ lines: [{ productId: PROD_TRACKED_ID, quantity: 2 }] }),
+      world.deps(),
+    );
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    const blocked = await deleteProductUseCase(
+      MERCHANT_ID,
+      PROD_TRACKED_ID,
+      world.catalogDeps(),
+    );
+    expect(blocked.ok).toBe(false);
+    if (!blocked.ok) {
+      expect(blocked.error.code).toBe(PRODUCT_HAS_OPEN_ORDERS);
+    }
+    expect(world.writeProducts.some((row) => row.id === PROD_TRACKED_ID)).toBe(
+      true,
+    );
+    await cancelOrder(
+      { orderId: placed.value.orderId, ...customerCancel },
+      world.cancelDeps(),
+    );
+    const deleted = await deleteProductUseCase(
+      MERCHANT_ID,
+      PROD_TRACKED_ID,
+      world.catalogDeps(),
+    );
+    expect(deleted.ok).toBe(true);
+    expect(world.writeProducts.some((row) => row.id === PROD_TRACKED_ID)).toBe(
+      false,
+    );
+  });
+
+  it("serializes concurrent placeOrder and stock_mode change", async () => {
+    const world = new MemoryCheckout();
+    const [placed, changed] = await Promise.all([
+      placeOrder(
+        pickupInput({ lines: [{ productId: PROD_TRACKED_ID, quantity: 2 }] }),
+        world.deps(),
+      ),
+      updateProductUseCase(
+        MERCHANT_ID,
+        PROD_TRACKED_ID,
+        { stockMode: "NOT_TRACKED" },
+        world.catalogDeps(),
+      ),
+    ]);
+    const live = world.writeProducts.find((row) => row.id === PROD_TRACKED_ID)!;
+    const hasOpen = world.hasOpenNonTerminalOrders(
+      MERCHANT_ID,
+      PROD_TRACKED_ID,
+    );
+    if (hasOpen && live.stockMode === "TRACKED") {
+      expect(placed.ok).toBe(true);
+      expect(changed.ok).toBe(false);
+      expect(live.stockQuantity).toBe(3);
+    } else {
+      expect(changed.ok).toBe(true);
+      expect(live.stockMode).toBe("NOT_TRACKED");
+      expect(live.stockQuantity).toBeNull();
+    }
+    expect(
+      hasOpen && live.stockMode === "NOT_TRACKED" && live.stockQuantity === 3,
+    ).toBe(false);
   });
 });

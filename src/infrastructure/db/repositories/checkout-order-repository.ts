@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, eq, gte, inArray, sql } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, sql } from "drizzle-orm";
 import {
   checkoutError,
   CHECKOUT_ERROR_CODES,
@@ -165,7 +165,8 @@ function trackedDemand(prepared: PreparedOrder): Map<string, number> {
  * Writes a new Order inside one Postgres transaction.
  * Unique idempotency races roll back automatically and surface as unique_violation.
  *
- * Cancel/restock of TRACKED inventory is not implemented here.
+ * Products are locked FOR UPDATE (stable id order) so stock_mode/delete
+ * cannot race past a TRACKED decrement.
  */
 export async function persistPreparedOrderInTransaction(
   prepared: PreparedOrder,
@@ -218,7 +219,14 @@ export async function persistPreparedOrderInTransaction(
           stockQuantity: products.stockQuantity,
         })
         .from(products)
-        .where(inArray(products.id, productIds));
+        .where(
+          and(
+            inArray(products.id, productIds),
+            eq(products.merchantId, prepared.merchantId),
+          ),
+        )
+        .orderBy(asc(products.id))
+        .for("update");
 
       const productById = new Map(productRows.map((row) => [row.id, row]));
       for (const productId of productIds) {

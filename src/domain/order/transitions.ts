@@ -1,6 +1,6 @@
 import { DomainError } from "../shared/errors";
 import { err, ok, type Result } from "../shared/result";
-import type { OrderStatus } from "./enums";
+import { ORDER_STATUSES, type OrderStatus } from "./enums";
 
 const ALLOWED_TRANSITIONS: Readonly<
   Record<OrderStatus, readonly OrderStatus[]>
@@ -18,8 +18,15 @@ export const ORDER_TERMINAL_STATUSES: readonly OrderStatus[] = [
   "CANCELED",
 ];
 
+export const ORDER_NON_TERMINAL_STATUSES: readonly OrderStatus[] =
+  ORDER_STATUSES.filter((status) => !ORDER_TERMINAL_STATUSES.includes(status));
+
 export function isOrderTerminalStatus(status: OrderStatus): boolean {
   return ORDER_TERMINAL_STATUSES.includes(status);
+}
+
+export function isOrderNonTerminalStatus(status: OrderStatus): boolean {
+  return !isOrderTerminalStatus(status);
 }
 
 export function canTransitionOrderStatus(

@@ -6,8 +6,13 @@ import {
 } from "@/domain/catalog/product";
 import type { StockMode } from "@/domain/catalog/enums";
 import { STOCK_MODES } from "@/domain/catalog/enums";
+import {
+  DELETE_BLOCKED_BY_OPEN_ORDERS_MESSAGE,
+  PRODUCT_HAS_OPEN_ORDERS,
+  STOCK_MODE_BLOCKED_BY_OPEN_ORDERS_MESSAGE,
+} from "@/domain/catalog/open-order-integrity";
 import { moneyCents } from "@/domain/money/money-cents";
-import { DomainError } from "@/domain/shared/errors";
+import { DomainError, isDomainError } from "@/domain/shared/errors";
 import { err, ok, type Result } from "@/domain/shared/result";
 import { parseMoneyInputToCents } from "@/lib/parse-money";
 import { isValidUuid } from "@/lib/uuid";
@@ -60,10 +65,32 @@ export type ProductDeps = CatalogAuthDeps & {
     productId: string,
     available: boolean,
   ) => Promise<{ id: string; available: boolean } | null>;
+  productHasOpenNonTerminalOrders: (
+    merchantId: string,
+    productId: string,
+  ) => Promise<boolean>;
+  deleteProduct: (
+    merchantId: string,
+    productId: string,
+  ) => Promise<{ id: string } | null>;
 };
 
 function parseStockMode(value: string): StockMode | null {
   return STOCK_MODES.includes(value as StockMode) ? (value as StockMode) : null;
+}
+
+function mapWriteError(error: unknown): CatalogApplicationError | null {
+  if (isDomainError(error) && error.code === PRODUCT_HAS_OPEN_ORDERS) {
+    return { code: error.code, message: error.message };
+  }
+  if (
+    error instanceof Error &&
+    isDomainError(error.cause) &&
+    error.cause.code === PRODUCT_HAS_OPEN_ORDERS
+  ) {
+    return { code: error.cause.code, message: error.cause.message };
+  }
+  return null;
 }
 
 function validateProductName(name: string): string | null {
@@ -339,8 +366,13 @@ export async function updateProduct(
     });
   }
 
+  const stockModeChanging =
+    Boolean(nextStockMode) && nextStockMode !== existing.stockMode;
+
   if (nextStockMode) {
-    patch.stockMode = nextStockMode;
+    if (stockModeChanging) {
+      patch.stockMode = nextStockMode;
+    }
     if (nextStockMode === "TRACKED") {
       const qty =
         input.stockQuantity !== undefined
@@ -364,6 +396,19 @@ export async function updateProduct(
     }
   } else if (input.stockQuantity !== undefined) {
     patch.stockQuantity = input.stockQuantity;
+  }
+
+  if (stockModeChanging) {
+    const open = await deps.productHasOpenNonTerminalOrders(
+      merchantId,
+      productId,
+    );
+    if (open) {
+      return err({
+        code: PRODUCT_HAS_OPEN_ORDERS,
+        message: STOCK_MODE_BLOCKED_BY_OPEN_ORDERS_MESSAGE,
+      });
+    }
   }
 
   const merged = {
@@ -398,14 +443,22 @@ export async function updateProduct(
     });
   }
 
-  const updated = await deps.updateProduct(merchantId, productId, patch);
-  if (!updated) {
-    return err({
-      code: "PRODUCT_NOT_FOUND",
-      message: "El producto no existe.",
-    });
+  try {
+    const updated = await deps.updateProduct(merchantId, productId, patch);
+    if (!updated) {
+      return err({
+        code: "PRODUCT_NOT_FOUND",
+        message: "El producto no existe.",
+      });
+    }
+    return ok({ id: updated.id });
+  } catch (error) {
+    const mapped = mapWriteError(error);
+    if (mapped) {
+      return err(mapped);
+    }
+    throw error;
   }
-  return ok({ id: updated.id });
 }
 
 export async function toggleProductAvailability(
@@ -462,6 +515,57 @@ export async function toggleProductAvailability(
     available: nextAvailable,
     sellable,
   });
+}
+
+export async function deleteProduct(
+  merchantId: string,
+  productId: string,
+  deps: ProductDeps,
+): Promise<Result<{ id: string }, CatalogApplicationError>> {
+  await deps.requireCatalogAccess(merchantId);
+
+  if (!isValidUuid(productId)) {
+    return err({
+      code: "PRODUCT_NOT_FOUND",
+      message: "El producto no existe.",
+    });
+  }
+
+  const existing = await deps.findProductById(merchantId, productId);
+  if (!existing) {
+    return err({
+      code: "PRODUCT_NOT_FOUND",
+      message: "El producto no existe.",
+    });
+  }
+
+  const open = await deps.productHasOpenNonTerminalOrders(
+    merchantId,
+    productId,
+  );
+  if (open) {
+    return err({
+      code: PRODUCT_HAS_OPEN_ORDERS,
+      message: DELETE_BLOCKED_BY_OPEN_ORDERS_MESSAGE,
+    });
+  }
+
+  try {
+    const deleted = await deps.deleteProduct(merchantId, productId);
+    if (!deleted) {
+      return err({
+        code: "PRODUCT_NOT_FOUND",
+        message: "El producto no existe.",
+      });
+    }
+    return ok({ id: deleted.id });
+  } catch (error) {
+    const mapped = mapWriteError(error);
+    if (mapped) {
+      return err(mapped);
+    }
+    throw error;
+  }
 }
 
 export {

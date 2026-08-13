@@ -1,10 +1,19 @@
 import "server-only";
 
-import { and, asc, count, eq, ilike, sql } from "drizzle-orm";
-import { getDb } from "../client";
+import { and, asc, count, eq, ilike, inArray, sql } from "drizzle-orm";
+import {
+  DELETE_BLOCKED_BY_OPEN_ORDERS_MESSAGE,
+  PRODUCT_HAS_OPEN_ORDERS,
+  STOCK_MODE_BLOCKED_BY_OPEN_ORDERS_MESSAGE,
+} from "@/domain/catalog/open-order-integrity";
 import { moneyCents } from "@/domain/money/money-cents";
+import { ORDER_NON_TERMINAL_STATUSES } from "@/domain/order/transitions";
+import { DomainError } from "@/domain/shared/errors";
+import { getDb } from "../client";
 import {
   merchantCategories,
+  orderItems,
+  orders,
   productOptionChoices,
   productOptionGroups,
   products,
@@ -411,65 +420,171 @@ export async function insertProduct(input: {
   return { ...row, priceCents: Number(row.priceCents) };
 }
 
-export async function updateProduct(
-  merchantId: string,
-  productId: string,
-  patch: {
-    merchantCategoryId?: string;
-    name?: string;
-    description?: string;
-    priceCents?: number;
-    active?: boolean;
-    available?: boolean;
-    stockMode?: string;
-    stockQuantity?: number | null;
-    sortOrder?: number;
-  },
-): Promise<ProductRecord | null> {
-  const db = getDb();
-  const updated = await db
-    .update(products)
-    .set({
-      ...(patch.merchantCategoryId !== undefined
-        ? { merchantCategoryId: patch.merchantCategoryId }
-        : {}),
-      ...(patch.name !== undefined ? { name: patch.name } : {}),
-      ...(patch.description !== undefined
-        ? { description: patch.description }
-        : {}),
-      ...(patch.priceCents !== undefined
-        ? { priceCents: moneyCents(patch.priceCents) }
-        : {}),
-      ...(patch.active !== undefined ? { active: patch.active } : {}),
-      ...(patch.available !== undefined ? { available: patch.available } : {}),
-      ...(patch.stockMode !== undefined ? { stockMode: patch.stockMode } : {}),
-      ...(patch.stockQuantity !== undefined
-        ? { stockQuantity: patch.stockQuantity }
-        : {}),
-      ...(patch.sortOrder !== undefined ? { sortOrder: patch.sortOrder } : {}),
-      updatedAt: new Date(),
-    })
-    .where(and(eq(products.id, productId), eq(products.merchantId, merchantId)))
-    .returning({
-      id: products.id,
-      merchantId: products.merchantId,
-      merchantCategoryId: products.merchantCategoryId,
-      name: products.name,
-      description: products.description,
-      priceCents: products.priceCents,
-      active: products.active,
-      available: products.available,
-      stockMode: products.stockMode,
-      stockQuantity: products.stockQuantity,
-      sortOrder: products.sortOrder,
-      imagePath: products.imagePath,
-    });
+type ProductPatch = {
+  merchantCategoryId?: string;
+  name?: string;
+  description?: string;
+  priceCents?: number;
+  active?: boolean;
+  available?: boolean;
+  stockMode?: string;
+  stockQuantity?: number | null;
+  sortOrder?: number;
+};
 
-  const row = updated[0];
+const PRODUCT_RETURNING = {
+  id: products.id,
+  merchantId: products.merchantId,
+  merchantCategoryId: products.merchantCategoryId,
+  name: products.name,
+  description: products.description,
+  priceCents: products.priceCents,
+  active: products.active,
+  available: products.available,
+  stockMode: products.stockMode,
+  stockQuantity: products.stockQuantity,
+  sortOrder: products.sortOrder,
+  imagePath: products.imagePath,
+} as const;
+
+function mapProductRow(
+  row:
+    | {
+        id: string;
+        merchantId: string;
+        merchantCategoryId: string;
+        name: string;
+        description: string;
+        priceCents: unknown;
+        active: boolean;
+        available: boolean;
+        stockMode: string;
+        stockQuantity: number | null;
+        sortOrder: number;
+        imagePath: string | null;
+      }
+    | undefined,
+): ProductRecord | null {
   if (!row) {
     return null;
   }
   return { ...row, priceCents: Number(row.priceCents) };
+}
+
+function productSetFromPatch(patch: ProductPatch) {
+  return {
+    ...(patch.merchantCategoryId !== undefined
+      ? { merchantCategoryId: patch.merchantCategoryId }
+      : {}),
+    ...(patch.name !== undefined ? { name: patch.name } : {}),
+    ...(patch.description !== undefined
+      ? { description: patch.description }
+      : {}),
+    ...(patch.priceCents !== undefined
+      ? { priceCents: moneyCents(patch.priceCents) }
+      : {}),
+    ...(patch.active !== undefined ? { active: patch.active } : {}),
+    ...(patch.available !== undefined ? { available: patch.available } : {}),
+    ...(patch.stockMode !== undefined ? { stockMode: patch.stockMode } : {}),
+    ...(patch.stockQuantity !== undefined
+      ? { stockQuantity: patch.stockQuantity }
+      : {}),
+    ...(patch.sortOrder !== undefined ? { sortOrder: patch.sortOrder } : {}),
+    updatedAt: new Date(),
+  };
+}
+
+async function productHasOpenNonTerminalOrdersInTx(
+  tx: Pick<ReturnType<typeof getDb>, "select">,
+  merchantId: string,
+  productId: string,
+): Promise<boolean> {
+  const open = await tx
+    .select({ id: orderItems.id })
+    .from(orderItems)
+    .innerJoin(orders, eq(orders.id, orderItems.orderId))
+    .where(
+      and(
+        eq(orderItems.productId, productId),
+        eq(orders.merchantId, merchantId),
+        inArray(orders.status, ORDER_NON_TERMINAL_STATUSES),
+      ),
+    )
+    .limit(1);
+  return open.length > 0;
+}
+
+/**
+ * Merchant-scoped: true only when this merchant has a non-terminal Order
+ * that still references the product. Does not leak other merchants' orders.
+ */
+export async function productHasOpenNonTerminalOrders(
+  merchantId: string,
+  productId: string,
+): Promise<boolean> {
+  const db = getDb();
+  return productHasOpenNonTerminalOrdersInTx(db, merchantId, productId);
+}
+
+export async function updateProduct(
+  merchantId: string,
+  productId: string,
+  patch: ProductPatch,
+): Promise<ProductRecord | null> {
+  const db = getDb();
+  const stockModeChanging = patch.stockMode !== undefined;
+
+  if (!stockModeChanging) {
+    const updated = await db
+      .update(products)
+      .set(productSetFromPatch(patch))
+      .where(
+        and(eq(products.id, productId), eq(products.merchantId, merchantId)),
+      )
+      .returning(PRODUCT_RETURNING);
+    return mapProductRow(updated[0]);
+  }
+
+  return db.transaction(async (tx) => {
+    const lockedRows = await tx
+      .select({
+        id: products.id,
+        stockMode: products.stockMode,
+      })
+      .from(products)
+      .where(
+        and(eq(products.id, productId), eq(products.merchantId, merchantId)),
+      )
+      .for("update")
+      .limit(1);
+    const locked = lockedRows[0];
+    if (!locked) {
+      return null;
+    }
+
+    if (patch.stockMode !== locked.stockMode) {
+      const open = await productHasOpenNonTerminalOrdersInTx(
+        tx,
+        merchantId,
+        productId,
+      );
+      if (open) {
+        throw new DomainError(
+          PRODUCT_HAS_OPEN_ORDERS,
+          STOCK_MODE_BLOCKED_BY_OPEN_ORDERS_MESSAGE,
+        );
+      }
+    }
+
+    const updated = await tx
+      .update(products)
+      .set(productSetFromPatch(patch))
+      .where(
+        and(eq(products.id, productId), eq(products.merchantId, merchantId)),
+      )
+      .returning(PRODUCT_RETURNING);
+    return mapProductRow(updated[0]);
+  });
 }
 
 export async function setProductImagePath(
@@ -513,6 +628,47 @@ export async function setProductAvailability(
   available: boolean,
 ): Promise<ProductRecord | null> {
   return updateProduct(merchantId, productId, { available });
+}
+
+export async function deleteProduct(
+  merchantId: string,
+  productId: string,
+): Promise<{ id: string } | null> {
+  const db = getDb();
+  return db.transaction(async (tx) => {
+    const lockedRows = await tx
+      .select({ id: products.id })
+      .from(products)
+      .where(
+        and(eq(products.id, productId), eq(products.merchantId, merchantId)),
+      )
+      .for("update")
+      .limit(1);
+    const locked = lockedRows[0];
+    if (!locked) {
+      return null;
+    }
+
+    const open = await productHasOpenNonTerminalOrdersInTx(
+      tx,
+      merchantId,
+      productId,
+    );
+    if (open) {
+      throw new DomainError(
+        PRODUCT_HAS_OPEN_ORDERS,
+        DELETE_BLOCKED_BY_OPEN_ORDERS_MESSAGE,
+      );
+    }
+
+    const deleted = await tx
+      .delete(products)
+      .where(
+        and(eq(products.id, productId), eq(products.merchantId, merchantId)),
+      )
+      .returning({ id: products.id });
+    return deleted[0] ?? null;
+  });
 }
 
 export async function listOptionGroupsForProduct(

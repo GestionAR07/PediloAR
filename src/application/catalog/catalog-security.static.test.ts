@@ -88,8 +88,21 @@ describe("catalog management security static checks", () => {
     const repo = read(
       "src/infrastructure/db/repositories/catalog-repository.ts",
     );
-    expect(repo).not.toContain("orderItems");
     expect(repo).not.toContain("orderItemOptions");
+    expect(repo).not.toMatch(/\.insert\(orderItems\)/);
+    expect(repo).not.toMatch(/\.update\(orderItems\)/);
+    expect(repo).not.toMatch(/\.delete\(orderItems\)/);
+  });
+
+  it("blocks stock_mode change and hard delete while Orders are open", () => {
+    const repo = read(
+      "src/infrastructure/db/repositories/catalog-repository.ts",
+    );
+    expect(repo).toContain("productHasOpenNonTerminalOrders");
+    expect(repo).toContain("ORDER_NON_TERMINAL_STATUSES");
+    expect(repo).toContain('.for("update")');
+    expect(repo).toContain("PRODUCT_HAS_OPEN_ORDERS");
+    expect(repo).toContain("eq(orders.merchantId, merchantId)");
   });
 
   it("catalog RLS stays enabled without permissive policies", () => {
@@ -114,6 +127,16 @@ describe("catalog management security static checks", () => {
     );
     expect(toggle).toContain("getProductAvailabilityToggleLabel");
     expect(toggle).not.toContain("Marcar sin stock");
+  });
+
+  it("product hard-delete stays merchant-scoped and is not a public Server Action", () => {
+    const wiring = read("src/application/catalog/wiring.ts");
+    expect(wiring).toContain("deleteProductApp");
+    expect(wiring).toContain("requireMerchantRole");
+    expect(wiring).not.toContain('"use server"');
+    const actions = read("src/app/merchant/[merchantId]/catalog/actions.ts");
+    expect(actions).not.toContain("deleteProductAction");
+    expect(actions).not.toContain("deleteProductApp");
   });
 
   it("domain exposes operational availability helper", () => {

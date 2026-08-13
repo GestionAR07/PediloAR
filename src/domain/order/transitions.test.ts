@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   assertFulfillmentAllowedForMvp,
   canTransitionOrderStatus,
+  isOrderNonTerminalStatus,
   isOrderTerminalStatus,
   transitionOrderStatus,
 } from "./transitions";
@@ -60,6 +61,9 @@ describe("order state machine", () => {
     expect(isOrderTerminalStatus("COMPLETED")).toBe(true);
     expect(isOrderTerminalStatus("CANCELED")).toBe(true);
     expect(isOrderTerminalStatus("READY")).toBe(false);
+    expect(isOrderNonTerminalStatus("PENDING")).toBe(true);
+    expect(isOrderNonTerminalStatus("READY")).toBe(true);
+    expect(isOrderNonTerminalStatus("COMPLETED")).toBe(false);
   });
 
   it("rejects no-op transitions", () => {
