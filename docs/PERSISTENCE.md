@@ -34,6 +34,14 @@ DATABASE_URL=postgresql://...
 
 Validación mínima: `getDatabaseConfig()` / `hasDatabaseConfig()` en `src/infrastructure/db/env.ts`.
 
+El harness manual `scripts/validate-real-order-lifecycle.ts` exige además:
+
+```text
+MARKETPLACE_DEV_PROJECT_REF=
+```
+
+Ese valor es el project ref exacto del proyecto Supabase DEV (`https://<ref>.supabase.co`). Vive solo en `.env.local` (ignorado por git). Sin ese match exacto el harness aborta antes de cualquier write. No forma parte de `npm test` / `npm run build`.
+
 ## IDs
 
 UUID generados en PostgreSQL (`gen_random_uuid()` vía `defaultRandom()` de Drizzle).
