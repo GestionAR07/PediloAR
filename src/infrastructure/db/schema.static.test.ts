@@ -37,6 +37,9 @@ describe("persistence schema (static)", () => {
     expect(names).toContain("payment_method_code");
     expect(names).toContain("delivery_street");
     expect(names).toContain("delivery_city_name_snapshot");
+    expect(names).toContain("customer_name_snapshot");
+    expect(names).toContain("customer_phone_snapshot");
+    expect(names).toContain("merchant_name_snapshot");
   });
 
   it("deliveries reference order_id uniquely", () => {
@@ -113,6 +116,30 @@ describe("persistence schema (static)", () => {
     expect(sql).toMatch(
       /order_items_product_id_products_id_fk[\s\S]*ON DELETE set null/i,
     );
+  });
+
+  it("order contact and merchant snapshots are required text columns", () => {
+    const names = columnNames(orders);
+    expect(names).toContain("customer_name_snapshot");
+    expect(names).toContain("customer_phone_snapshot");
+    expect(names).toContain("merchant_name_snapshot");
+
+    const migration = fs.readFileSync(
+      path.resolve(process.cwd(), "drizzle", "0004_brown_forgotten_one.sql"),
+      "utf8",
+    );
+    expect(migration).toContain(
+      'ADD COLUMN "customer_name_snapshot" text NOT NULL',
+    );
+    expect(migration).toContain(
+      'ADD COLUMN "customer_phone_snapshot" text NOT NULL',
+    );
+    expect(migration).toContain(
+      'ADD COLUMN "merchant_name_snapshot" text NOT NULL',
+    );
+    expect(migration).toContain("orders_customer_name_snapshot_not_blank");
+    expect(migration).toContain("orders_customer_phone_snapshot_not_blank");
+    expect(migration).toContain("orders_merchant_name_snapshot_not_blank");
   });
 
   it("money columns use bigint (not float) in schema and migration", () => {

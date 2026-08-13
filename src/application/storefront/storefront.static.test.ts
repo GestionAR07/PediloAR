@@ -37,10 +37,14 @@ describe("public storefront static checks", () => {
       .readdirSync(drizzleDir)
       .filter((file) => file.endsWith(".sql"));
     for (const file of sqlFiles) {
-      if (file.startsWith("0004") || file.includes("storefront")) {
-        throw new Error(`Unexpected storefront migration: ${file}`);
-      }
+      expect(file.toLowerCase()).not.toContain("storefront");
     }
+    const orderSnapshots = fs.readFileSync(
+      path.join(drizzleDir, "0004_brown_forgotten_one.sql"),
+      "utf8",
+    );
+    expect(orderSnapshots).toContain("customer_name_snapshot");
+    expect(orderSnapshots).not.toContain("storefront");
     expect(sqlFiles.length).toBeGreaterThan(0);
   });
 });

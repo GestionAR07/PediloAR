@@ -45,6 +45,12 @@ export const orders = pgTable(
      * No FK until Auth strategy is approved — opaque UUID only.
      */
     customerUserId: uuid("customer_user_id"),
+    /** Frozen buyer name at checkout. Required for guest and authenticated orders. */
+    customerNameSnapshot: text("customer_name_snapshot").notNull(),
+    /** Frozen buyer phone at checkout. Stored as presented text, not a number. */
+    customerPhoneSnapshot: text("customer_phone_snapshot").notNull(),
+    /** Frozen merchant name so later renames do not rewrite order history. */
+    merchantNameSnapshot: text("merchant_name_snapshot").notNull(),
     status: text("status").notNull().default("PENDING"),
     fulfillmentMethod: text("fulfillment_method").notNull(),
     idempotencyKey: text("idempotency_key").notNull(),
@@ -122,6 +128,18 @@ export const orders = pgTable(
     check(
       "orders_idempotency_key_shape",
       sql`char_length(${table.idempotencyKey}) >= 8 AND char_length(${table.idempotencyKey}) <= 128 AND ${table.idempotencyKey} ~ '^[A-Za-z0-9._~-]+$'`,
+    ),
+    check(
+      "orders_customer_name_snapshot_not_blank",
+      sql`length(btrim(${table.customerNameSnapshot})) > 0`,
+    ),
+    check(
+      "orders_customer_phone_snapshot_not_blank",
+      sql`length(btrim(${table.customerPhoneSnapshot})) > 0`,
+    ),
+    check(
+      "orders_merchant_name_snapshot_not_blank",
+      sql`length(btrim(${table.merchantNameSnapshot})) > 0`,
     ),
   ],
 );

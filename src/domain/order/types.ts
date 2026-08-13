@@ -50,6 +50,9 @@ export type Order = {
   id: OrderId;
   merchantId: MerchantId;
   customerUserId: UserId | null;
+  customerNameSnapshot: string;
+  customerPhoneSnapshot: string;
+  merchantNameSnapshot: string;
   status: OrderStatus;
   fulfillmentMethod: FulfillmentMethod;
   paymentMethodSnapshot: PaymentMethodSnapshot;
