@@ -105,11 +105,6 @@ export function ProductOptionsSheet({ product, open, onClose }: Props) {
             </section>
           ))}
         </div>
-
-        <p className="mt-5 text-xs text-muted">
-          El carrito llega en la próxima fase. Por ahora podés ver opciones y
-          precios.
-        </p>
       </div>
     </div>
   );
