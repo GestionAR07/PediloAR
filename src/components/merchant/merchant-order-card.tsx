@@ -27,23 +27,15 @@ export function MerchantOrderCard({ merchantId, order, now, timeZone }: Props) {
         </h3>
         <p className="text-sm text-muted">{ageText}</p>
       </header>
-      <dl className="grid gap-1 text-sm">
-        <div className="flex flex-wrap gap-x-2">
-          <dt className="text-muted">Cliente</dt>
-          <dd>{order.customer.name}</dd>
-        </div>
-        <div className="flex flex-wrap gap-x-2">
-          <dt className="text-muted">Total</dt>
-          <dd className="font-medium">{total}</dd>
-        </div>
-        <div className="flex flex-wrap gap-x-2">
-          <dt className="text-muted">Modalidad</dt>
-          <dd>{order.fulfillmentLabel}</dd>
-        </div>
-        <div className="flex flex-wrap gap-x-2">
-          <dt className="text-muted">Estado</dt>
-          <dd>{order.statusLabel}</dd>
-        </div>
+      <dl className="grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-4 gap-y-1 text-sm">
+        <dt className="text-muted">Cliente</dt>
+        <dd className="min-w-0 break-words">{order.customer.name}</dd>
+        <dt className="text-muted">Total</dt>
+        <dd className="min-w-0 break-words font-medium">{total}</dd>
+        <dt className="text-muted">Modalidad</dt>
+        <dd className="min-w-0 break-words">{order.fulfillmentLabel}</dd>
+        <dt className="text-muted">Estado</dt>
+        <dd className="min-w-0 break-words">{order.statusLabel}</dd>
       </dl>
       <p>
         <Link

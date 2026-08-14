@@ -72,6 +72,10 @@ describe("merchant order inbox static checks", () => {
     expect(inbox).toContain("No hay pedidos nuevos.");
     expect(inbox).toContain("No tenés pedidos en curso.");
     expect(card).toContain("<article");
+    expect(card).toContain("<dl");
+    expect(card).toContain("grid-cols-[auto_minmax(0,1fr)]");
+    expect(card).toContain("gap-x-4");
+    expect(card).not.toContain("flex flex-wrap gap-x-2");
     expect(card).toContain("<Link");
     expect(card).toContain("Ver pedido");
     expect(card).toContain("focus-visible:outline");
