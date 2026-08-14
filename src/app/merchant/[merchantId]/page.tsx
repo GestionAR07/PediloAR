@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { logoutAction } from "@/app/login/actions";
+import { listMerchantInboxApp } from "@/application/merchant/order-inbox-wiring";
+import { MerchantOrderInbox } from "@/components/merchant/merchant-order-inbox";
 import { isAuthzError } from "@/server/auth/errors";
 import { requireMerchantMembership } from "@/server/auth/authorization";
 import { findMerchantDetailForMember } from "@/infrastructure/db/repositories/merchant-repository";
@@ -65,6 +67,59 @@ export default async function MerchantDetailPage({ params }: PageProps) {
     resumesAtLabel,
   });
 
+  let inbox = null;
+  let inboxError: string | null = null;
+  try {
+    const listed = await listMerchantInboxApp(
+      merchantId,
+      merchant.cityTimezone,
+    );
+    if (listed.ok) {
+      inbox = listed.value;
+    } else {
+      inboxError = listed.error.message;
+    }
+  } catch (error) {
+    if (isAuthzError(error)) {
+      redirect("/login?next=/merchant&error=forbidden");
+    }
+    inboxError = "No pudimos cargar los pedidos.";
+  }
+
+  const hasPending = (inbox?.attention.length ?? 0) > 0;
+  const settingsNav = (
+    <nav className="flex flex-col gap-2 text-sm sm:flex-row">
+      <Link
+        href={`/merchant/${merchantId}/catalog`}
+        className="inline-flex rounded-md border border-border px-4 py-3 font-medium text-accent underline-offset-4 hover:underline"
+      >
+        Gestionar catálogo →
+      </Link>
+      <Link
+        href={`/merchant/${merchantId}/payment-methods`}
+        className="inline-flex rounded-md border border-border px-4 py-3 font-medium text-accent underline-offset-4 hover:underline"
+      >
+        Medios de pago →
+      </Link>
+      <Link
+        href={`/merchant/${merchantId}/delivery`}
+        className="inline-flex rounded-md border border-border px-4 py-3 font-medium text-accent underline-offset-4 hover:underline"
+      >
+        Envíos y zonas →
+      </Link>
+    </nav>
+  );
+  const inboxBlock = inboxError ? (
+    <p className="text-sm text-muted">{inboxError}</p>
+  ) : inbox ? (
+    <MerchantOrderInbox
+      merchantId={merchantId}
+      inbox={inbox}
+      now={now}
+      timeZone={merchant.cityTimezone}
+    />
+  ) : null;
+
   return (
     <main className="flex flex-1 flex-col gap-6 border-t border-border pt-10">
       <header className="space-y-2">
@@ -91,26 +146,17 @@ export default async function MerchantDetailPage({ params }: PageProps) {
         resumeAction={resumeMerchantOrdersAction}
       />
 
-      <nav className="flex flex-col gap-2 text-sm sm:flex-row">
-        <Link
-          href={`/merchant/${merchantId}/catalog`}
-          className="inline-flex rounded-md border border-border px-4 py-3 font-medium text-accent underline-offset-4 hover:underline"
-        >
-          Gestionar catálogo →
-        </Link>
-        <Link
-          href={`/merchant/${merchantId}/payment-methods`}
-          className="inline-flex rounded-md border border-border px-4 py-3 font-medium text-accent underline-offset-4 hover:underline"
-        >
-          Medios de pago →
-        </Link>
-        <Link
-          href={`/merchant/${merchantId}/delivery`}
-          className="inline-flex rounded-md border border-border px-4 py-3 font-medium text-accent underline-offset-4 hover:underline"
-        >
-          Envíos y zonas →
-        </Link>
-      </nav>
+      {hasPending ? (
+        <>
+          {inboxBlock}
+          {settingsNav}
+        </>
+      ) : (
+        <>
+          {settingsNav}
+          {inboxBlock}
+        </>
+      )}
 
       <dl className="space-y-2 text-sm">
         <div>

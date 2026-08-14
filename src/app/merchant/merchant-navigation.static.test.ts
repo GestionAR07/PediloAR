@@ -55,6 +55,14 @@ describe("merchant back navigation", () => {
     );
   });
 
+  it("order detail returns to the merchant dashboard", () => {
+    const page = read(
+      "src/app/merchant/[merchantId]/orders/[orderId]/page.tsx",
+    );
+    expect(page).toContain("← Mi comercio");
+    expect(page).toContain("href={`/merchant/${merchantId}`}");
+  });
+
   it("merchant index still auto-resolves a single membership", () => {
     const page = read("src/app/merchant/page.tsx");
     expect(page).toContain("memberships.length === 1");
