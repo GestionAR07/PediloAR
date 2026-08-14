@@ -2,14 +2,21 @@ import { moneyCents } from "@/domain/money/money-cents";
 import { formatMoneyCentsArs } from "@/lib/format-money";
 import { formatMerchantOrderWhen } from "@/lib/format-local-time";
 import type { MerchantOrderView } from "@/application/merchant/order-inbox";
+import { MerchantPendingOrderActions } from "./merchant-pending-order-actions";
 
 type Props = {
+  merchantId: string;
   order: MerchantOrderView;
   now: Date;
   timeZone: string;
 };
 
-export function MerchantOrderDetail({ order, now, timeZone }: Props) {
+export function MerchantOrderDetail({
+  merchantId,
+  order,
+  now,
+  timeZone,
+}: Props) {
   const when = formatMerchantOrderWhen(order.createdAt, now, timeZone);
   const total = formatMoneyCentsArs(moneyCents(order.money.totalCents));
   const subtotal = formatMoneyCentsArs(
@@ -32,6 +39,12 @@ export function MerchantOrderDetail({ order, now, timeZone }: Props) {
         <p className="text-sm text-muted">
           {ageText} · {order.statusLabel}
         </p>
+        {order.status === "PENDING" ? (
+          <MerchantPendingOrderActions
+            merchantId={merchantId}
+            orderId={order.orderId}
+          />
+        ) : null}
       </header>
 
       <section className="space-y-2">

@@ -759,8 +759,32 @@ class MemoryCheckout {
       };
     }
     const [key, stored] = entry;
+    if (
+      command.expectedMerchantId &&
+      stored.aggregate.merchantId !== command.expectedMerchantId
+    ) {
+      return {
+        status: "rejected",
+        error: checkoutError(
+          CHECKOUT_ERROR_CODES.ORDER_NOT_FOUND,
+          "El pedido no existe.",
+        ),
+      };
+    }
     if (stored.aggregate.status === "CANCELED") {
       return { status: "already_canceled", orderId: stored.aggregate.orderId };
+    }
+    if (
+      command.expectedCurrentStatus &&
+      stored.aggregate.status !== command.expectedCurrentStatus
+    ) {
+      return {
+        status: "rejected",
+        error: checkoutError(
+          CHECKOUT_ERROR_CODES.ORDER_NOT_CANCELABLE,
+          "El pedido ya no se puede rechazar.",
+        ),
+      };
     }
 
     if (stored.delivery?.status === "DELIVERED") {
@@ -1685,6 +1709,64 @@ describe("cancelOrder exactly once", () => {
     expect(
       world.onlyOrder().events.filter((event) => event.toStatus === "CANCELED"),
     ).toHaveLength(1);
+  });
+});
+
+describe("cancelOrder merchant scope guards", () => {
+  it("does not cancel or restock when expectedMerchantId does not match", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(
+      pickupInput({ lines: [{ productId: PROD_TRACKED_ID, quantity: 2 }] }),
+      world.deps(),
+    );
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    const canceled = await cancelOrder(
+      {
+        orderId: placed.value.orderId,
+        ...merchantCancel,
+        expectedMerchantId: "22222222-2222-4222-8222-222222222222",
+      },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(false);
+    if (!canceled.ok) {
+      expect(canceled.error.code).toBe(CHECKOUT_ERROR_CODES.ORDER_NOT_FOUND);
+      expect(canceled.error.message).toBe("El pedido no existe.");
+    }
+    expect(world.onlyOrder().aggregate.status).toBe("PENDING");
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(3);
+    expect(
+      world.onlyOrder().events.filter((event) => event.toStatus === "CANCELED"),
+    ).toHaveLength(0);
+  });
+
+  it("does not cancel when expectedCurrentStatus does not match the locked row", async () => {
+    const world = new MemoryCheckout();
+    const placed = await placeOrder(
+      pickupInput({ lines: [{ productId: PROD_TRACKED_ID, quantity: 2 }] }),
+      world.deps(),
+    );
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    world.onlyOrder().aggregate.status = "ACCEPTED";
+    const canceled = await cancelOrder(
+      {
+        orderId: placed.value.orderId,
+        ...merchantCancel,
+        expectedMerchantId: MERCHANT_ID,
+        expectedCurrentStatus: "PENDING",
+      },
+      world.cancelDeps(),
+    );
+    expect(canceled.ok).toBe(false);
+    if (!canceled.ok) {
+      expect(canceled.error.code).toBe(
+        CHECKOUT_ERROR_CODES.ORDER_NOT_CANCELABLE,
+      );
+    }
+    expect(world.onlyOrder().aggregate.status).toBe("ACCEPTED");
+    expect(world.productStock(PROD_TRACKED_ID)).toBe(3);
   });
 });
 

@@ -502,6 +502,14 @@ export async function cancelOrderInTransaction(
 
   try {
     return await db.transaction(async (tx) => {
+      const scoped =
+        command.expectedMerchantId != null
+          ? and(
+              eq(orders.id, command.orderId),
+              eq(orders.merchantId, command.expectedMerchantId),
+            )
+          : eq(orders.id, command.orderId);
+
       const orderRows = await tx
         .select({
           id: orders.id,
@@ -509,7 +517,7 @@ export async function cancelOrderInTransaction(
           fulfillmentMethod: orders.fulfillmentMethod,
         })
         .from(orders)
-        .where(eq(orders.id, command.orderId))
+        .where(scoped)
         .for("update")
         .limit(1);
 
@@ -523,6 +531,16 @@ export async function cancelOrderInTransaction(
           status: "already_canceled" as const,
           orderId: order.id,
         };
+      }
+
+      if (
+        command.expectedCurrentStatus != null &&
+        order.status !== command.expectedCurrentStatus
+      ) {
+        reject(
+          CHECKOUT_ERROR_CODES.ORDER_NOT_CANCELABLE,
+          "El pedido ya no se puede rechazar.",
+        );
       }
 
       const itemRows = await tx

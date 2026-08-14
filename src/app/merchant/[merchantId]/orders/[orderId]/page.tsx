@@ -67,6 +67,7 @@ export default async function MerchantOrderDetailPage({ params }: PageProps) {
       </p>
       {order ? (
         <MerchantOrderDetail
+          merchantId={merchantId}
           order={order}
           now={now}
           timeZone={merchant.cityTimezone}

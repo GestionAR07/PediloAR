@@ -3,6 +3,7 @@ import { moneyCents } from "@/domain/money/money-cents";
 import { formatMoneyCentsArs } from "@/lib/format-money";
 import { formatMerchantOrderWhen } from "@/lib/format-local-time";
 import type { MerchantOrderView } from "@/application/merchant/order-inbox";
+import { MerchantPendingOrderActions } from "./merchant-pending-order-actions";
 
 type Props = {
   merchantId: string;
@@ -45,6 +46,12 @@ export function MerchantOrderCard({ merchantId, order, now, timeZone }: Props) {
           Ver pedido
         </Link>
       </p>
+      {order.status === "PENDING" ? (
+        <MerchantPendingOrderActions
+          merchantId={merchantId}
+          orderId={order.orderId}
+        />
+      ) : null}
     </article>
   );
 }

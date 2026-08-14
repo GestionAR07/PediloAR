@@ -235,6 +235,10 @@ export type CancelOrderInput = {
     id?: string | null;
   };
   reason: string;
+  /** When set, the locked row must belong to this merchant or it is not found. */
+  expectedMerchantId?: string;
+  /** When set, the locked row must currently be this status or cancel is denied. */
+  expectedCurrentStatus?: string;
 };
 
 export type CanceledOrderResult = {
@@ -251,6 +255,8 @@ export type CancelOrderCommand = {
   actorId: string | null;
   reason: CancelReason;
   now: Date;
+  expectedMerchantId?: string;
+  expectedCurrentStatus?: string;
 };
 
 export type CancelOrderPersistResult =

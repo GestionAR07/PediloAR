@@ -60,12 +60,21 @@ export async function cancelOrder(
 
   const actorId = input.actor?.id?.trim() ? input.actor.id.trim() : null;
 
+  if (
+    input.expectedMerchantId != null &&
+    !isValidUuid(input.expectedMerchantId)
+  ) {
+    return fail(CHECKOUT_ERROR_CODES.ORDER_NOT_FOUND, "El pedido no existe.");
+  }
+
   const persisted = await deps.cancelOrderInTransaction({
     orderId: input.orderId,
     actorType: actorType as OrderActorType,
     actorId,
     reason: reasonResult.value,
     now: deps.now(),
+    expectedMerchantId: input.expectedMerchantId,
+    expectedCurrentStatus: input.expectedCurrentStatus,
   });
 
   if (persisted.status === "canceled") {
