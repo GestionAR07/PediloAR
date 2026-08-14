@@ -1,19 +1,27 @@
 import { describe, expect, it, vi } from "vitest";
 import { AuthzError } from "@/server/auth/errors";
 import { CHECKOUT_ERROR_CODES } from "@/application/checkout/errors";
+import { cancelOrder } from "@/application/checkout/cancel-order";
 import type {
   CancelOrderCommand,
   CancelOrderPersistResult,
 } from "@/application/checkout/types";
 import { canCancelOrder } from "@/domain/order/cancellation";
+import { canCompleteOrder } from "@/domain/order/completion";
 import type { DeliveryStatus } from "@/domain/delivery/enums";
-import type { OrderStatus } from "@/domain/order/enums";
+import type { FulfillmentMethod, OrderStatus } from "@/domain/order/enums";
+import { assertOrderDeliveryCompatibility } from "@/domain/order/fulfillment-compat";
 import { transitionOrderStatus } from "@/domain/order/transitions";
 import {
   acceptMerchantOrder,
+  completeMerchantPickupOrder,
   isMerchantRejectReason,
+  markMerchantOrderReady,
   MERCHANT_REJECT_REASONS,
   rejectMerchantOrder,
+  startPreparingMerchantOrder,
+  type CompleteMerchantPickupCommand,
+  type CompleteMerchantPickupPersistResult,
   type MerchantOrderActionDeps,
 } from "./order-actions";
 import {
@@ -43,6 +51,7 @@ type StoredOrder = {
   merchantId: string;
   id: string;
   status: string;
+  fulfillmentMethod: string;
   stockQuantity: number;
   deliveryStatus: string | null;
   events: StoredEvent[];
@@ -72,6 +81,7 @@ function seed(
     merchantId: MERCHANT_A,
     id: ORDER_A,
     status,
+    fulfillmentMethod: "PICKUP",
     stockQuantity: 2,
     deliveryStatus: "PENDING",
     events: [],
@@ -86,8 +96,14 @@ function memoryOps(
   access: MerchantOrderActionDeps["requireMerchantOrderAccess"] = vi.fn(
     async () => undefined,
   ),
-): { orders: StoredOrder[]; deps: MerchantOrderActionDeps } {
+  options: { failOn?: "complete-update" | "complete-event" } = {},
+): {
+  orders: StoredOrder[];
+  deps: MerchantOrderActionDeps;
+  writes: { stock: number; delivery: number };
+} {
   const lock = new SerialLock();
+  const writes = { stock: 0, delivery: 0 };
 
   async function transitionMerchantOrderInTransaction(
     command: TransitionMerchantOrderCommand,
@@ -209,8 +225,10 @@ function memoryOps(
       stored.canceledBy = command.actorType;
       stored.cancelReason = command.reason;
       stored.stockQuantity += 1;
+      writes.stock += 1;
       if (stored.deliveryStatus && stored.deliveryStatus !== "DELIVERED") {
         stored.deliveryStatus = "CANCELED";
+        writes.delivery += 1;
       }
       stored.events.push({
         fromStatus: previous,
@@ -232,13 +250,162 @@ function memoryOps(
     });
   }
 
+  async function completeMerchantPickupOrderInTransaction(
+    command: CompleteMerchantPickupCommand,
+  ): Promise<CompleteMerchantPickupPersistResult> {
+    return lock.run(async () => {
+      const stored = orders.find(
+        (row) =>
+          row.id === command.orderId && row.merchantId === command.merchantId,
+      );
+      if (!stored) {
+        return {
+          status: "rejected",
+          error: {
+            code: "ORDER_NOT_FOUND",
+            message: "El pedido no existe.",
+          },
+        };
+      }
+
+      const snapshot = {
+        status: stored.status,
+        stockQuantity: stored.stockQuantity,
+        deliveryStatus: stored.deliveryStatus,
+        events: [...stored.events],
+      };
+
+      try {
+        if (stored.status === "COMPLETED") {
+          return {
+            status: "rejected",
+            error: {
+              code: "ORDER_TRANSITION_NOOP",
+              message: "El pedido ya fue procesado.",
+            },
+          };
+        }
+        if (stored.status === "CANCELED") {
+          return {
+            status: "rejected",
+            error: {
+              code: "ORDER_TRANSITION_TERMINAL",
+              message: "El pedido ya no se puede actualizar.",
+            },
+          };
+        }
+        if (stored.fulfillmentMethod !== "PICKUP") {
+          return {
+            status: "rejected",
+            error: {
+              code: "ORDER_COMPLETE_WRONG_FULFILLMENT",
+              message: "Este pedido no se puede completar como retiro.",
+            },
+          };
+        }
+
+        const delivery = stored.deliveryStatus
+          ? {
+              provider: "MERCHANT" as const,
+              status: stored.deliveryStatus as DeliveryStatus,
+            }
+          : null;
+        const compat = assertOrderDeliveryCompatibility(
+          { fulfillmentMethod: "PICKUP" },
+          delivery,
+        );
+        if (!compat.ok) {
+          return {
+            status: "rejected",
+            error: {
+              code: compat.error.code,
+              message: "No se puede completar el retiro.",
+            },
+          };
+        }
+
+        const complete = canCompleteOrder({
+          orderStatus: stored.status as OrderStatus,
+          fulfillmentMethod: stored.fulfillmentMethod as FulfillmentMethod,
+          delivery,
+        });
+        if (!complete.ok) {
+          return {
+            status: "rejected",
+            error: {
+              code: complete.error.code,
+              message:
+                complete.error.code === "ORDER_COMPLETE_NOT_READY"
+                  ? "El pedido ya no se puede completar."
+                  : "No se puede completar el pedido.",
+            },
+          };
+        }
+
+        const next = transitionOrderStatus(
+          stored.status as OrderStatus,
+          "COMPLETED",
+        );
+        if (!next.ok) {
+          return {
+            status: "rejected",
+            error: {
+              code: next.error.code,
+              message: "No se puede completar el pedido.",
+            },
+          };
+        }
+
+        if (options.failOn === "complete-update") {
+          throw new Error("simulated order update failure");
+        }
+        const previous = stored.status as OrderStatus;
+        stored.status = "COMPLETED";
+
+        if (options.failOn === "complete-event") {
+          throw new Error("simulated order_events insert failure");
+        }
+        stored.events.push({
+          fromStatus: previous,
+          toStatus: "COMPLETED",
+          actorType: "MERCHANT_USER",
+          actorId: command.actorUserId,
+          reason: null,
+        });
+
+        return {
+          status: "completed",
+          result: {
+            orderId: stored.id,
+            previousStatus: previous,
+            status: "COMPLETED",
+          },
+        };
+      } catch {
+        stored.status = snapshot.status;
+        stored.stockQuantity = snapshot.stockQuantity;
+        stored.deliveryStatus = snapshot.deliveryStatus;
+        stored.events.splice(0, stored.events.length, ...snapshot.events);
+        return {
+          status: "rejected",
+          error: {
+            code: "ORDER_PERSISTENCE_FAILED",
+            message: "No se pudo actualizar el pedido.",
+          },
+        };
+      }
+    });
+  }
+
   return {
     orders,
+    writes,
     deps: {
       now: () => NOW,
       requireMerchantOrderAccess: access,
       transitionMerchantOrderInTransaction,
       cancelOrderInTransaction,
+      completeMerchantPickupOrderInTransaction,
     },
   };
 }
@@ -538,6 +705,400 @@ describe("accept vs reject interleaved", () => {
       expect(orders[0]?.status).toBe("CANCELED");
       expect(orders[0]?.stockQuantity).toBe(3);
       expect(accept.ok).toBe(false);
+    }
+  });
+});
+
+const pickupReady = () =>
+  seed("READY", { fulfillmentMethod: "PICKUP", deliveryStatus: null });
+
+describe("startPreparingMerchantOrder", () => {
+  it("allows OWNER and STAFF to move ACCEPTED to PREPARING", async () => {
+    const owner = memoryOps([seed("ACCEPTED", { deliveryStatus: null })]);
+    const staff = memoryOps([seed("ACCEPTED", { deliveryStatus: null })]);
+    const asOwner = await startPreparingMerchantOrder(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      owner.deps,
+    );
+    const asStaff = await startPreparingMerchantOrder(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: STAFF_ID },
+      staff.deps,
+    );
+    expect(asOwner.ok).toBe(true);
+    expect(asStaff.ok).toBe(true);
+    if (!asOwner.ok) return;
+    expect(asOwner.value).toEqual({
+      orderId: ORDER_A,
+      previousStatus: "ACCEPTED",
+      status: "PREPARING",
+    });
+    expect(owner.orders[0]?.events).toHaveLength(1);
+    expect(owner.orders[0]?.events[0]).toMatchObject({
+      fromStatus: "ACCEPTED",
+      toStatus: "PREPARING",
+      actorType: "MERCHANT_USER",
+      actorId: OWNER_ID,
+      reason: null,
+    });
+    expect(owner.orders[0]?.stockQuantity).toBe(2);
+    expect(owner.writes.stock).toBe(0);
+    expect(owner.writes.delivery).toBe(0);
+    expect(owner.orders[0]?.deliveryStatus).toBeNull();
+  });
+
+  it("denies ADMIN without membership and merchant B", async () => {
+    const admin = memoryOps(
+      [seed("ACCEPTED")],
+      vi.fn(async () => {
+        throw new AuthzError("NOT_MERCHANT_MEMBER", "no");
+      }),
+    );
+    await expect(
+      startPreparingMerchantOrder(
+        { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+        admin.deps,
+      ),
+    ).rejects.toMatchObject({ code: "NOT_MERCHANT_MEMBER" });
+    expect(admin.orders[0]?.status).toBe("ACCEPTED");
+    expect(admin.orders[0]?.events).toHaveLength(0);
+
+    const { orders, deps } = memoryOps([seed("ACCEPTED")]);
+    const foreign = await startPreparingMerchantOrder(
+      { merchantId: MERCHANT_B, orderId: ORDER_A, actorUserId: OWNER_ID },
+      deps,
+    );
+    expect(foreign.ok).toBe(false);
+    if (!foreign.ok) {
+      expect(foreign.error.code).toBe("ORDER_NOT_FOUND");
+    }
+    expect(orders[0]?.status).toBe("ACCEPTED");
+    expect(orders[0]?.events).toHaveLength(0);
+  });
+
+  it("writes exactly one event and no-ops a double start", async () => {
+    const { orders, deps, writes } = memoryOps([
+      seed("ACCEPTED", { deliveryStatus: null }),
+    ]);
+    const [first, second] = await Promise.all([
+      startPreparingMerchantOrder(
+        { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+        deps,
+      ),
+      startPreparingMerchantOrder(
+        { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+        deps,
+      ),
+    ]);
+    expect(Number(first.ok) + Number(second.ok)).toBe(1);
+    expect(orders[0]?.status).toBe("PREPARING");
+    expect(orders[0]?.events).toHaveLength(1);
+    expect(writes.stock).toBe(0);
+    expect(writes.delivery).toBe(0);
+  });
+
+  it("denies PENDING and terminal orders without writes", async () => {
+    const pending = memoryOps([seed("PENDING")]);
+    const canceled = memoryOps([seed("CANCELED")]);
+    const fromPending = await startPreparingMerchantOrder(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      pending.deps,
+    );
+    const fromCanceled = await startPreparingMerchantOrder(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      canceled.deps,
+    );
+    expect(fromPending.ok).toBe(false);
+    if (!fromPending.ok) {
+      expect(fromPending.error.code).toBe("ORDER_TRANSITION_INVALID");
+    }
+    expect(fromCanceled.ok).toBe(false);
+    if (!fromCanceled.ok) {
+      expect(fromCanceled.error.code).toBe("ORDER_TRANSITION_TERMINAL");
+    }
+    expect(pending.orders[0]?.events).toHaveLength(0);
+    expect(canceled.orders[0]?.events).toHaveLength(0);
+    expect(pending.writes.stock).toBe(0);
+    expect(canceled.writes.stock).toBe(0);
+  });
+});
+
+describe("markMerchantOrderReady", () => {
+  it("moves PREPARING to READY with one event and zero stock/Delivery writes", async () => {
+    const { orders, deps, writes } = memoryOps([
+      seed("PREPARING", { deliveryStatus: null }),
+    ]);
+    const result = await markMerchantOrderReady(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      deps,
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.status).toBe("READY");
+    expect(result.value.previousStatus).toBe("PREPARING");
+    expect(orders[0]?.events).toHaveLength(1);
+    expect(orders[0]?.events[0]).toMatchObject({
+      fromStatus: "PREPARING",
+      toStatus: "READY",
+      actorType: "MERCHANT_USER",
+      actorId: OWNER_ID,
+      reason: null,
+    });
+    expect(orders[0]?.stockQuantity).toBe(2);
+    expect(orders[0]?.deliveryStatus).toBeNull();
+    expect(writes.stock).toBe(0);
+    expect(writes.delivery).toBe(0);
+  });
+
+  it("does not write a second event on double ready", async () => {
+    const { orders, deps } = memoryOps([seed("PREPARING")]);
+    const [first, second] = await Promise.all([
+      markMerchantOrderReady(
+        { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+        deps,
+      ),
+      markMerchantOrderReady(
+        { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+        deps,
+      ),
+    ]);
+    expect(Number(first.ok) + Number(second.ok)).toBe(1);
+    expect(orders[0]?.status).toBe("READY");
+    expect(orders[0]?.events).toHaveLength(1);
+  });
+
+  it("denies ACCEPTED to READY and terminal orders", async () => {
+    const accepted = memoryOps([seed("ACCEPTED")]);
+    const completed = memoryOps([seed("COMPLETED")]);
+    const skipped = await markMerchantOrderReady(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      accepted.deps,
+    );
+    const terminal = await markMerchantOrderReady(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      completed.deps,
+    );
+    expect(skipped.ok).toBe(false);
+    if (!skipped.ok) {
+      expect(skipped.error.code).toBe("ORDER_TRANSITION_INVALID");
+    }
+    expect(terminal.ok).toBe(false);
+    if (!terminal.ok) {
+      expect(terminal.error.code).toBe("ORDER_TRANSITION_TERMINAL");
+    }
+    expect(accepted.orders[0]?.status).toBe("ACCEPTED");
+    expect(completed.orders[0]?.status).toBe("COMPLETED");
+    expect(accepted.orders[0]?.events).toHaveLength(0);
+    expect(completed.orders[0]?.events).toHaveLength(0);
+  });
+});
+
+describe("completeMerchantPickupOrder", () => {
+  it("completes READY PICKUP with canCompleteOrder, one event, and zero stock/Delivery writes", async () => {
+    const { orders, deps, writes } = memoryOps([pickupReady()]);
+    const result = await completeMerchantPickupOrder(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      deps,
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.status).toBe("COMPLETED");
+    expect(result.value.previousStatus).toBe("READY");
+    expect(orders[0]?.events).toHaveLength(1);
+    expect(orders[0]?.events[0]).toMatchObject({
+      fromStatus: "READY",
+      toStatus: "COMPLETED",
+      actorType: "MERCHANT_USER",
+      actorId: OWNER_ID,
+      reason: null,
+    });
+    expect(orders[0]?.stockQuantity).toBe(2);
+    expect(orders[0]?.deliveryStatus).toBeNull();
+    expect(writes.stock).toBe(0);
+    expect(writes.delivery).toBe(0);
+    expect(
+      canCompleteOrder({
+        orderStatus: "READY",
+        fulfillmentMethod: "PICKUP",
+      }).ok,
+    ).toBe(true);
+  });
+
+  it("denies READY MERCHANT_DELIVERY and PLATFORM_DELIVERY on the pickup path", async () => {
+    const merchantDelivery = memoryOps([
+      seed("READY", {
+        fulfillmentMethod: "MERCHANT_DELIVERY",
+        deliveryStatus: "PENDING",
+      }),
+    ]);
+    const platform = memoryOps([
+      seed("READY", {
+        fulfillmentMethod: "PLATFORM_DELIVERY",
+        deliveryStatus: "PENDING",
+      }),
+    ]);
+    const merchantResult = await completeMerchantPickupOrder(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      merchantDelivery.deps,
+    );
+    const platformResult = await completeMerchantPickupOrder(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      platform.deps,
+    );
+    expect(merchantResult.ok).toBe(false);
+    if (!merchantResult.ok) {
+      expect(merchantResult.error.code).toBe(
+        "ORDER_COMPLETE_WRONG_FULFILLMENT",
+      );
+      expect(merchantResult.error.message).toBe(
+        "Este pedido no se puede completar como retiro.",
+      );
+    }
+    expect(platformResult.ok).toBe(false);
+    expect(merchantDelivery.orders[0]?.status).toBe("READY");
+    expect(merchantDelivery.orders[0]?.events).toHaveLength(0);
+    expect(merchantDelivery.writes.stock).toBe(0);
+    expect(merchantDelivery.writes.delivery).toBe(0);
+  });
+
+  it("denies PREPARING PICKUP, COMPLETED, and CANCELED", async () => {
+    const preparing = memoryOps([
+      seed("PREPARING", { fulfillmentMethod: "PICKUP", deliveryStatus: null }),
+    ]);
+    const completed = memoryOps([
+      seed("COMPLETED", { fulfillmentMethod: "PICKUP", deliveryStatus: null }),
+    ]);
+    const canceled = memoryOps([
+      seed("CANCELED", { fulfillmentMethod: "PICKUP", deliveryStatus: null }),
+    ]);
+    const fromPreparing = await completeMerchantPickupOrder(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      preparing.deps,
+    );
+    const fromCompleted = await completeMerchantPickupOrder(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      completed.deps,
+    );
+    const fromCanceled = await completeMerchantPickupOrder(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      canceled.deps,
+    );
+    expect(fromPreparing.ok).toBe(false);
+    if (!fromPreparing.ok) {
+      expect(fromPreparing.error.code).toBe("ORDER_COMPLETE_NOT_READY");
+    }
+    expect(fromCompleted.ok).toBe(false);
+    if (!fromCompleted.ok) {
+      expect(fromCompleted.error.code).toBe("ORDER_TRANSITION_NOOP");
+    }
+    expect(fromCanceled.ok).toBe(false);
+    if (!fromCanceled.ok) {
+      expect(fromCanceled.error.code).toBe("ORDER_TRANSITION_TERMINAL");
+    }
+    expect(preparing.orders[0]?.events).toHaveLength(0);
+    expect(completed.orders[0]?.events).toHaveLength(0);
+    expect(canceled.orders[0]?.events).toHaveLength(0);
+    expect(preparing.writes.stock).toBe(0);
+    expect(completed.writes.stock).toBe(0);
+    expect(canceled.writes.stock).toBe(0);
+  });
+
+  it("denies merchant B and a nonexistent order", async () => {
+    const { orders, deps } = memoryOps([pickupReady()]);
+    const foreign = await completeMerchantPickupOrder(
+      { merchantId: MERCHANT_B, orderId: ORDER_A, actorUserId: OWNER_ID },
+      deps,
+    );
+    const missing = await completeMerchantPickupOrder(
+      { merchantId: MERCHANT_A, orderId: MISSING, actorUserId: OWNER_ID },
+      deps,
+    );
+    expect(foreign.ok).toBe(false);
+    if (!foreign.ok) {
+      expect(foreign.error.code).toBe("ORDER_NOT_FOUND");
+      expect(foreign.error.message).toBe("El pedido no existe.");
+    }
+    expect(missing.ok).toBe(false);
+    expect(orders[0]?.status).toBe("READY");
+    expect(orders[0]?.events).toHaveLength(0);
+  });
+
+  it("rolls back if the OrderEvent insert fails", async () => {
+    const { orders, deps, writes } = memoryOps([pickupReady()], undefined, {
+      failOn: "complete-event",
+    });
+    const result = await completeMerchantPickupOrder(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      deps,
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("ORDER_PERSISTENCE_FAILED");
+      expect(result.error.message).not.toContain("simulated");
+    }
+    expect(orders[0]?.status).toBe("READY");
+    expect(orders[0]?.events).toHaveLength(0);
+    expect(orders[0]?.stockQuantity).toBe(2);
+    expect(orders[0]?.deliveryStatus).toBeNull();
+    expect(writes.stock).toBe(0);
+    expect(writes.delivery).toBe(0);
+  });
+
+  it("does not write a second event on double complete", async () => {
+    const { orders, deps, writes } = memoryOps([pickupReady()]);
+    const [first, second] = await Promise.all([
+      completeMerchantPickupOrder(
+        { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+        deps,
+      ),
+      completeMerchantPickupOrder(
+        { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+        deps,
+      ),
+    ]);
+    expect(Number(first.ok) + Number(second.ok)).toBe(1);
+    const failed = first.ok ? second : first;
+    expect(failed.ok).toBe(false);
+    if (!failed.ok) {
+      expect(failed.error.code).toBe("ORDER_TRANSITION_NOOP");
+      expect(failed.error.message).toBe("El pedido ya fue procesado.");
+    }
+    expect(orders[0]?.status).toBe("COMPLETED");
+    expect(orders[0]?.events).toHaveLength(1);
+    expect(writes.stock).toBe(0);
+  });
+
+  it("serializes complete vs cancel on READY PICKUP", async () => {
+    const { orders, deps, writes } = memoryOps([pickupReady()]);
+    const [completed, canceled] = await Promise.all([
+      completeMerchantPickupOrder(
+        { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+        deps,
+      ),
+      cancelOrder(
+        {
+          orderId: ORDER_A,
+          actor: { type: "MERCHANT_USER", id: OWNER_ID },
+          reason: "OTHER",
+          expectedMerchantId: MERCHANT_A,
+        },
+        {
+          now: deps.now,
+          cancelOrderInTransaction: deps.cancelOrderInTransaction,
+        },
+      ),
+    ]);
+    expect(Number(completed.ok) + Number(canceled.ok)).toBe(1);
+    expect(orders[0]?.events).toHaveLength(1);
+    if (completed.ok) {
+      expect(orders[0]?.status).toBe("COMPLETED");
+      expect(orders[0]?.stockQuantity).toBe(2);
+      expect(writes.stock).toBe(0);
+      expect(canceled.ok).toBe(false);
+    } else {
+      expect(orders[0]?.status).toBe("CANCELED");
+      expect(orders[0]?.stockQuantity).toBe(3);
+      expect(writes.stock).toBe(1);
+      expect(completed.ok).toBe(false);
     }
   });
 });

@@ -46,6 +46,15 @@ describe("merchant accept/reject static checks", () => {
     expect(actions).toContain(
       "export async function rejectMerchantOrderAction",
     );
+    expect(actions).toContain(
+      "export async function startPreparingMerchantOrderAction",
+    );
+    expect(actions).toContain(
+      "export async function markMerchantOrderReadyAction",
+    );
+    expect(actions).toContain(
+      "export async function completeMerchantPickupOrderAction",
+    );
     expect(actions).toContain('revalidatePath("/merchant")');
     expect(actions).toContain("revalidatePath(`/merchant/${merchantId}`)");
     expect(actions).toContain(
@@ -53,6 +62,10 @@ describe("merchant accept/reject static checks", () => {
     );
     expect(actions).not.toMatch(/export const /);
     expect(actions).not.toContain("alert(");
+    expect(actions).not.toContain("fromStatus");
+    expect(actions).not.toContain("targetStatus");
+    expect(actions).not.toContain("actorUserId");
+    expect(actions).not.toContain("fulfillmentMethod");
   });
 
   it("shows PENDING-only accept/reject and no later lifecycle CTAs", () => {
@@ -61,10 +74,10 @@ describe("merchant accept/reject static checks", () => {
     const actions = read(
       "src/components/merchant/merchant-pending-order-actions.tsx",
     );
-    expect(card).toContain('order.status === "PENDING"');
-    expect(detail).toContain('order.status === "PENDING"');
-    expect(card).toContain("MerchantPendingOrderActions");
-    expect(detail).toContain("MerchantPendingOrderActions");
+    expect(card).toContain("MerchantOrderLifecycleActions");
+    expect(detail).toContain("MerchantOrderLifecycleActions");
+    expect(card).not.toContain("MerchantPendingOrderActions");
+    expect(detail).not.toContain("MerchantPendingOrderActions");
     expect(actions).toContain("Aceptar");
     expect(actions).toContain("Rechazar");
     expect(actions).toContain("Aceptando...");
@@ -79,5 +92,69 @@ describe("merchant accept/reject static checks", () => {
     expect(actions).not.toContain("Completar");
     expect(actions).not.toContain("En camino");
     expect(actions).not.toContain("alert(");
+  });
+
+  it("prepares and marks ready via the operational core", () => {
+    const useCase = read("src/application/merchant/order-actions.ts");
+    const wiring = read("src/application/merchant/order-actions-wiring.ts");
+    expect(useCase).toContain("startPreparingMerchantOrder");
+    expect(useCase).toContain('targetStatus: "PREPARING"');
+    expect(useCase).toContain("markMerchantOrderReady");
+    expect(useCase).toContain('targetStatus: "READY"');
+    expect(useCase).toContain("transitionMerchantOperationalOrder");
+    expect(wiring).toContain("startPreparingMerchantOrderApp");
+    expect(wiring).toContain("markMerchantOrderReadyApp");
+    expect(wiring).toContain("requireMerchantRole");
+  });
+
+  it("completes PICKUP via a specialized transaction, not the operational core", () => {
+    const useCase = read("src/application/merchant/order-actions.ts");
+    const repo = read(
+      "src/infrastructure/db/repositories/merchant-order-completion-repository.ts",
+    );
+    expect(useCase).toContain("completeMerchantPickupOrder");
+    expect(useCase).toContain("completeMerchantPickupOrderInTransaction");
+    expect(useCase).not.toContain('targetStatus: "COMPLETED"');
+    expect(repo).toContain("canCompleteOrder");
+    expect(repo).toContain("assertOrderDeliveryCompatibility");
+    expect(repo).toContain("transitionOrderStatus");
+    expect(repo).toContain('.for("update")');
+    expect(repo).toContain("eq(orders.merchantId, command.merchantId)");
+    expect(repo).toContain("toStatus: next.value");
+    expect(repo).toContain('actorType: "MERCHANT_USER"');
+    expect(repo).not.toContain("transitionMerchantOperationalOrder");
+    expect(repo).not.toContain("products");
+    expect(repo).not.toContain("stockQuantity");
+    expect(repo).not.toContain("tx.insert(deliveries)");
+    expect(repo).not.toContain(".update(deliveries)");
+    expect(repo).not.toContain("IN_TRANSIT");
+  });
+
+  it("shows contextual pickup CTAs and no delivery progression yet", () => {
+    const lifecycle = read(
+      "src/components/merchant/merchant-order-lifecycle-actions.tsx",
+    );
+    expect(lifecycle).toContain("MerchantPendingOrderActions");
+    expect(lifecycle).toContain('status === "PENDING"');
+    expect(lifecycle).toContain('status === "ACCEPTED"');
+    expect(lifecycle).toContain("Comenzar preparación");
+    expect(lifecycle).toContain("Comenzando...");
+    expect(lifecycle).toContain("Marcar listo");
+    expect(lifecycle).toContain("Marcar retirado");
+    expect(lifecycle).toContain('fulfillmentMethod === "PICKUP"');
+    expect(lifecycle).toContain('fulfillmentMethod === "MERCHANT_DELIVERY"');
+    expect(lifecycle).toContain("Listo para iniciar el envío.");
+    expect(lifecycle).toContain("startPreparingMerchantOrderAction");
+    expect(lifecycle).toContain("markMerchantOrderReadyAction");
+    expect(lifecycle).toContain("completeMerchantPickupOrderAction");
+    expect(lifecycle).toContain("min-h-11");
+    expect(lifecycle).toContain("focus-visible:outline");
+    expect(lifecycle).toContain("aria-busy");
+    expect(lifecycle).toContain('role="alert"');
+    expect(lifecycle).not.toContain("Marcar en camino");
+    expect(lifecycle).not.toContain("Aceptar");
+    expect(lifecycle).not.toContain("Rechazar");
+    expect(lifecycle).not.toContain("alert(");
+    expect(lifecycle).not.toContain("COLLECTED");
   });
 });

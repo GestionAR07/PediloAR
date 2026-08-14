@@ -12,6 +12,7 @@ import {
   type MerchantOrderTransitionError,
   type MerchantOrderTransitionResult,
 } from "@/application/merchant/order-transitions";
+import type { OrderStatus } from "@/domain/order/enums";
 import { err, ok, type Result } from "@/domain/shared/result";
 import { isValidUuid } from "@/lib/uuid";
 
@@ -47,11 +48,37 @@ export type RejectMerchantOrderResult = {
   restoredTrackedQuantity: number;
 };
 
+export type CompleteMerchantPickupInput = {
+  merchantId: string;
+  orderId: string;
+  actorUserId: string;
+};
+
+export type CompleteMerchantPickupCommand = {
+  merchantId: string;
+  orderId: string;
+  actorUserId: string;
+  now: Date;
+};
+
+export type CompleteMerchantPickupResult = {
+  orderId: string;
+  previousStatus: OrderStatus;
+  status: "COMPLETED";
+};
+
+export type CompleteMerchantPickupPersistResult =
+  | { status: "completed"; result: CompleteMerchantPickupResult }
+  | { status: "rejected"; error: MerchantOrderMutationError };
+
 export type MerchantOrderActionDeps = MerchantOrderTransitionDeps & {
   requireMerchantOrderAccess: (merchantId: string) => Promise<void>;
   cancelOrderInTransaction: (
     command: CancelOrderCommand,
   ) => Promise<CancelOrderPersistResult>;
+  completeMerchantPickupOrderInTransaction: (
+    command: CompleteMerchantPickupCommand,
+  ) => Promise<CompleteMerchantPickupPersistResult>;
 };
 
 function notFound(): MerchantOrderMutationError {
@@ -59,6 +86,25 @@ function notFound(): MerchantOrderMutationError {
     code: MERCHANT_ORDER_TRANSITION_ERROR_CODES.ORDER_NOT_FOUND,
     message: "El pedido no existe.",
   };
+}
+
+function invalidActor(): MerchantOrderMutationError {
+  return {
+    code: MERCHANT_ORDER_TRANSITION_ERROR_CODES.ORDER_TRANSITION_INVALID,
+    message: "No se puede actualizar el pedido.",
+  };
+}
+
+function mapAlreadyProcessed(
+  result: Result<MerchantOrderTransitionResult, MerchantOrderMutationError>,
+): Result<MerchantOrderTransitionResult, MerchantOrderMutationError> {
+  if (!result.ok && result.error.code === "ORDER_TRANSITION_NOOP") {
+    return err({
+      code: result.error.code,
+      message: "El pedido ya fue procesado.",
+    });
+  }
+  return result;
 }
 
 export function isMerchantRejectReason(
@@ -115,13 +161,7 @@ export async function acceptMerchantOrder(
     },
     deps,
   );
-  if (!result.ok && result.error.code === "ORDER_TRANSITION_NOOP") {
-    return err({
-      code: result.error.code,
-      message: "El pedido ya fue procesado.",
-    });
-  }
-  return result;
+  return mapAlreadyProcessed(result);
 }
 
 /**
@@ -136,10 +176,7 @@ export async function rejectMerchantOrder(
     return err(notFound());
   }
   if (!isValidUuid(input.actorUserId)) {
-    return err({
-      code: MERCHANT_ORDER_TRANSITION_ERROR_CODES.ORDER_TRANSITION_INVALID,
-      message: "No se puede actualizar el pedido.",
-    });
+    return err(invalidActor());
   }
   if (!isMerchantRejectReason(input.reason)) {
     return err({
@@ -171,4 +208,73 @@ export async function rejectMerchantOrder(
     status: "CANCELED",
     restoredTrackedQuantity: canceled.value.restoredTrackedQuantity,
   });
+}
+
+/**
+ * ACCEPTED → PREPARING. Target is fixed server-side. No stock or Delivery writes.
+ */
+export async function startPreparingMerchantOrder(
+  input: AcceptMerchantOrderInput,
+  deps: MerchantOrderActionDeps,
+): Promise<Result<MerchantOrderTransitionResult, MerchantOrderMutationError>> {
+  await deps.requireMerchantOrderAccess(input.merchantId);
+  const result = await transitionMerchantOperationalOrder(
+    {
+      merchantId: input.merchantId,
+      orderId: input.orderId,
+      actorUserId: input.actorUserId,
+      targetStatus: "PREPARING",
+    },
+    deps,
+  );
+  return mapAlreadyProcessed(result);
+}
+
+/**
+ * PREPARING → READY. Target is fixed server-side. No stock or Delivery writes.
+ */
+export async function markMerchantOrderReady(
+  input: AcceptMerchantOrderInput,
+  deps: MerchantOrderActionDeps,
+): Promise<Result<MerchantOrderTransitionResult, MerchantOrderMutationError>> {
+  await deps.requireMerchantOrderAccess(input.merchantId);
+  const result = await transitionMerchantOperationalOrder(
+    {
+      merchantId: input.merchantId,
+      orderId: input.orderId,
+      actorUserId: input.actorUserId,
+      targetStatus: "READY",
+    },
+    deps,
+  );
+  return mapAlreadyProcessed(result);
+}
+
+/**
+ * READY PICKUP → COMPLETED. Specialized path — not transitionMerchantOperationalOrder.
+ * Does not restock and does not create or write Delivery.
+ */
+export async function completeMerchantPickupOrder(
+  input: CompleteMerchantPickupInput,
+  deps: MerchantOrderActionDeps,
+): Promise<Result<CompleteMerchantPickupResult, MerchantOrderMutationError>> {
+  await deps.requireMerchantOrderAccess(input.merchantId);
+  if (!isValidUuid(input.merchantId) || !isValidUuid(input.orderId)) {
+    return err(notFound());
+  }
+  if (!isValidUuid(input.actorUserId)) {
+    return err(invalidActor());
+  }
+
+  const persisted = await deps.completeMerchantPickupOrderInTransaction({
+    merchantId: input.merchantId,
+    orderId: input.orderId,
+    actorUserId: input.actorUserId,
+    now: deps.now(),
+  });
+
+  if (persisted.status === "completed") {
+    return ok(persisted.result);
+  }
+  return err(persisted.error);
 }

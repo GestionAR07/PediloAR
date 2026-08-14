@@ -3,7 +3,10 @@
 import { revalidatePath } from "next/cache";
 import {
   acceptMerchantOrderApp,
+  completeMerchantPickupOrderApp,
+  markMerchantOrderReadyApp,
   rejectMerchantOrderApp,
+  startPreparingMerchantOrderApp,
 } from "@/application/merchant/order-actions-wiring";
 import { isAuthzError } from "@/server/auth/errors";
 
@@ -68,6 +71,66 @@ export async function rejectMerchantOrderAction(
 ): Promise<MerchantOrderActionState> {
   try {
     const result = await rejectMerchantOrderApp(merchantId, orderId, reason);
+    if (!result.ok) {
+      return {
+        ok: false,
+        code: result.error.code,
+        message: result.error.message,
+      };
+    }
+    revalidateOrderPaths(merchantId, orderId);
+    return { ok: true, code: null, message: null };
+  } catch (error) {
+    return mapFailure(error);
+  }
+}
+
+export async function startPreparingMerchantOrderAction(
+  merchantId: string,
+  orderId: string,
+): Promise<MerchantOrderActionState> {
+  try {
+    const result = await startPreparingMerchantOrderApp(merchantId, orderId);
+    if (!result.ok) {
+      return {
+        ok: false,
+        code: result.error.code,
+        message: result.error.message,
+      };
+    }
+    revalidateOrderPaths(merchantId, orderId);
+    return { ok: true, code: null, message: null };
+  } catch (error) {
+    return mapFailure(error);
+  }
+}
+
+export async function markMerchantOrderReadyAction(
+  merchantId: string,
+  orderId: string,
+): Promise<MerchantOrderActionState> {
+  try {
+    const result = await markMerchantOrderReadyApp(merchantId, orderId);
+    if (!result.ok) {
+      return {
+        ok: false,
+        code: result.error.code,
+        message: result.error.message,
+      };
+    }
+    revalidateOrderPaths(merchantId, orderId);
+    return { ok: true, code: null, message: null };
+  } catch (error) {
+    return mapFailure(error);
+  }
+}
+
+export async function completeMerchantPickupOrderAction(
+  merchantId: string,
+  orderId: string,
+): Promise<MerchantOrderActionState> {
+  try {
+    const result = await completeMerchantPickupOrderApp(merchantId, orderId);
     if (!result.ok) {
       return {
         ok: false,

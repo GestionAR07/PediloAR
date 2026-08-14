@@ -3,8 +3,12 @@ import "server-only";
 import {
   MERCHANT_ORDER_ALLOWED_ROLES,
   acceptMerchantOrder,
+  completeMerchantPickupOrder,
+  markMerchantOrderReady,
   rejectMerchantOrder,
+  startPreparingMerchantOrder,
 } from "@/application/merchant/order-actions";
+import { completeMerchantPickupOrderInTransaction } from "@/infrastructure/db/repositories/merchant-order-completion-repository";
 import { transitionMerchantOrderInTransaction } from "@/infrastructure/db/repositories/merchant-order-transition-repository";
 import { cancelOrderInTransaction } from "@/infrastructure/db/repositories/checkout-order-repository";
 import { requireMerchantRole } from "@/server/auth/authorization";
@@ -19,6 +23,7 @@ function actionDeps() {
     requireMerchantOrderAccess,
     transitionMerchantOrderInTransaction,
     cancelOrderInTransaction,
+    completeMerchantPickupOrderInTransaction,
   };
 }
 
@@ -55,6 +60,60 @@ export async function rejectMerchantOrderApp(
       orderId,
       actorUserId: context.user.id,
       reason,
+    },
+    actionDeps(),
+  );
+}
+
+export async function startPreparingMerchantOrderApp(
+  merchantId: string,
+  orderId: string,
+) {
+  const context = await requireMerchantRole(
+    merchantId,
+    MERCHANT_ORDER_ALLOWED_ROLES,
+  );
+  return startPreparingMerchantOrder(
+    {
+      merchantId,
+      orderId,
+      actorUserId: context.user.id,
+    },
+    actionDeps(),
+  );
+}
+
+export async function markMerchantOrderReadyApp(
+  merchantId: string,
+  orderId: string,
+) {
+  const context = await requireMerchantRole(
+    merchantId,
+    MERCHANT_ORDER_ALLOWED_ROLES,
+  );
+  return markMerchantOrderReady(
+    {
+      merchantId,
+      orderId,
+      actorUserId: context.user.id,
+    },
+    actionDeps(),
+  );
+}
+
+export async function completeMerchantPickupOrderApp(
+  merchantId: string,
+  orderId: string,
+) {
+  const context = await requireMerchantRole(
+    merchantId,
+    MERCHANT_ORDER_ALLOWED_ROLES,
+  );
+  return completeMerchantPickupOrder(
+    {
+      merchantId,
+      orderId,
+      actorUserId: context.user.id,
     },
     actionDeps(),
   );
