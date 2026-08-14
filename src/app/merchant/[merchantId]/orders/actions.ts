@@ -3,9 +3,11 @@
 import { revalidatePath } from "next/cache";
 import {
   acceptMerchantOrderApp,
+  completeMerchantDeliveryApp,
   completeMerchantPickupOrderApp,
   markMerchantOrderReadyApp,
   rejectMerchantOrderApp,
+  startMerchantDeliveryApp,
   startPreparingMerchantOrderApp,
 } from "@/application/merchant/order-actions-wiring";
 import { isAuthzError } from "@/server/auth/errors";
@@ -131,6 +133,46 @@ export async function completeMerchantPickupOrderAction(
 ): Promise<MerchantOrderActionState> {
   try {
     const result = await completeMerchantPickupOrderApp(merchantId, orderId);
+    if (!result.ok) {
+      return {
+        ok: false,
+        code: result.error.code,
+        message: result.error.message,
+      };
+    }
+    revalidateOrderPaths(merchantId, orderId);
+    return { ok: true, code: null, message: null };
+  } catch (error) {
+    return mapFailure(error);
+  }
+}
+
+export async function startMerchantDeliveryAction(
+  merchantId: string,
+  orderId: string,
+): Promise<MerchantOrderActionState> {
+  try {
+    const result = await startMerchantDeliveryApp(merchantId, orderId);
+    if (!result.ok) {
+      return {
+        ok: false,
+        code: result.error.code,
+        message: result.error.message,
+      };
+    }
+    revalidateOrderPaths(merchantId, orderId);
+    return { ok: true, code: null, message: null };
+  } catch (error) {
+    return mapFailure(error);
+  }
+}
+
+export async function completeMerchantDeliveryAction(
+  merchantId: string,
+  orderId: string,
+): Promise<MerchantOrderActionState> {
+  try {
+    const result = await completeMerchantDeliveryApp(merchantId, orderId);
     if (!result.ok) {
       return {
         ok: false,

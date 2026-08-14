@@ -51,6 +51,7 @@ export function MerchantOrderCard({ merchantId, order, now, timeZone }: Props) {
         orderId={order.orderId}
         status={order.status}
         fulfillmentMethod={order.fulfillmentMethod}
+        deliveryStatus={order.delivery?.status ?? null}
       />
     </article>
   );

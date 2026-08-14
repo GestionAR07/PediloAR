@@ -3,8 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
+  completeMerchantDeliveryAction,
   completeMerchantPickupOrderAction,
   markMerchantOrderReadyAction,
+  startMerchantDeliveryAction,
   startPreparingMerchantOrderAction,
   type MerchantOrderActionState,
 } from "@/app/merchant/[merchantId]/orders/actions";
@@ -15,6 +17,7 @@ type Props = {
   orderId: string;
   status: string;
   fulfillmentMethod: string;
+  deliveryStatus?: string | null;
 };
 
 const buttonClassName =
@@ -80,6 +83,7 @@ export function MerchantOrderLifecycleActions({
   orderId,
   status,
   fulfillmentMethod,
+  deliveryStatus = null,
 }: Props) {
   if (status === "PENDING") {
     return (
@@ -127,7 +131,31 @@ export function MerchantOrderLifecycleActions({
   }
 
   if (status === "READY" && fulfillmentMethod === "MERCHANT_DELIVERY") {
-    return <p className="text-sm text-muted">Listo para iniciar el envío.</p>;
+    if (deliveryStatus === "PENDING") {
+      return (
+        <MerchantProgressionAction
+          merchantId={merchantId}
+          orderId={orderId}
+          label="Marcar en camino"
+          pendingLabel="Marcando en camino..."
+          fallbackError="No se pudo iniciar el envío."
+          run={startMerchantDeliveryAction}
+        />
+      );
+    }
+    if (deliveryStatus === "IN_TRANSIT") {
+      return (
+        <MerchantProgressionAction
+          merchantId={merchantId}
+          orderId={orderId}
+          label="Marcar entregado"
+          pendingLabel="Marcando entregado..."
+          fallbackError="No se pudo marcar la entrega."
+          run={completeMerchantDeliveryAction}
+        />
+      );
+    }
+    return null;
   }
 
   return null;

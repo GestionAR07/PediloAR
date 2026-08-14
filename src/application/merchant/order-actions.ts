@@ -71,6 +71,54 @@ export type CompleteMerchantPickupPersistResult =
   | { status: "completed"; result: CompleteMerchantPickupResult }
   | { status: "rejected"; error: MerchantOrderMutationError };
 
+export type StartMerchantDeliveryInput = {
+  merchantId: string;
+  orderId: string;
+  actorUserId: string;
+};
+
+export type StartMerchantDeliveryCommand = {
+  merchantId: string;
+  orderId: string;
+  now: Date;
+};
+
+export type StartMerchantDeliveryResult = {
+  orderId: string;
+  orderStatus: "READY";
+  previousDeliveryStatus: "PENDING";
+  deliveryStatus: "IN_TRANSIT";
+};
+
+export type StartMerchantDeliveryPersistResult =
+  | { status: "started"; result: StartMerchantDeliveryResult }
+  | { status: "rejected"; error: MerchantOrderMutationError };
+
+export type CompleteMerchantDeliveryInput = {
+  merchantId: string;
+  orderId: string;
+  actorUserId: string;
+};
+
+export type CompleteMerchantDeliveryCommand = {
+  merchantId: string;
+  orderId: string;
+  actorUserId: string;
+  now: Date;
+};
+
+export type CompleteMerchantDeliveryResult = {
+  orderId: string;
+  previousStatus: OrderStatus;
+  status: "COMPLETED";
+  previousDeliveryStatus: "IN_TRANSIT";
+  deliveryStatus: "DELIVERED";
+};
+
+export type CompleteMerchantDeliveryPersistResult =
+  | { status: "completed"; result: CompleteMerchantDeliveryResult }
+  | { status: "rejected"; error: MerchantOrderMutationError };
+
 export type MerchantOrderActionDeps = MerchantOrderTransitionDeps & {
   requireMerchantOrderAccess: (merchantId: string) => Promise<void>;
   cancelOrderInTransaction: (
@@ -79,6 +127,12 @@ export type MerchantOrderActionDeps = MerchantOrderTransitionDeps & {
   completeMerchantPickupOrderInTransaction: (
     command: CompleteMerchantPickupCommand,
   ) => Promise<CompleteMerchantPickupPersistResult>;
+  startMerchantDeliveryInTransaction: (
+    command: StartMerchantDeliveryCommand,
+  ) => Promise<StartMerchantDeliveryPersistResult>;
+  completeMerchantDeliveryInTransaction: (
+    command: CompleteMerchantDeliveryCommand,
+  ) => Promise<CompleteMerchantDeliveryPersistResult>;
 };
 
 function notFound(): MerchantOrderMutationError {
@@ -267,6 +321,62 @@ export async function completeMerchantPickupOrder(
   }
 
   const persisted = await deps.completeMerchantPickupOrderInTransaction({
+    merchantId: input.merchantId,
+    orderId: input.orderId,
+    actorUserId: input.actorUserId,
+    now: deps.now(),
+  });
+
+  if (persisted.status === "completed") {
+    return ok(persisted.result);
+  }
+  return err(persisted.error);
+}
+
+/**
+ * READY + Delivery PENDING → Delivery IN_TRANSIT. Order stays READY. No OrderEvent.
+ */
+export async function startMerchantDelivery(
+  input: StartMerchantDeliveryInput,
+  deps: MerchantOrderActionDeps,
+): Promise<Result<StartMerchantDeliveryResult, MerchantOrderMutationError>> {
+  await deps.requireMerchantOrderAccess(input.merchantId);
+  if (!isValidUuid(input.merchantId) || !isValidUuid(input.orderId)) {
+    return err(notFound());
+  }
+  if (!isValidUuid(input.actorUserId)) {
+    return err(invalidActor());
+  }
+
+  const persisted = await deps.startMerchantDeliveryInTransaction({
+    merchantId: input.merchantId,
+    orderId: input.orderId,
+    now: deps.now(),
+  });
+
+  if (persisted.status === "started") {
+    return ok(persisted.result);
+  }
+  return err(persisted.error);
+}
+
+/**
+ * READY + Delivery IN_TRANSIT → Delivery DELIVERED + Order COMPLETED + 1 event.
+ * Atomic. Does not restock. Not the pickup completion path.
+ */
+export async function completeMerchantDelivery(
+  input: CompleteMerchantDeliveryInput,
+  deps: MerchantOrderActionDeps,
+): Promise<Result<CompleteMerchantDeliveryResult, MerchantOrderMutationError>> {
+  await deps.requireMerchantOrderAccess(input.merchantId);
+  if (!isValidUuid(input.merchantId) || !isValidUuid(input.orderId)) {
+    return err(notFound());
+  }
+  if (!isValidUuid(input.actorUserId)) {
+    return err(invalidActor());
+  }
+
+  const persisted = await deps.completeMerchantDeliveryInTransaction({
     merchantId: input.merchantId,
     orderId: input.orderId,
     actorUserId: input.actorUserId,

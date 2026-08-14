@@ -9,20 +9,33 @@ import type {
 import { canCancelOrder } from "@/domain/order/cancellation";
 import { canCompleteOrder } from "@/domain/order/completion";
 import type { DeliveryStatus } from "@/domain/delivery/enums";
+import {
+  deliveryCompletionImpliesOrderReadyToComplete,
+  transitionDeliveryStatus,
+} from "@/domain/delivery/transitions";
 import type { FulfillmentMethod, OrderStatus } from "@/domain/order/enums";
 import { assertOrderDeliveryCompatibility } from "@/domain/order/fulfillment-compat";
-import { transitionOrderStatus } from "@/domain/order/transitions";
+import {
+  assertFulfillmentAllowedForMvp,
+  transitionOrderStatus,
+} from "@/domain/order/transitions";
 import {
   acceptMerchantOrder,
+  completeMerchantDelivery,
   completeMerchantPickupOrder,
   isMerchantRejectReason,
   markMerchantOrderReady,
   MERCHANT_REJECT_REASONS,
   rejectMerchantOrder,
+  startMerchantDelivery,
   startPreparingMerchantOrder,
+  type CompleteMerchantDeliveryCommand,
+  type CompleteMerchantDeliveryPersistResult,
   type CompleteMerchantPickupCommand,
   type CompleteMerchantPickupPersistResult,
   type MerchantOrderActionDeps,
+  type StartMerchantDeliveryCommand,
+  type StartMerchantDeliveryPersistResult,
 } from "./order-actions";
 import {
   decideMerchantOperationalTransition,
@@ -54,6 +67,7 @@ type StoredOrder = {
   fulfillmentMethod: string;
   stockQuantity: number;
   deliveryStatus: string | null;
+  deliveryProvider: string | null;
   events: StoredEvent[];
   canceledBy: string | null;
   cancelReason: string | null;
@@ -84,6 +98,7 @@ function seed(
     fulfillmentMethod: "PICKUP",
     stockQuantity: 2,
     deliveryStatus: "PENDING",
+    deliveryProvider: "MERCHANT",
     events: [],
     canceledBy: null,
     cancelReason: null,
@@ -96,7 +111,13 @@ function memoryOps(
   access: MerchantOrderActionDeps["requireMerchantOrderAccess"] = vi.fn(
     async () => undefined,
   ),
-  options: { failOn?: "complete-update" | "complete-event" } = {},
+  options: {
+    failOn?:
+      | "complete-update"
+      | "complete-event"
+      | "delivery-complete-order"
+      | "delivery-complete-event";
+  } = {},
 ): {
   orders: StoredOrder[];
   deps: MerchantOrderActionDeps;
@@ -397,6 +418,318 @@ function memoryOps(
     });
   }
 
+  async function startMerchantDeliveryInTransaction(
+    command: StartMerchantDeliveryCommand,
+  ): Promise<StartMerchantDeliveryPersistResult> {
+    return lock.run(async () => {
+      const stored = orders.find(
+        (row) =>
+          row.id === command.orderId && row.merchantId === command.merchantId,
+      );
+      if (!stored) {
+        return {
+          status: "rejected",
+          error: {
+            code: "ORDER_NOT_FOUND",
+            message: "El pedido no existe.",
+          },
+        };
+      }
+      if (stored.status === "COMPLETED") {
+        return {
+          status: "rejected",
+          error: {
+            code: "ORDER_TRANSITION_NOOP",
+            message: "El pedido ya fue procesado.",
+          },
+        };
+      }
+      if (stored.status === "CANCELED") {
+        return {
+          status: "rejected",
+          error: {
+            code: "ORDER_TRANSITION_TERMINAL",
+            message: "El pedido ya no se puede actualizar.",
+          },
+        };
+      }
+      const mvp = assertFulfillmentAllowedForMvp(
+        stored.fulfillmentMethod as FulfillmentMethod,
+      );
+      if (!mvp.ok) {
+        return {
+          status: "rejected",
+          error: {
+            code: mvp.error.code,
+            message:
+              "Este pedido no se puede gestionar como envío del comercio.",
+          },
+        };
+      }
+      if (stored.fulfillmentMethod !== "MERCHANT_DELIVERY") {
+        return {
+          status: "rejected",
+          error: {
+            code: "ORDER_COMPLETE_WRONG_FULFILLMENT",
+            message: "Este pedido no se envía a domicilio.",
+          },
+        };
+      }
+      if (!stored.deliveryStatus) {
+        return {
+          status: "rejected",
+          error: {
+            code: "DELIVERY_NOT_FOUND",
+            message: "No se encontró el envío.",
+          },
+        };
+      }
+      if (stored.deliveryProvider !== "MERCHANT") {
+        return {
+          status: "rejected",
+          error: {
+            code: "DELIVERY_PROVIDER_INVALID",
+            message:
+              "Este pedido no se puede gestionar como envío del comercio.",
+          },
+        };
+      }
+      if (stored.status !== "READY") {
+        return {
+          status: "rejected",
+          error: {
+            code: "ORDER_TRANSITION_INVALID",
+            message: "El pedido no está listo para el envío.",
+          },
+        };
+      }
+      const next = transitionDeliveryStatus(
+        "MERCHANT",
+        stored.deliveryStatus as DeliveryStatus,
+        "IN_TRANSIT",
+      );
+      if (!next.ok) {
+        return {
+          status: "rejected",
+          error: {
+            code: next.error.code,
+            message:
+              next.error.code === "DELIVERY_TRANSITION_NOOP"
+                ? "El pedido ya fue procesado."
+                : "No se puede actualizar el envío.",
+          },
+        };
+      }
+      stored.deliveryStatus = next.value;
+      writes.delivery += 1;
+      return {
+        status: "started",
+        result: {
+          orderId: stored.id,
+          orderStatus: "READY",
+          previousDeliveryStatus: "PENDING",
+          deliveryStatus: "IN_TRANSIT",
+        },
+      };
+    });
+  }
+
+  async function completeMerchantDeliveryInTransaction(
+    command: CompleteMerchantDeliveryCommand,
+  ): Promise<CompleteMerchantDeliveryPersistResult> {
+    return lock.run(async () => {
+      const stored = orders.find(
+        (row) =>
+          row.id === command.orderId && row.merchantId === command.merchantId,
+      );
+      if (!stored) {
+        return {
+          status: "rejected",
+          error: {
+            code: "ORDER_NOT_FOUND",
+            message: "El pedido no existe.",
+          },
+        };
+      }
+
+      const snapshot = {
+        status: stored.status,
+        stockQuantity: stored.stockQuantity,
+        deliveryStatus: stored.deliveryStatus,
+        events: [...stored.events],
+      };
+
+      try {
+        if (stored.status === "COMPLETED") {
+          return {
+            status: "rejected",
+            error: {
+              code: "ORDER_TRANSITION_NOOP",
+              message: "El pedido ya fue procesado.",
+            },
+          };
+        }
+        if (stored.status === "CANCELED") {
+          return {
+            status: "rejected",
+            error: {
+              code: "ORDER_TRANSITION_TERMINAL",
+              message: "El pedido ya no se puede actualizar.",
+            },
+          };
+        }
+        const mvp = assertFulfillmentAllowedForMvp(
+          stored.fulfillmentMethod as FulfillmentMethod,
+        );
+        if (!mvp.ok) {
+          return {
+            status: "rejected",
+            error: {
+              code: mvp.error.code,
+              message:
+                "Este pedido no se puede gestionar como envío del comercio.",
+            },
+          };
+        }
+        if (stored.fulfillmentMethod !== "MERCHANT_DELIVERY") {
+          return {
+            status: "rejected",
+            error: {
+              code: "ORDER_COMPLETE_WRONG_FULFILLMENT",
+              message: "Este pedido no se envía a domicilio.",
+            },
+          };
+        }
+        if (!stored.deliveryStatus) {
+          return {
+            status: "rejected",
+            error: {
+              code: "DELIVERY_NOT_FOUND",
+              message: "No se encontró el envío.",
+            },
+          };
+        }
+        if (stored.deliveryProvider !== "MERCHANT") {
+          return {
+            status: "rejected",
+            error: {
+              code: "DELIVERY_PROVIDER_INVALID",
+              message:
+                "Este pedido no se puede gestionar como envío del comercio.",
+            },
+          };
+        }
+        if (stored.status !== "READY") {
+          return {
+            status: "rejected",
+            error: {
+              code: "ORDER_COMPLETE_NOT_READY",
+              message: "El pedido ya no se puede completar.",
+            },
+          };
+        }
+
+        const nextDelivery = transitionDeliveryStatus(
+          "MERCHANT",
+          stored.deliveryStatus as DeliveryStatus,
+          "DELIVERED",
+        );
+        if (!nextDelivery.ok) {
+          return {
+            status: "rejected",
+            error: {
+              code: nextDelivery.error.code,
+              message:
+                stored.deliveryStatus === "PENDING"
+                  ? "El envío aún no está en camino."
+                  : nextDelivery.error.code === "DELIVERY_TRANSITION_NOOP"
+                    ? "El pedido ya fue procesado."
+                    : "No se puede actualizar el envío.",
+            },
+          };
+        }
+        if (
+          !deliveryCompletionImpliesOrderReadyToComplete(nextDelivery.value)
+        ) {
+          return {
+            status: "rejected",
+            error: {
+              code: "ORDER_COMPLETE_DELIVERY_NOT_DELIVERED",
+              message: "No se puede completar el pedido.",
+            },
+          };
+        }
+        const complete = canCompleteOrder({
+          orderStatus: stored.status as OrderStatus,
+          fulfillmentMethod: "MERCHANT_DELIVERY",
+          delivery: { status: nextDelivery.value },
+        });
+        if (!complete.ok) {
+          return {
+            status: "rejected",
+            error: {
+              code: complete.error.code,
+              message: "No se puede completar el pedido.",
+            },
+          };
+        }
+        const nextOrder = transitionOrderStatus(
+          stored.status as OrderStatus,
+          "COMPLETED",
+        );
+        if (!nextOrder.ok) {
+          return {
+            status: "rejected",
+            error: {
+              code: nextOrder.error.code,
+              message: "No se puede completar el pedido.",
+            },
+          };
+        }
+
+        stored.deliveryStatus = nextDelivery.value;
+        if (options.failOn === "delivery-complete-order") {
+          throw new Error("simulated order update failure");
+        }
+        const previous = stored.status as OrderStatus;
+        stored.status = "COMPLETED";
+        if (options.failOn === "delivery-complete-event") {
+          throw new Error("simulated order_events insert failure");
+        }
+        stored.events.push({
+          fromStatus: previous,
+          toStatus: "COMPLETED",
+          actorType: "MERCHANT_USER",
+          actorId: command.actorUserId,
+          reason: null,
+        });
+        writes.delivery += 1;
+        return {
+          status: "completed",
+          result: {
+            orderId: stored.id,
+            previousStatus: previous,
+            status: "COMPLETED",
+            previousDeliveryStatus: "IN_TRANSIT",
+            deliveryStatus: "DELIVERED",
+          },
+        };
+      } catch {
+        stored.status = snapshot.status;
+        stored.stockQuantity = snapshot.stockQuantity;
+        stored.deliveryStatus = snapshot.deliveryStatus;
+        stored.events.splice(0, stored.events.length, ...snapshot.events);
+        return {
+          status: "rejected",
+          error: {
+            code: "ORDER_PERSISTENCE_FAILED",
+            message: "No se pudo actualizar el pedido.",
+          },
+        };
+      }
+    });
+  }
+
   return {
     orders,
     writes,
@@ -406,6 +739,8 @@ function memoryOps(
       transitionMerchantOrderInTransaction,
       cancelOrderInTransaction,
       completeMerchantPickupOrderInTransaction,
+      startMerchantDeliveryInTransaction,
+      completeMerchantDeliveryInTransaction,
     },
   };
 }
@@ -1100,5 +1435,288 @@ describe("completeMerchantPickupOrder", () => {
       expect(writes.stock).toBe(1);
       expect(completed.ok).toBe(false);
     }
+  });
+});
+
+const readyMerchantDelivery = (deliveryStatus = "PENDING") =>
+  seed("READY", {
+    fulfillmentMethod: "MERCHANT_DELIVERY",
+    deliveryStatus,
+    deliveryProvider: "MERCHANT",
+  });
+
+describe("startMerchantDelivery", () => {
+  it("allows OWNER and STAFF to move PENDING delivery to IN_TRANSIT", async () => {
+    const owner = memoryOps([readyMerchantDelivery()]);
+    const staff = memoryOps([readyMerchantDelivery()]);
+    const asOwner = await startMerchantDelivery(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      owner.deps,
+    );
+    const asStaff = await startMerchantDelivery(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: STAFF_ID },
+      staff.deps,
+    );
+    expect(asOwner.ok).toBe(true);
+    expect(asStaff.ok).toBe(true);
+    if (!asOwner.ok) return;
+    expect(asOwner.value).toEqual({
+      orderId: ORDER_A,
+      orderStatus: "READY",
+      previousDeliveryStatus: "PENDING",
+      deliveryStatus: "IN_TRANSIT",
+    });
+    expect(owner.orders[0]?.status).toBe("READY");
+    expect(owner.orders[0]?.deliveryStatus).toBe("IN_TRANSIT");
+    expect(owner.orders[0]?.events).toHaveLength(0);
+    expect(owner.orders[0]?.stockQuantity).toBe(2);
+    expect(owner.writes.stock).toBe(0);
+    expect(owner.writes.delivery).toBe(1);
+  });
+
+  it("denies ADMIN without membership and merchant B", async () => {
+    const admin = memoryOps(
+      [readyMerchantDelivery()],
+      vi.fn(async () => {
+        throw new AuthzError("NOT_MERCHANT_MEMBER", "no");
+      }),
+    );
+    await expect(
+      startMerchantDelivery(
+        { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+        admin.deps,
+      ),
+    ).rejects.toMatchObject({ code: "NOT_MERCHANT_MEMBER" });
+    expect(admin.orders[0]?.deliveryStatus).toBe("PENDING");
+    expect(admin.writes.delivery).toBe(0);
+
+    const { orders, deps, writes } = memoryOps([readyMerchantDelivery()]);
+    const foreign = await startMerchantDelivery(
+      { merchantId: MERCHANT_B, orderId: ORDER_A, actorUserId: OWNER_ID },
+      deps,
+    );
+    expect(foreign.ok).toBe(false);
+    if (!foreign.ok) {
+      expect(foreign.error.code).toBe("ORDER_NOT_FOUND");
+    }
+    expect(orders[0]?.deliveryStatus).toBe("PENDING");
+    expect(writes.delivery).toBe(0);
+  });
+
+  it("does not write an OrderEvent on double start", async () => {
+    const { orders, deps, writes } = memoryOps([readyMerchantDelivery()]);
+    const [first, second] = await Promise.all([
+      startMerchantDelivery(
+        { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+        deps,
+      ),
+      startMerchantDelivery(
+        { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+        deps,
+      ),
+    ]);
+    expect(Number(first.ok) + Number(second.ok)).toBe(1);
+    const failed = first.ok ? second : first;
+    expect(failed.ok).toBe(false);
+    if (!failed.ok) {
+      expect(failed.error.code).toBe("DELIVERY_TRANSITION_NOOP");
+    }
+    expect(orders[0]?.status).toBe("READY");
+    expect(orders[0]?.deliveryStatus).toBe("IN_TRANSIT");
+    expect(orders[0]?.events).toHaveLength(0);
+    expect(writes.stock).toBe(0);
+    expect(writes.delivery).toBe(1);
+  });
+
+  it("denies start when the Order is not READY", async () => {
+    const { orders, deps, writes } = memoryOps([
+      seed("PREPARING", {
+        fulfillmentMethod: "MERCHANT_DELIVERY",
+        deliveryStatus: "PENDING",
+        deliveryProvider: "MERCHANT",
+      }),
+    ]);
+    const result = await startMerchantDelivery(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      deps,
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("ORDER_TRANSITION_INVALID");
+      expect(result.error.message).toBe(
+        "El pedido no está listo para el envío.",
+      );
+    }
+    expect(orders[0]?.status).toBe("PREPARING");
+    expect(orders[0]?.deliveryStatus).toBe("PENDING");
+    expect(orders[0]?.events).toHaveLength(0);
+    expect(writes.delivery).toBe(0);
+  });
+
+  it("denies PICKUP, PLATFORM provider, and invalid delivery status", async () => {
+    const pickup = memoryOps([
+      seed("READY", { fulfillmentMethod: "PICKUP", deliveryStatus: null }),
+    ]);
+    const platform = memoryOps([
+      seed("READY", {
+        fulfillmentMethod: "MERCHANT_DELIVERY",
+        deliveryStatus: "PENDING",
+        deliveryProvider: "PLATFORM",
+      }),
+    ]);
+    const assigned = memoryOps([
+      seed("READY", {
+        fulfillmentMethod: "MERCHANT_DELIVERY",
+        deliveryStatus: "ASSIGNED",
+        deliveryProvider: "MERCHANT",
+      }),
+    ]);
+    const pickupResult = await startMerchantDelivery(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      pickup.deps,
+    );
+    const platformResult = await startMerchantDelivery(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      platform.deps,
+    );
+    const assignedResult = await startMerchantDelivery(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      assigned.deps,
+    );
+    expect(pickupResult.ok).toBe(false);
+    if (!pickupResult.ok) {
+      expect(pickupResult.error.code).toBe("ORDER_COMPLETE_WRONG_FULFILLMENT");
+    }
+    expect(platformResult.ok).toBe(false);
+    if (!platformResult.ok) {
+      expect(platformResult.error.code).toBe("DELIVERY_PROVIDER_INVALID");
+    }
+    expect(assignedResult.ok).toBe(false);
+    if (!assignedResult.ok) {
+      expect(assignedResult.error.code).toBe("DELIVERY_TRANSITION_INVALID");
+    }
+    expect(pickup.writes.delivery).toBe(0);
+    expect(platform.writes.delivery).toBe(0);
+    expect(assigned.writes.delivery).toBe(0);
+    expect(assigned.orders[0]?.deliveryStatus).toBe("ASSIGNED");
+  });
+});
+
+describe("completeMerchantDelivery", () => {
+  it("completes READY IN_TRANSIT atomically with one event and zero stock writes", async () => {
+    const { orders, deps, writes } = memoryOps([
+      readyMerchantDelivery("IN_TRANSIT"),
+    ]);
+    const result = await completeMerchantDelivery(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      deps,
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value).toEqual({
+      orderId: ORDER_A,
+      previousStatus: "READY",
+      status: "COMPLETED",
+      previousDeliveryStatus: "IN_TRANSIT",
+      deliveryStatus: "DELIVERED",
+    });
+    expect(orders[0]?.status).toBe("COMPLETED");
+    expect(orders[0]?.deliveryStatus).toBe("DELIVERED");
+    expect(orders[0]?.events).toHaveLength(1);
+    expect(orders[0]?.events[0]).toMatchObject({
+      fromStatus: "READY",
+      toStatus: "COMPLETED",
+      actorType: "MERCHANT_USER",
+      actorId: OWNER_ID,
+      reason: null,
+    });
+    expect(orders[0]?.stockQuantity).toBe(2);
+    expect(writes.stock).toBe(0);
+    expect(writes.delivery).toBe(1);
+    expect(deliveryCompletionImpliesOrderReadyToComplete("DELIVERED")).toBe(
+      true,
+    );
+    expect(
+      canCompleteOrder({
+        orderStatus: "READY",
+        fulfillmentMethod: "MERCHANT_DELIVERY",
+        delivery: { status: "DELIVERED" },
+      }).ok,
+    ).toBe(true);
+  });
+
+  it("rolls back Order, Delivery, and event if persistence fails", async () => {
+    const { orders, deps, writes } = memoryOps(
+      [readyMerchantDelivery("IN_TRANSIT")],
+      undefined,
+      { failOn: "delivery-complete-event" },
+    );
+    const result = await completeMerchantDelivery(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      deps,
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("ORDER_PERSISTENCE_FAILED");
+      expect(result.error.message).not.toContain("simulated");
+    }
+    expect(orders[0]?.status).toBe("READY");
+    expect(orders[0]?.deliveryStatus).toBe("IN_TRANSIT");
+    expect(orders[0]?.events).toHaveLength(0);
+    expect(orders[0]?.stockQuantity).toBe(2);
+    expect(writes.stock).toBe(0);
+    expect(writes.delivery).toBe(0);
+  });
+
+  it("does not write a second event on double complete", async () => {
+    const { orders, deps, writes } = memoryOps([
+      readyMerchantDelivery("IN_TRANSIT"),
+    ]);
+    const [first, second] = await Promise.all([
+      completeMerchantDelivery(
+        { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+        deps,
+      ),
+      completeMerchantDelivery(
+        { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+        deps,
+      ),
+    ]);
+    expect(Number(first.ok) + Number(second.ok)).toBe(1);
+    const failed = first.ok ? second : first;
+    expect(failed.ok).toBe(false);
+    if (!failed.ok) {
+      expect(failed.error.code).toBe("ORDER_TRANSITION_NOOP");
+    }
+    expect(orders[0]?.status).toBe("COMPLETED");
+    expect(orders[0]?.deliveryStatus).toBe("DELIVERED");
+    expect(orders[0]?.events).toHaveLength(1);
+    expect(writes.stock).toBe(0);
+  });
+
+  it("denies complete when Delivery is still PENDING or Order is PICKUP", async () => {
+    const pending = memoryOps([readyMerchantDelivery("PENDING")]);
+    const pickup = memoryOps([
+      seed("READY", { fulfillmentMethod: "PICKUP", deliveryStatus: null }),
+    ]);
+    const pendingResult = await completeMerchantDelivery(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      pending.deps,
+    );
+    const pickupResult = await completeMerchantDelivery(
+      { merchantId: MERCHANT_A, orderId: ORDER_A, actorUserId: OWNER_ID },
+      pickup.deps,
+    );
+    expect(pendingResult.ok).toBe(false);
+    if (!pendingResult.ok) {
+      expect(pendingResult.error.message).toBe(
+        "El envío aún no está en camino.",
+      );
+    }
+    expect(pickupResult.ok).toBe(false);
+    expect(pending.orders[0]?.status).toBe("READY");
+    expect(pending.orders[0]?.deliveryStatus).toBe("PENDING");
+    expect(pending.orders[0]?.events).toHaveLength(0);
+    expect(pickup.orders[0]?.status).toBe("READY");
   });
 });

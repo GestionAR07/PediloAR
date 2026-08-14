@@ -55,6 +55,12 @@ describe("merchant accept/reject static checks", () => {
     expect(actions).toContain(
       "export async function completeMerchantPickupOrderAction",
     );
+    expect(actions).toContain(
+      "export async function startMerchantDeliveryAction",
+    );
+    expect(actions).toContain(
+      "export async function completeMerchantDeliveryAction",
+    );
     expect(actions).toContain('revalidatePath("/merchant")');
     expect(actions).toContain("revalidatePath(`/merchant/${merchantId}`)");
     expect(actions).toContain(
@@ -130,10 +136,12 @@ describe("merchant accept/reject static checks", () => {
     expect(repo).not.toContain("IN_TRANSIT");
   });
 
-  it("shows contextual pickup CTAs and no delivery progression yet", () => {
+  it("shows contextual pickup CTAs and merchant delivery progression", () => {
     const lifecycle = read(
       "src/components/merchant/merchant-order-lifecycle-actions.tsx",
     );
+    const card = read("src/components/merchant/merchant-order-card.tsx");
+    const detail = read("src/components/merchant/merchant-order-detail.tsx");
     expect(lifecycle).toContain("MerchantPendingOrderActions");
     expect(lifecycle).toContain('status === "PENDING"');
     expect(lifecycle).toContain('status === "ACCEPTED"');
@@ -143,7 +151,12 @@ describe("merchant accept/reject static checks", () => {
     expect(lifecycle).toContain("Marcar retirado");
     expect(lifecycle).toContain('fulfillmentMethod === "PICKUP"');
     expect(lifecycle).toContain('fulfillmentMethod === "MERCHANT_DELIVERY"');
-    expect(lifecycle).toContain("Listo para iniciar el envío.");
+    expect(lifecycle).toContain('deliveryStatus === "PENDING"');
+    expect(lifecycle).toContain('deliveryStatus === "IN_TRANSIT"');
+    expect(lifecycle).toContain("Marcar en camino");
+    expect(lifecycle).toContain("Marcar entregado");
+    expect(lifecycle).toContain("startMerchantDeliveryAction");
+    expect(lifecycle).toContain("completeMerchantDeliveryAction");
     expect(lifecycle).toContain("startPreparingMerchantOrderAction");
     expect(lifecycle).toContain("markMerchantOrderReadyAction");
     expect(lifecycle).toContain("completeMerchantPickupOrderAction");
@@ -151,10 +164,43 @@ describe("merchant accept/reject static checks", () => {
     expect(lifecycle).toContain("focus-visible:outline");
     expect(lifecycle).toContain("aria-busy");
     expect(lifecycle).toContain('role="alert"');
-    expect(lifecycle).not.toContain("Marcar en camino");
+    expect(lifecycle).not.toContain("Listo para iniciar el envío.");
     expect(lifecycle).not.toContain("Aceptar");
     expect(lifecycle).not.toContain("Rechazar");
     expect(lifecycle).not.toContain("alert(");
     expect(lifecycle).not.toContain("COLLECTED");
+    expect(lifecycle).not.toContain("PLATFORM");
+    expect(card).toContain("order.delivery?.status");
+    expect(detail).toContain("order.delivery?.status");
+  });
+
+  it("progresses MERCHANT delivery via specialized transactions, not pickup or operational core", () => {
+    const useCase = read("src/application/merchant/order-actions.ts");
+    const wiring = read("src/application/merchant/order-actions-wiring.ts");
+    const repo = read(
+      "src/infrastructure/db/repositories/merchant-order-delivery-repository.ts",
+    );
+    expect(useCase).toContain("startMerchantDelivery");
+    expect(useCase).toContain("completeMerchantDelivery");
+    expect(useCase).toContain("startMerchantDeliveryInTransaction");
+    expect(useCase).toContain("completeMerchantDeliveryInTransaction");
+    expect(wiring).toContain("startMerchantDeliveryApp");
+    expect(wiring).toContain("completeMerchantDeliveryApp");
+    expect(wiring).toContain("requireMerchantRole");
+    expect(repo).toContain("transitionDeliveryStatus");
+    expect(repo).toContain("transitionOrderStatus");
+    expect(repo).toContain("canCompleteOrder");
+    expect(repo).toContain("deliveryCompletionImpliesOrderReadyToComplete");
+    expect(repo).toContain("assertFulfillmentAllowedForMvp");
+    expect(repo).toContain('.for("update")');
+    expect(repo).toContain("eq(orders.merchantId, command.merchantId)");
+    expect(repo).toContain('actorType: "MERCHANT_USER"');
+    expect(repo).not.toContain("transitionMerchantOperationalOrder");
+    expect(repo).not.toContain("products");
+    expect(repo).not.toContain("stockQuantity");
+    expect(repo).not.toContain("tx.insert(deliveries)");
+    expect(repo).not.toContain("completeMerchantPickupOrder");
+    expect(repo).toContain('"IN_TRANSIT"');
+    expect(repo).toContain('"DELIVERED"');
   });
 });

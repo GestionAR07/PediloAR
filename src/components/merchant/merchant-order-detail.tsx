@@ -44,6 +44,7 @@ export function MerchantOrderDetail({
           orderId={order.orderId}
           status={order.status}
           fulfillmentMethod={order.fulfillmentMethod}
+          deliveryStatus={order.delivery?.status ?? null}
         />
       </header>
 
