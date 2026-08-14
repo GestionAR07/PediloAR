@@ -84,6 +84,25 @@ export async function listZones(): Promise<ZoneWithCity[]> {
     .orderBy(asc(zones.name));
 }
 
+export async function listZonesByCityId(
+  cityId: string,
+): Promise<ZoneWithCity[]> {
+  const db = getDb();
+  return db
+    .select({
+      id: zones.id,
+      cityId: zones.cityId,
+      name: zones.name,
+      slug: zones.slug,
+      createdAt: zones.createdAt,
+      cityName: cities.name,
+    })
+    .from(zones)
+    .innerJoin(cities, eq(cities.id, zones.cityId))
+    .where(eq(zones.cityId, cityId))
+    .orderBy(asc(zones.name));
+}
+
 export async function findProvinceById(
   id: string,
 ): Promise<ProvinceRecord | null> {

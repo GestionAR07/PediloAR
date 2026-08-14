@@ -197,4 +197,39 @@ describe("getPublicMerchantCatalog", () => {
     const serialized = JSON.stringify(page!.paymentMethods);
     expect(serialized).not.toMatch(/createdAt|updatedAt|merchantId|sortOrder/);
   });
+
+  it("shows delivery logistics from the active zone without internals", async () => {
+    const deps = baseDeps();
+    deps.findActiveMerchantById = vi.fn(async () => ({
+      id: MERCHANT,
+      name: "Comercio Prueba",
+      description: "Buenas empanadas",
+      status: "ACTIVE",
+      zoneId: ZONE,
+      zoneName: "Rawson",
+      cityName: "Rawson",
+      cityTimezone: "America/Argentina/Catamarca",
+      pickupEnabled: true,
+      merchantDeliveryEnabled: true,
+      preparationMinutes: 20,
+      acceptingOrders: true,
+      pausedUntil: null,
+    }));
+    deps.listDeliveryZones = vi.fn(async () => [
+      {
+        zoneId: ZONE,
+        deliveryFeeCents: 150000,
+        minimumOrderCents: 200000,
+        estimatedMinutes: 30,
+        active: true,
+      },
+    ]);
+    const page = await getPublicMerchantCatalog(MERCHANT, ZONE, deps);
+    expect(page!.logistics.pickupAvailable).toBe(true);
+    expect(page!.logistics.deliveryAvailable).toBe(true);
+    expect(page!.logistics.deliveryFeeLabel).toBe("Envío $1.500,00");
+    expect(page!.logistics.minimumOrderLabel).toBe("Compra mínima $2.000,00");
+    const serialized = JSON.stringify(page!.logistics);
+    expect(serialized).not.toMatch(/platformDelivery|membership|SECRET/i);
+  });
 });

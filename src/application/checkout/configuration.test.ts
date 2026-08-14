@@ -174,6 +174,19 @@ describe("getCheckoutConfiguration", () => {
     ]);
   });
 
+  it("does not load delivery zones when merchant delivery is disabled", async () => {
+    const loaded = deps({
+      findMerchantById: vi.fn(async () =>
+        merchant({ merchantDeliveryEnabled: false }),
+      ),
+    });
+    const result = await getCheckoutConfiguration(MERCHANT_ID, loaded);
+    expect(result?.merchant.merchantDeliveryEnabled).toBe(false);
+    expect(result?.merchant.pickupEnabled).toBe(true);
+    expect(result?.deliveryZones).toEqual([]);
+    expect(loaded.listDeliveryZonesForMerchant).not.toHaveBeenCalled();
+  });
+
   it("returns null for an invalid merchant id", async () => {
     expect(await getCheckoutConfiguration("not-a-uuid", deps())).toBeNull();
   });

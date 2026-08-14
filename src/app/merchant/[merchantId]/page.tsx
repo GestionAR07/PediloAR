@@ -104,6 +104,12 @@ export default async function MerchantDetailPage({ params }: PageProps) {
         >
           Medios de pago →
         </Link>
+        <Link
+          href={`/merchant/${merchantId}/delivery`}
+          className="inline-flex rounded-md border border-border px-4 py-3 font-medium text-accent underline-offset-4 hover:underline"
+        >
+          Envíos y zonas →
+        </Link>
       </nav>
 
       <dl className="space-y-2 text-sm">
