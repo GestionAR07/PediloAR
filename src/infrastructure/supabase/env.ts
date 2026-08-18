@@ -10,18 +10,30 @@ export type SupabasePublicConfig = {
 
 export type EnvLike = Readonly<Record<string, string | undefined>>;
 
-export function hasSupabasePublicConfig(env: EnvLike = process.env): boolean {
+/**
+ * Direct `process.env.NEXT_PUBLIC_*` reads so Next.js inlines them into
+ * Client Component bundles. Do not pass `process.env` through a variable.
+ */
+function getRuntimePublicEnv(): EnvLike {
+  return {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  };
+}
+
+export function hasSupabasePublicConfig(env?: EnvLike): boolean {
+  const source = env ?? getRuntimePublicEnv();
   return Boolean(
-    env.NEXT_PUBLIC_SUPABASE_URL?.trim() &&
-    env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim(),
+    source.NEXT_PUBLIC_SUPABASE_URL?.trim() &&
+      source.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim(),
   );
 }
 
-export function getSupabasePublicConfig(
-  env: EnvLike = process.env,
-): SupabasePublicConfig {
-  const url = env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  const publishableKey = env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim();
+export function getSupabasePublicConfig(env?: EnvLike): SupabasePublicConfig {
+  const source = env ?? getRuntimePublicEnv();
+  const url = source.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const publishableKey = source.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim();
 
   if (!url || !publishableKey) {
     throw new Error(

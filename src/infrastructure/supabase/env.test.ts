@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   getSupabasePublicConfig,
@@ -36,6 +38,25 @@ describe("supabase public config", () => {
         NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "service_role_secret",
       }),
     ).toThrow(/service-role/);
+  });
+
+  it("reads NEXT_PUBLIC keys via direct process.env property access", () => {
+    const source = fs.readFileSync(
+      path.join(process.cwd(), "src/infrastructure/supabase/env.ts"),
+      "utf8",
+    );
+    expect(source).toContain(
+      "NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL",
+    );
+    expect(source).toContain(
+      "process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+    );
+    expect(source).not.toMatch(
+      /export function hasSupabasePublicConfig\([^)]*=\s*process\.env/,
+    );
+    expect(source).not.toMatch(
+      /export function getSupabasePublicConfig\([^)]*=\s*process\.env/,
+    );
   });
 });
 
