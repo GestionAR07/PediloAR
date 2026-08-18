@@ -26,7 +26,7 @@ export function hasSupabasePublicConfig(env?: EnvLike): boolean {
   const source = env ?? getRuntimePublicEnv();
   return Boolean(
     source.NEXT_PUBLIC_SUPABASE_URL?.trim() &&
-      source.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim(),
+    source.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim(),
   );
 }
 
