@@ -22,3 +22,66 @@ body {
   color: var(--color-fg);
   font-family: var(--font-sans);
 }
+
+/* Public storefront skin — does not replace :root for /merchant or /admin. */
+.public-storefront {
+  --color-bg: #faf8ff;
+  --color-fg: #0e0820;
+  --color-muted: #5b5470;
+  --color-border: #e4dcf7;
+  --color-accent: #7c3aed;
+  --ps-cream: #faf8ff;
+  --ps-night: #0b0618;
+  --ps-night-900: #0e0820;
+  --ps-violet: #7c3aed;
+  --ps-fuchsia: #d946ef;
+  --ps-orange: #f97316;
+  background-color: var(--ps-cream);
+  color: var(--color-fg);
+  font-family: var(--font-inter), var(--font-sans);
+}
+
+.public-storefront .font-display {
+  font-family: var(--font-sora), var(--font-inter), var(--font-sans);
+}
+
+.public-storefront .grad-text {
+  background: linear-gradient(90deg, #c4b5fd 0%, #a78bfa 42%, #d946ef 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.public-storefront .grad-btn {
+  background-image: linear-gradient(
+    135deg,
+    #6d28d9 0%,
+    #7c3aed 48%,
+    #a855f7 82%,
+    #d946ef 100%
+  );
+  background-size: 160% 160%;
+  background-position: 0% 50%;
+}
+
+.public-storefront .nav-blur {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(18px);
+}
+
+.public-storefront .shadow-soft {
+  box-shadow: 0 20px 45px -20px rgba(109, 40, 217, 0.18);
+}
+
+.public-storefront .shadow-glow {
+  box-shadow: 0 12px 32px -12px rgba(124, 58, 237, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-storefront .grad-btn,
+  .public-storefront .card-lift,
+  .public-storefront .nav-blur {
+    transition: none;
+    transform: none;
+  }
+}

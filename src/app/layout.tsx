@@ -1,8 +1,22 @@
 import type { Metadata } from "next";
+import { Inter, Sora } from "next/font/google";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { SiteShell } from "@/components/layout/site-shell";
 import { APP_NAME } from "@/lib/app-info";
 import "@/styles/globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const sora = Sora({
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+  variable: "--font-sora",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: APP_NAME,
@@ -16,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es-AR">
+    <html lang="es-AR" className={`${inter.variable} ${sora.variable}`}>
       <body className="antialiased">
         <CartProvider>
           <SiteShell>{children}</SiteShell>
