@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { logoutAction } from "@/app/login/actions";
 import { listMerchantInboxApp } from "@/application/merchant/order-inbox-wiring";
+import { MerchantInboxRealtime } from "@/components/merchant/merchant-inbox-realtime";
 import { MerchantOrderInbox } from "@/components/merchant/merchant-order-inbox";
 import { isAuthzError } from "@/server/auth/errors";
 import { requireMerchantMembership } from "@/server/auth/authorization";
@@ -122,6 +123,7 @@ export default async function MerchantDetailPage({ params }: PageProps) {
 
   return (
     <main className="flex flex-1 flex-col gap-6 border-t border-border pt-10">
+      <MerchantInboxRealtime merchantId={merchantId} />
       <header className="space-y-2">
         <p className="text-sm">
           <Link
