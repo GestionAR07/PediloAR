@@ -193,7 +193,7 @@ export function CartPageClient() {
           </p>
           <Link
             href="/checkout"
-            className={`grad-btn hidden min-h-12 items-center justify-center rounded-full px-4 text-sm font-extrabold text-white shadow-glow lg:inline-flex ${focusRing}`}
+            className={`grad-btn hidden min-h-12 w-full items-center justify-center rounded-full px-4 text-sm font-extrabold text-white shadow-glow lg:flex ${focusRing}`}
           >
             Continuar
           </Link>
