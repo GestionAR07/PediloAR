@@ -21,6 +21,7 @@ function isPublicStorefrontPath(pathname: string): boolean {
   return (
     pathname === "/" ||
     pathname === "/carrito" ||
+    pathname === "/checkout" ||
     pathname.startsWith("/comercios")
   );
 }

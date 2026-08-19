@@ -100,7 +100,7 @@ body {
 }
 
 .public-storefront .nav-blur {
-  background: rgba(255, 255, 255, 0.86);
+  background-color: var(--ps-cream);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
 }
@@ -304,6 +304,68 @@ body {
   animation: ps-cart-sticky-in 0.28s ease both;
 }
 
+.public-storefront .checkout-intro,
+.public-storefront .checkout-section,
+.public-storefront .checkout-summary-panel,
+.public-storefront .checkout-empty,
+.public-storefront .checkout-success {
+  animation: ps-cart-reveal 0.3s ease both;
+}
+
+.public-storefront .checkout-address {
+  animation: ps-cart-reveal 0.28s ease both;
+}
+
+.public-storefront .checkout-review-panel {
+  animation: ps-cart-reveal 0.3s ease both;
+}
+
+.public-storefront .checkout-input {
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.public-storefront .checkout-input:focus-visible {
+  border-color: #7c3aed;
+}
+
+.public-storefront .checkout-choice {
+  transition:
+    border-color 0.16s ease,
+    background-color 0.16s ease,
+    transform 0.15s ease;
+}
+
+.public-storefront .checkout-choice:active {
+  transform: scale(0.99);
+}
+
+.public-storefront .checkout-total-value {
+  display: inline-block;
+  animation: ps-cart-pulse 0.18s ease;
+}
+
+.public-storefront .checkout-sticky-bar {
+  animation: ps-cart-sticky-in 0.28s ease both;
+}
+
+.public-storefront .checkout-spinner {
+  display: inline-block;
+  height: 0.9rem;
+  width: 0.9rem;
+  border: 2px solid #ddd6fe;
+  border-top-color: #7c3aed;
+  border-radius: 999px;
+  animation: ps-checkout-spin 0.6s linear infinite;
+}
+
+@keyframes ps-checkout-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .public-storefront .grad-btn,
   .public-storefront .grad-btn:hover,
@@ -327,7 +389,20 @@ body {
   .public-storefront .cart-qty-value,
   .public-storefront .cart-total-value,
   .public-storefront .cart-price-value,
-  .public-storefront .cart-sticky-bar {
+  .public-storefront .cart-sticky-bar,
+  .public-storefront .checkout-intro,
+  .public-storefront .checkout-section,
+  .public-storefront .checkout-summary-panel,
+  .public-storefront .checkout-empty,
+  .public-storefront .checkout-success,
+  .public-storefront .checkout-address,
+  .public-storefront .checkout-review-panel,
+  .public-storefront .checkout-input,
+  .public-storefront .checkout-choice,
+  .public-storefront .checkout-choice:active,
+  .public-storefront .checkout-total-value,
+  .public-storefront .checkout-sticky-bar,
+  .public-storefront .checkout-spinner {
     transition: none;
     transform: none;
     filter: none;

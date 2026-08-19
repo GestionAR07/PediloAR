@@ -109,6 +109,7 @@ describe("qwen public discovery v1 static checks", () => {
 
     expect(shell).toContain('pathname === "/"');
     expect(shell).toContain('pathname === "/carrito"');
+    expect(shell).toContain('pathname === "/checkout"');
     expect(shell).toContain('pathname.startsWith("/comercios")');
     expect(shell).toContain('pathname.startsWith("/merchant")');
     expect(shell).toContain('pathname.startsWith("/admin")');

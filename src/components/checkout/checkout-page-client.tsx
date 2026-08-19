@@ -16,10 +16,16 @@ import {
 } from "@/application/checkout/parse-checkout-input";
 import { isStaleCartError } from "@/application/checkout/user-messages";
 import { CHECKOUT_ERROR_CODES } from "@/application/checkout/errors";
+import { formatConfigurationSummary } from "@/domain/cart/validate-configuration";
 import { isCartEmpty } from "@/domain/cart/types";
 import { moneyCents } from "@/domain/money/money-cents";
 import { formatMoneyCentsArs } from "@/lib/format-money";
 import { useCart } from "@/components/cart/cart-provider";
+import {
+  BikeIcon,
+  ShoppingBagIcon,
+  StoreIcon,
+} from "@/components/ui/public-icons";
 import {
   getCheckoutConfigurationAction,
   placeOrderAction,
@@ -53,8 +59,15 @@ import {
 } from "@/lib/checkout/session-store";
 import { readPublicZoneId } from "@/lib/public-zone-storage";
 
-const inputClassName =
-  "min-h-11 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none ring-accent focus-visible:ring-2 disabled:opacity-60";
+const focusRing =
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]";
+
+const inputClassName = `checkout-input min-h-12 w-full rounded-2xl border border-violet-100 bg-white px-4 py-3 text-sm outline-none ring-accent focus-visible:ring-2 disabled:opacity-60 ${focusRing}`;
+
+const choiceBase =
+  "checkout-choice flex min-h-12 cursor-pointer items-start gap-3 rounded-2xl border px-4 py-3 text-sm transition";
+const choiceIdle = `${choiceBase} border-violet-100 bg-white text-[var(--ps-night-900)]`;
+const choiceActive = `${choiceBase} checkout-choice--active border-violet-300 bg-violet-50 text-[var(--ps-night-900)]`;
 
 function formatCents(cents: number): string {
   return formatMoneyCentsArs(moneyCents(cents));
@@ -385,103 +398,152 @@ export function CheckoutPageClient() {
     await confirmWithDraft(draft);
   }
 
+  const contactInvalid = errorCode === CHECKOUT_ERROR_CODES.CONTACT_INVALID;
+  const addressInvalid =
+    errorCode === CHECKOUT_ERROR_CODES.DELIVERY_ADDRESS_REQUIRED;
+  const zoneInvalid = errorCode === CHECKOUT_ERROR_CODES.DELIVERY_ZONE_REQUIRED;
+
   if (!hydrated) {
     return (
-      <p className="text-sm text-muted" role="status">
-        Cargando checkout…
-      </p>
+      <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+        <p className="text-sm text-muted" role="status">
+          Cargando checkout…
+        </p>
+      </div>
     );
   }
 
   if (success) {
     return (
-      <section className="space-y-4" aria-live="polite">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Pedido recibido
-        </h1>
-        <p className="text-sm text-muted">
-          El comercio recibió tu pedido y está pendiente de confirmación.
-        </p>
-        <dl className="space-y-2 rounded-xl border border-border bg-white/70 p-4 text-sm">
-          <div className="flex justify-between gap-3">
-            <dt className="text-muted">Referencia</dt>
-            <dd className="font-medium">{success.orderRef}</dd>
-          </div>
-          <div className="flex justify-between gap-3">
-            <dt className="text-muted">Comercio</dt>
-            <dd className="font-medium">{success.merchantName}</dd>
-          </div>
-          <div className="flex justify-between gap-3">
-            <dt className="text-muted">Total</dt>
-            <dd className="font-medium">{formatCents(success.totalCents)}</dd>
-          </div>
-          <div className="flex justify-between gap-3">
-            <dt className="text-muted">Modalidad</dt>
-            <dd className="font-medium">
-              {fulfillmentLabel(success.fulfillmentMethod)}
-            </dd>
-          </div>
-          <div className="flex justify-between gap-3">
-            <dt className="text-muted">Estado</dt>
-            <dd className="font-medium">Pendiente</dd>
-          </div>
-        </dl>
-        <Link
-          href="/"
-          className="inline-flex min-h-11 items-center rounded-md bg-accent px-4 text-sm font-medium text-white"
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-10 sm:px-6 lg:px-8">
+        <section
+          className="checkout-success mx-auto w-full max-w-md space-y-5 rounded-[1.75rem] border border-violet-100/70 bg-white p-6 text-center shadow-soft sm:p-8"
+          aria-live="polite"
         >
-          Volver al inicio
-        </Link>
-      </section>
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-50 text-violet-700">
+            <ShoppingBagIcon className="h-7 w-7" />
+          </span>
+          <h1 className="font-display text-2xl font-extrabold tracking-tight text-[var(--ps-night-900)]">
+            Pedido recibido
+          </h1>
+          <p className="text-sm text-muted">
+            El comercio recibió tu pedido y está pendiente de confirmación.
+          </p>
+          <dl className="space-y-2 rounded-2xl bg-violet-50/70 p-4 text-left text-sm">
+            <div className="flex justify-between gap-3">
+              <dt className="text-muted">Referencia</dt>
+              <dd className="font-bold">{success.orderRef}</dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-muted">Comercio</dt>
+              <dd className="font-medium">{success.merchantName}</dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-muted">Total</dt>
+              <dd className="font-extrabold tabular-nums">
+                {formatCents(success.totalCents)}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-muted">Modalidad</dt>
+              <dd className="font-medium">
+                {fulfillmentLabel(success.fulfillmentMethod)}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-muted">Estado</dt>
+              <dd className="font-medium">Pendiente</dd>
+            </div>
+          </dl>
+          <Link
+            href="/"
+            className={`grad-btn inline-flex min-h-12 w-full items-center justify-center rounded-full px-4 text-sm font-extrabold text-white shadow-glow ${focusRing}`}
+          >
+            Volver al inicio
+          </Link>
+        </section>
+      </div>
     );
   }
 
   if (isCartEmpty(cart)) {
     return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-semibold tracking-tight">Checkout</h1>
-        <p className="text-sm text-muted">
-          Tu carrito está vacío. Agregá productos antes de continuar.
-        </p>
-        <Link
-          href="/carrito"
-          className="inline-flex min-h-11 items-center rounded-md bg-accent px-4 text-sm font-medium text-white"
-        >
-          Ir al carrito
-        </Link>
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-10 sm:px-6 lg:px-8">
+        <div className="checkout-empty mx-auto w-full max-w-md rounded-[1.75rem] border border-violet-100/70 bg-white px-6 py-12 text-center shadow-soft">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-50 text-violet-700">
+            <ShoppingBagIcon className="h-7 w-7" />
+          </span>
+          <h1 className="font-display mt-5 text-2xl font-extrabold tracking-tight text-[var(--ps-night-900)]">
+            Checkout
+          </h1>
+          <p className="mt-2 text-sm text-muted">
+            Tu carrito está vacío. Agregá productos antes de continuar.
+          </p>
+          <Link
+            href="/carrito"
+            className={`grad-btn mt-6 inline-flex min-h-12 items-center justify-center rounded-full px-6 text-sm font-extrabold text-white shadow-glow ${focusRing}`}
+          >
+            Ir al carrito
+          </Link>
+        </div>
       </div>
     );
   }
 
   const selectedInstructions = selectedPayment?.instructions?.trim() ?? "";
+  const merchantLabel = config?.merchant.name ?? cart.merchantNameSnapshot;
+  const serverMinimumError =
+    errorCode === CHECKOUT_ERROR_CODES.DELIVERY_MINIMUM_NOT_MET;
+  const showMinimumHint =
+    belowMinimum && Boolean(selectedDeliveryZone) && !serverMinimumError;
+  const displayedError =
+    errorCode === CHECKOUT_ERROR_CODES.DELIVERY_MINIMUM_NOT_MET &&
+    selectedDeliveryZone
+      ? `Para esta zona el pedido mínimo es de ${formatCents(selectedDeliveryZone.minimumOrderCents)}.`
+      : error;
+  const shellPadding = showConfirm
+    ? "pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] lg:pb-12"
+    : "pb-10 lg:pb-12";
 
   return (
-    <div className="space-y-6">
+    <div
+      className={`mx-auto w-full max-w-6xl px-4 pt-6 sm:px-6 lg:px-8 lg:pt-8 ${shellPadding}`}
+    >
       <p className="text-sm">
         <Link
           href="/carrito"
-          className="text-accent underline-offset-4 hover:underline"
+          className={`inline-flex items-center font-bold text-violet-800 underline-offset-4 hover:underline ${focusRing}`}
         >
           ← Volver al carrito
         </Link>
       </p>
 
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Checkout</h1>
+      <header className="checkout-intro mt-5 max-w-2xl space-y-2">
+        <p className="text-[11px] font-bold tracking-wider text-violet-700 uppercase">
+          Pedido local
+        </p>
+        <h1 className="font-display text-3xl font-extrabold tracking-tight text-[var(--ps-night-900)]">
+          Finalizá tu pedido
+        </h1>
+        <p className="flex items-center gap-2 text-sm font-medium text-muted">
+          <StoreIcon className="h-4 w-4 shrink-0 text-violet-600" />
+          <span className="min-w-0 truncate">{merchantLabel}</span>
+        </p>
         <p className="text-sm text-muted">
-          {config?.merchant.name ?? cart.merchantNameSnapshot}
+          Completá tus datos, revisá el pedido y confirmá. Los precios los
+          valida el comercio al revisar.
         </p>
       </header>
 
       {configLoading ? (
-        <p className="text-sm text-muted" role="status">
+        <p className="mt-4 text-sm text-muted" role="status">
           Cargando datos del comercio…
         </p>
       ) : null}
 
       {configError ? (
         <p
-          className="rounded-md border border-border px-3 py-2 text-sm"
+          className="checkout-alert mt-4 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm"
           role="alert"
         >
           {configError}
@@ -490,7 +552,7 @@ export function CheckoutPageClient() {
 
       {config && !config.merchant.acceptingOrders ? (
         <p
-          className="rounded-md border border-border px-3 py-2 text-sm"
+          className="checkout-alert mt-4 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm"
           role="alert"
         >
           Este comercio no está tomando pedidos en este momento.
@@ -499,39 +561,44 @@ export function CheckoutPageClient() {
 
       {config && config.paymentMethods.length === 0 ? (
         <p
-          className="rounded-md border border-border px-3 py-2 text-sm"
+          className="checkout-alert mt-4 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm"
           role="alert"
         >
           Este comercio todavía no configuró medios de pago.
         </p>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_16rem]">
-        <div className="space-y-6">
-          <section className="space-y-3">
-            <h2 className="text-lg font-semibold">Contacto</h2>
+      <div className="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1.62fr)_minmax(18rem,0.9fr)] lg:gap-8">
+        <div className="space-y-5">
+          <section className="checkout-section space-y-4 rounded-[1.75rem] border border-violet-100/70 bg-white p-5 shadow-soft">
+            <h2 className="font-display text-lg font-extrabold tracking-tight text-[var(--ps-night-900)]">
+              Tus datos
+            </h2>
             <label className="flex flex-col gap-1.5 text-sm">
-              <span className="font-medium">Nombre</span>
+              <span className="font-bold">Nombre</span>
               <input
                 name="customerName"
                 autoComplete="name"
                 maxLength={80}
                 required
                 disabled={formLocked}
+                aria-invalid={contactInvalid}
                 value={nameValue}
                 onChange={(event) => setCustomerName(event.target.value)}
                 className={inputClassName}
               />
             </label>
             <label className="flex flex-col gap-1.5 text-sm">
-              <span className="font-medium">Teléfono</span>
+              <span className="font-bold">Teléfono</span>
               <input
                 name="customerPhone"
                 type="tel"
+                inputMode="tel"
                 autoComplete="tel"
                 maxLength={32}
                 required
                 disabled={formLocked}
+                aria-invalid={contactInvalid}
                 value={phoneValue}
                 onChange={(event) => setCustomerPhone(event.target.value)}
                 className={inputClassName}
@@ -539,26 +606,34 @@ export function CheckoutPageClient() {
             </label>
           </section>
 
-          <fieldset className="space-y-3" disabled={formLocked}>
-            <legend className="text-lg font-semibold">
-              Modalidad de entrega
+          <fieldset
+            className="checkout-section space-y-3 rounded-[1.75rem] border border-violet-100/70 bg-white p-5 shadow-soft"
+            disabled={formLocked}
+          >
+            <legend className="font-display px-1 text-lg font-extrabold tracking-tight text-[var(--ps-night-900)]">
+              Cómo lo recibís
             </legend>
             {pickupAvailable ? (
-              <label className="flex min-h-11 items-start gap-3 rounded-md border border-border px-3 py-2 text-sm">
+              <label
+                className={
+                  fulfillmentValue === "PICKUP" ? choiceActive : choiceIdle
+                }
+              >
                 <input
                   type="radio"
                   name="fulfillmentMethod"
                   value="PICKUP"
                   checked={fulfillmentValue === "PICKUP"}
                   onChange={() => setFulfillmentMethod("PICKUP")}
-                  className="mt-1"
+                  className="mt-1 accent-violet-700"
                 />
-                <span>
-                  <span className="block font-medium">
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center gap-2 font-bold">
+                    <StoreIcon className="h-4 w-4 shrink-0 text-violet-600" />
                     Retiro en el comercio
                   </span>
                   {config ? (
-                    <span className="block text-xs text-muted">
+                    <span className="mt-1 block text-xs text-muted">
                       En {config.merchant.homeZoneName},{" "}
                       {config.merchant.homeCityName}
                       {config.merchant.preparationMinutes != null
@@ -570,16 +645,25 @@ export function CheckoutPageClient() {
               </label>
             ) : null}
             {deliveryAvailable ? (
-              <label className="flex min-h-11 items-start gap-3 rounded-md border border-border px-3 py-2 text-sm">
+              <label
+                className={
+                  fulfillmentValue === "MERCHANT_DELIVERY"
+                    ? choiceActive
+                    : choiceIdle
+                }
+              >
                 <input
                   type="radio"
                   name="fulfillmentMethod"
                   value="MERCHANT_DELIVERY"
                   checked={fulfillmentValue === "MERCHANT_DELIVERY"}
                   onChange={() => setFulfillmentMethod("MERCHANT_DELIVERY")}
-                  className="mt-1"
+                  className="mt-1 accent-violet-700"
                 />
-                <span className="font-medium">Envío a domicilio</span>
+                <span className="flex items-center gap-2 font-bold">
+                  <BikeIcon className="h-4 w-4 shrink-0 text-violet-600" />
+                  Envío a domicilio
+                </span>
               </label>
             ) : null}
             {!pickupAvailable && !deliveryAvailable && config ? (
@@ -590,21 +674,24 @@ export function CheckoutPageClient() {
           </fieldset>
 
           {fulfillmentValue === "PICKUP" && config ? (
-            <p className="text-sm text-muted">
+            <p className="px-1 text-sm text-muted">
               El retiro es en {config.merchant.homeZoneName} (
               {config.merchant.homeCityName}).
             </p>
           ) : null}
 
           {fulfillmentValue === "MERCHANT_DELIVERY" ? (
-            <section className="space-y-3">
-              <h2 className="text-lg font-semibold">Dirección y zona</h2>
+            <section className="checkout-section checkout-address space-y-4 rounded-[1.75rem] border border-violet-100/70 bg-white p-5 shadow-soft">
+              <h2 className="font-display text-lg font-extrabold tracking-tight text-[var(--ps-night-900)]">
+                Dirección
+              </h2>
               <label className="flex flex-col gap-1.5 text-sm">
-                <span className="font-medium">Zona de envío</span>
+                <span className="font-bold">Zona de envío</span>
                 <select
                   name="deliveryZoneId"
                   required
                   disabled={formLocked}
+                  aria-invalid={zoneInvalid}
                   value={deliveryZoneValue}
                   onChange={(event) => setDeliveryZoneId(event.target.value)}
                   className={inputClassName}
@@ -629,37 +716,33 @@ export function CheckoutPageClient() {
                     : ""}
                 </p>
               ) : null}
-              {belowMinimum && selectedDeliveryZone ? (
-                <p className="text-sm" role="status">
-                  Para esta zona el pedido mínimo es de{" "}
-                  {formatCents(selectedDeliveryZone.minimumOrderCents)}.
-                </p>
-              ) : null}
               <label className="flex flex-col gap-1.5 text-sm">
-                <span className="font-medium">Calle</span>
+                <span className="font-bold">Calle</span>
                 <input
                   name="street"
                   autoComplete="address-line1"
                   required
                   disabled={formLocked}
+                  aria-invalid={addressInvalid}
                   value={streetValue}
                   onChange={(event) => setStreet(event.target.value)}
                   className={inputClassName}
                 />
               </label>
               <label className="flex flex-col gap-1.5 text-sm">
-                <span className="font-medium">Número</span>
+                <span className="font-bold">Número</span>
                 <input
                   name="number"
                   required
                   disabled={formLocked}
+                  aria-invalid={addressInvalid}
                   value={numberValue}
                   onChange={(event) => setNumber(event.target.value)}
                   className={inputClassName}
                 />
               </label>
               <label className="flex flex-col gap-1.5 text-sm">
-                <span className="font-medium">Piso / depto (opcional)</span>
+                <span className="font-bold">Piso / depto (opcional)</span>
                 <input
                   name="floorApartment"
                   disabled={formLocked}
@@ -669,7 +752,7 @@ export function CheckoutPageClient() {
                 />
               </label>
               <label className="flex flex-col gap-1.5 text-sm">
-                <span className="font-medium">Referencia (opcional)</span>
+                <span className="font-bold">Referencia (opcional)</span>
                 <input
                   name="reference"
                   disabled={formLocked}
@@ -681,12 +764,19 @@ export function CheckoutPageClient() {
             </section>
           ) : null}
 
-          <fieldset className="space-y-3" disabled={formLocked}>
-            <legend className="text-lg font-semibold">Medio de pago</legend>
+          <fieldset
+            className="checkout-section space-y-3 rounded-[1.75rem] border border-violet-100/70 bg-white p-5 shadow-soft"
+            disabled={formLocked}
+          >
+            <legend className="font-display px-1 text-lg font-extrabold tracking-tight text-[var(--ps-night-900)]">
+              Cómo pagás
+            </legend>
             {(config?.paymentMethods ?? []).map((method) => (
               <label
                 key={method.code}
-                className="flex min-h-11 items-start gap-3 rounded-md border border-border px-3 py-2 text-sm"
+                className={
+                  paymentValue === method.code ? choiceActive : choiceIdle
+                }
               >
                 <input
                   type="radio"
@@ -694,40 +784,141 @@ export function CheckoutPageClient() {
                   value={method.code}
                   checked={paymentValue === method.code}
                   onChange={() => setPaymentMethodCode(method.code)}
-                  className="mt-1"
+                  className="mt-1 accent-violet-700"
                 />
-                <span className="font-medium">{method.label}</span>
+                <span className="font-bold">{method.label}</span>
               </label>
             ))}
             {selectedInstructions ? (
-              <p className="rounded-md border border-border bg-white/60 px-3 py-2 text-sm text-muted">
+              <p className="rounded-2xl border border-violet-100 bg-violet-50/70 px-4 py-3 text-sm text-muted">
                 {selectedInstructions}
               </p>
             ) : null}
           </fieldset>
+
+          {error ? (
+            <p
+              className="checkout-alert rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900"
+              role="alert"
+              aria-live="assertive"
+            >
+              {displayedError}
+            </p>
+          ) : null}
+
+          {isStaleCartError(errorCode ?? "") ? (
+            <Link
+              href="/carrito"
+              className={`inline-flex min-h-11 items-center justify-center rounded-full border border-violet-100 px-4 text-sm font-bold text-violet-800 ${focusRing}`}
+            >
+              Volver al carrito
+            </Link>
+          ) : null}
+
+          {attempt.phase === "unknown" ? (
+            <div className="space-y-2" aria-live="polite">
+              <p className="text-sm">
+                No pudimos confirmar la respuesta del servidor.
+              </p>
+              <button
+                type="button"
+                onClick={() => void handleRetry()}
+                disabled={confirming}
+                className={`grad-btn min-h-12 w-full rounded-full px-4 text-sm font-extrabold text-white shadow-glow disabled:opacity-60 ${focusRing}`}
+              >
+                {confirming ? "Confirmando pedido…" : "Reintentar confirmación"}
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {showMinimumHint && selectedDeliveryZone ? (
+                <p
+                  className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950"
+                  role="status"
+                >
+                  Pedido mínimo de esta zona:{" "}
+                  {formatCents(selectedDeliveryZone.minimumOrderCents)}. El
+                  comercio lo validará al revisar.
+                </p>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => void handleReview()}
+                disabled={!canReview}
+                className={`inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-violet-200 bg-white px-4 text-sm font-extrabold text-violet-800 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-200 disabled:text-slate-500 disabled:opacity-100 ${focusRing}`}
+              >
+                {reviewing ? (
+                  <>
+                    <span className="checkout-spinner" aria-hidden />
+                    Revisando…
+                  </>
+                ) : (
+                  "Revisar pedido"
+                )}
+              </button>
+            </div>
+          )}
         </div>
 
-        <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-          <section className="space-y-3 rounded-xl border border-border bg-white/70 p-4">
-            <h2 className="text-lg font-semibold">Resumen</h2>
+        <aside className="checkout-summary-panel space-y-4 lg:sticky lg:top-24 lg:self-start">
+          <section className="space-y-3 rounded-[1.75rem] border border-violet-100/70 bg-white p-5 shadow-soft">
+            <h2 className="font-display text-lg font-extrabold tracking-tight text-[var(--ps-night-900)]">
+              Resumen
+            </h2>
+            <p className="text-sm font-medium text-muted">{merchantLabel}</p>
             <ul className="space-y-2 text-sm">
-              {cart.lines.map((line) => (
-                <li key={line.id} className="flex justify-between gap-2">
-                  <span>
-                    {line.quantity} × {line.productNameSnapshot}
-                  </span>
-                </li>
-              ))}
+              {cart.lines.map((line) => {
+                const summary = formatConfigurationSummary(line.configuration);
+                return (
+                  <li key={line.id}>
+                    <span className="font-medium">
+                      {line.quantity} × {line.productNameSnapshot}
+                    </span>
+                    {summary.length > 0 ? (
+                      <ul className="mt-0.5 space-y-0.5 text-xs text-muted">
+                        {summary.map((row) => (
+                          <li key={row}>{row}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </li>
+                );
+              })}
             </ul>
-            <p className="text-xs text-muted">
-              Los precios definitivos se confirman al revisar el pedido.
-            </p>
+            <div className="flex items-end justify-between gap-3 border-t border-violet-100 pt-3">
+              <span className="text-sm font-bold text-slate-500">
+                Subtotal de productos
+              </span>
+              <span
+                key={totalCents}
+                className="checkout-total-value font-display text-lg font-extrabold tabular-nums"
+              >
+                {formatCents(totalCents)}
+              </span>
+            </div>
+            {fulfillmentValue === "MERCHANT_DELIVERY" &&
+            selectedDeliveryZone ? (
+              <p className="text-xs text-muted">
+                Envío estimado de zona:{" "}
+                {formatCents(selectedDeliveryZone.feeCents)}. El total final se
+                confirma al revisar el pedido.
+              </p>
+            ) : (
+              <p className="text-xs text-muted">
+                Los precios definitivos se confirman al revisar el pedido.
+              </p>
+            )}
           </section>
 
           {showAuthoritativeReview && review ? (
-            <section className="space-y-3 rounded-xl border border-border bg-white/70 p-4">
-              <h2 className="text-lg font-semibold">Revisión del pedido</h2>
+            <section className="checkout-review-panel space-y-3 rounded-[1.75rem] border border-violet-200 bg-violet-50/60 p-5 shadow-soft">
+              <h2 className="font-display text-lg font-extrabold tracking-tight text-[var(--ps-night-900)]">
+                Revisión del pedido
+              </h2>
               <p className="text-sm font-medium">{review.merchantName}</p>
+              <p className="text-xs font-bold tracking-wider text-violet-700 uppercase">
+                Validado por el comercio
+              </p>
               <ul className="space-y-2 text-sm">
                 {review.lines.map((line) => (
                   <li key={`${line.productId}-${line.quantity}`}>
@@ -735,7 +926,9 @@ export function CheckoutPageClient() {
                       <span>
                         {line.quantity} × {line.productName}
                       </span>
-                      <span>{formatCents(line.lineTotalCents)}</span>
+                      <span className="tabular-nums">
+                        {formatCents(line.lineTotalCents)}
+                      </span>
                     </div>
                     {line.options.length > 0 ? (
                       <ul className="mt-1 space-y-0.5 text-xs text-muted">
@@ -754,15 +947,24 @@ export function CheckoutPageClient() {
               <dl className="space-y-1 text-sm">
                 <div className="flex justify-between gap-2">
                   <dt>Subtotal</dt>
-                  <dd>{formatCents(review.orderSubtotalCents)}</dd>
+                  <dd className="tabular-nums">
+                    {formatCents(review.orderSubtotalCents)}
+                  </dd>
                 </div>
                 <div className="flex justify-between gap-2">
                   <dt>Envío</dt>
-                  <dd>{formatCents(review.deliveryFeeCents)}</dd>
+                  <dd className="tabular-nums">
+                    {formatCents(review.deliveryFeeCents)}
+                  </dd>
                 </div>
-                <div className="flex justify-between gap-2 font-semibold">
+                <div className="flex justify-between gap-2 font-extrabold">
                   <dt>Total</dt>
-                  <dd>{formatCents(review.totalCents)}</dd>
+                  <dd
+                    key={review.totalCents}
+                    className="checkout-total-value tabular-nums"
+                  >
+                    {formatCents(review.totalCents)}
+                  </dd>
                 </div>
               </dl>
               <p className="text-sm">
@@ -784,65 +986,38 @@ export function CheckoutPageClient() {
                   ? ` — ${review.payment.instructions}`
                   : ""}
               </p>
-            </section>
-          ) : null}
-
-          {error ? (
-            <p className="text-sm" role="alert" aria-live="assertive">
-              {errorCode === CHECKOUT_ERROR_CODES.DELIVERY_MINIMUM_NOT_MET &&
-              selectedDeliveryZone
-                ? `Para esta zona el pedido mínimo es de ${formatCents(selectedDeliveryZone.minimumOrderCents)}.`
-                : error}
-            </p>
-          ) : null}
-
-          {isStaleCartError(errorCode ?? "") ? (
-            <Link
-              href="/carrito"
-              className="inline-flex min-h-11 items-center rounded-md border border-border px-4 text-sm"
-            >
-              Volver al carrito
-            </Link>
-          ) : null}
-
-          {attempt.phase === "unknown" ? (
-            <div className="space-y-2" aria-live="polite">
-              <p className="text-sm">
-                No pudimos confirmar la respuesta del servidor.
-              </p>
-              <button
-                type="button"
-                onClick={() => void handleRetry()}
-                disabled={confirming}
-                className="min-h-11 w-full rounded-md bg-accent px-4 text-sm font-medium text-white disabled:opacity-60"
-              >
-                {confirming ? "Confirmando pedido…" : "Reintentar confirmación"}
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <button
-                type="button"
-                onClick={() => void handleReview()}
-                disabled={!canReview}
-                className="min-h-11 w-full rounded-md border border-border px-4 text-sm font-medium disabled:opacity-60"
-              >
-                {reviewing ? "Revisando…" : "Revisar pedido"}
-              </button>
               {showConfirm ? (
                 <button
                   type="button"
                   onClick={() => void handleConfirm()}
                   disabled={!canConfirm}
-                  className="min-h-11 w-full rounded-md bg-accent px-4 text-sm font-medium text-white disabled:opacity-60"
+                  className={`grad-btn hidden min-h-12 w-full items-center justify-center rounded-full px-4 text-sm font-extrabold text-white shadow-glow disabled:opacity-60 lg:inline-flex ${focusRing}`}
                 >
                   {confirming ? "Confirmando pedido…" : "Confirmar pedido"}
                 </button>
               ) : null}
-            </div>
-          )}
+            </section>
+          ) : null}
         </aside>
       </div>
+
+      {showConfirm ? (
+        <div className="checkout-sticky-bar pb-safe sticky bottom-3 z-20 lg:hidden">
+          <button
+            type="button"
+            onClick={() => void handleConfirm()}
+            disabled={!canConfirm}
+            className={`grad-btn flex min-h-12 w-full items-center justify-between gap-3 rounded-full px-5 text-sm font-extrabold whitespace-nowrap text-white shadow-glow disabled:opacity-60 ${focusRing}`}
+          >
+            <span>
+              {confirming ? "Confirmando pedido…" : "Confirmar pedido"}
+            </span>
+            <span className="shrink-0 tabular-nums">
+              {review ? formatCents(review.totalCents) : ""}
+            </span>
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }
