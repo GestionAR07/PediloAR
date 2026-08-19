@@ -217,16 +217,117 @@ body {
   filter: drop-shadow(0 12px 28px rgba(192, 38, 211, 0.32));
 }
 
+.public-storefront .grad-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+@keyframes ps-cart-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ps-cart-pulse {
+  from {
+    opacity: 0.55;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes ps-cart-sticky-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.public-storefront .cart-intro,
+.public-storefront .cart-empty,
+.public-storefront .cart-summary-panel {
+  animation: ps-cart-reveal 0.3s ease both;
+}
+
+.public-storefront .cart-line-card {
+  animation: ps-cart-reveal 0.3s ease both;
+  animation-delay: min(calc(var(--cart-i, 0) * 45ms), 180ms);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .public-storefront .cart-line-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 40px -20px rgba(109, 40, 217, 0.22);
+  }
+}
+
+.public-storefront .cart-qty-stepper button {
+  transition:
+    transform 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.public-storefront .cart-qty-stepper button:active,
+.public-storefront .cart-remove-btn:active {
+  transform: scale(0.92);
+}
+
+.public-storefront .cart-remove-btn {
+  transition:
+    transform 0.15s ease,
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.public-storefront .cart-qty-value,
+.public-storefront .cart-total-value,
+.public-storefront .cart-price-value {
+  display: inline-block;
+  animation: ps-cart-pulse 0.18s ease;
+}
+
+.public-storefront .cart-sticky-bar {
+  animation: ps-cart-sticky-in 0.28s ease both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .public-storefront .grad-btn,
   .public-storefront .grad-btn:hover,
+  .public-storefront .grad-btn:active,
   .public-storefront .card-lift,
   .public-storefront .card-lift:hover,
   .public-storefront .zoom-img,
   .public-storefront .group:hover .zoom-img,
   .public-storefront .chip-active,
   .public-storefront .nav-blur,
-  .public-storefront .brand-wordmark--hero .brand-wordmark-text {
+  .public-storefront .brand-wordmark--hero .brand-wordmark-text,
+  .public-storefront .cart-intro,
+  .public-storefront .cart-empty,
+  .public-storefront .cart-summary-panel,
+  .public-storefront .cart-line-card,
+  .public-storefront .cart-line-card:hover,
+  .public-storefront .cart-qty-stepper button,
+  .public-storefront .cart-qty-stepper button:active,
+  .public-storefront .cart-remove-btn,
+  .public-storefront .cart-remove-btn:active,
+  .public-storefront .cart-qty-value,
+  .public-storefront .cart-total-value,
+  .public-storefront .cart-price-value,
+  .public-storefront .cart-sticky-bar {
     transition: none;
     transform: none;
     filter: none;

@@ -18,7 +18,11 @@ function isOperationalPath(pathname: string): boolean {
 }
 
 function isPublicStorefrontPath(pathname: string): boolean {
-  return pathname === "/" || pathname.startsWith("/comercios");
+  return (
+    pathname === "/" ||
+    pathname === "/carrito" ||
+    pathname.startsWith("/comercios")
+  );
 }
 
 export function SiteShell({ children }: SiteShellProps) {

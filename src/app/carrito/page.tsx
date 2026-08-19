@@ -15,7 +15,7 @@ export default async function CartPage() {
   const nav = await getPublicNavContextApp();
 
   return (
-    <main className="flex flex-1 flex-col gap-6 border-t border-border pt-8">
+    <main className="flex flex-1 flex-col">
       <PublicHeader nav={nav} />
       <CartPageClient />
     </main>
