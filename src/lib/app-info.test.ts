@@ -8,8 +8,9 @@ import {
 
 describe("app-info", () => {
   it("exposes the product name and public tagline", () => {
-    expect(APP_NAME).toBe("Marketplace Rawson");
+    expect(APP_NAME).toBe("Pedilo");
     expect(APP_TAGLINE).toContain("Rawson");
+    expect(APP_TAGLINE).toContain("Playa Unión");
     expect(APP_SERVICE_AREA).toBe("Rawson · Playa Unión");
   });
 

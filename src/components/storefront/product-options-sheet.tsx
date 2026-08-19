@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { PublicProductCard } from "@/application/storefront/types";
+import { CloseIcon } from "@/components/ui/public-icons";
 import {
   buildCartConfigurationFromDraft,
   isConfiguratorSelectionValid,
@@ -105,6 +106,12 @@ function setQuantitySelection(
   });
 }
 
+function choiceSurface(selected: boolean): string {
+  return selected
+    ? "border-violet-200 bg-violet-50"
+    : "border-transparent bg-slate-50 hover:border-violet-100 hover:bg-violet-50";
+}
+
 export function ProductOptionsSheet({
   product,
   open,
@@ -194,7 +201,7 @@ export function ProductOptionsSheet({
       <button
         type="button"
         aria-label="Cerrar"
-        className="absolute inset-0 bg-black/40"
+        className="absolute inset-0 bg-[var(--ps-night)]/60 backdrop-blur-sm"
         onClick={onClose}
       />
       <div
@@ -202,151 +209,130 @@ export function ProductOptionsSheet({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative z-10 max-h-[85dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl border border-border bg-[var(--color-bg)] p-5 shadow-lg sm:rounded-2xl"
+        className="relative z-10 flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-[2rem] bg-white shadow-2xl sm:max-w-xl sm:rounded-[2rem]"
       >
-        <div className="mb-4 flex items-start justify-between gap-3">
-          <div>
-            <h2 id={titleId} className="text-lg font-semibold tracking-tight">
-              {product.name}
-            </h2>
-            <p className="mt-1 text-sm text-muted">
-              {estimatedUnit != null
-                ? formatMoneyCentsArs(estimatedUnit)
-                : product.priceLabel}
-            </p>
+        <div className="shrink-0 px-5 pt-3 pb-4 sm:px-6 sm:pt-5">
+          <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-slate-200 sm:hidden" />
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <h2
+                id={titleId}
+                className="font-display text-xl font-extrabold tracking-tight text-[var(--ps-night-900)]"
+              >
+                {product.name}
+              </h2>
+              <p className="grad-text mt-1 text-sm font-extrabold">
+                {estimatedUnit != null
+                  ? formatMoneyCentsArs(estimatedUnit)
+                  : product.priceLabel}
+              </p>
+            </div>
+            <button
+              ref={closeRef}
+              type="button"
+              onClick={onClose}
+              className="flex h-10 w-10 items-center justify-center rounded-xl transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+            >
+              <CloseIcon className="h-5 w-5" />
+              <span className="sr-only">Cerrar</span>
+            </button>
           </div>
-          <button
-            ref={closeRef}
-            type="button"
-            onClick={onClose}
-            className="min-h-10 rounded-md border border-border px-3 text-sm"
-          >
-            Cerrar
-          </button>
         </div>
 
-        {!product.canAddToCart && product.statusLabel ? (
-          <p className="mb-3 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">
-            {product.statusLabel}
-          </p>
-        ) : null}
+        <div className="flex-1 overflow-y-auto px-5 pb-4">
+          {!product.canAddToCart && product.statusLabel ? (
+            <p className="mb-3 rounded-2xl bg-amber-50 px-3 py-2 text-sm text-amber-900">
+              {product.statusLabel}
+            </p>
+          ) : null}
 
-        {feedback ? (
-          <p className="mb-3 rounded-md bg-accent/10 px-3 py-2 text-sm text-accent">
-            {feedback}
-          </p>
-        ) : null}
+          {feedback ? (
+            <p className="mb-3 rounded-2xl bg-violet-50 px-3 py-2 text-sm font-medium text-violet-800">
+              {feedback}
+            </p>
+          ) : null}
 
-        {product.description ? (
-          <p className="mb-4 text-sm text-muted">{product.description}</p>
-        ) : null}
+          {product.description ? (
+            <p className="mb-4 text-sm text-muted">{product.description}</p>
+          ) : null}
 
-        <div className="space-y-5">
-          {product.optionGroups.map((group) => {
-            const totalSelected =
-              draft
-                .find((entry) => entry.groupId === group.id)
-                ?.selections.reduce((sum, s) => sum + s.quantity, 0) ?? 0;
+          <div className="space-y-5">
+            {product.optionGroups.map((group) => {
+              const totalSelected =
+                draft
+                  .find((entry) => entry.groupId === group.id)
+                  ?.selections.reduce((sum, s) => sum + s.quantity, 0) ?? 0;
 
-            return (
-              <section key={group.id} className="space-y-2">
-                <div>
-                  <h3 className="text-sm font-semibold">{group.name}</h3>
-                  <p className="text-xs text-muted">
-                    {group.modeLabel}. {group.hint}
-                  </p>
-                  {group.selectionMode === "QUANTITY" ? (
-                    <p className="mt-1 text-xs font-medium text-foreground">
-                      Total: {totalSelected} de {group.maxSelections}
+              return (
+                <section key={group.id} className="space-y-2">
+                  <div>
+                    <h3 className="font-display text-sm font-extrabold text-[var(--ps-night-900)]">
+                      {group.name}
+                    </h3>
+                    <p className="text-xs text-muted">
+                      {group.modeLabel}. {group.hint}
                     </p>
-                  ) : null}
-                </div>
-
-                {group.selectionMode === "SINGLE" ? (
-                  <div
-                    role="radiogroup"
-                    aria-label={group.name}
-                    className="space-y-1.5"
-                  >
-                    {group.minSelections === 0 ? (
-                      <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md border border-border bg-white/70 px-3 py-2 text-sm">
-                        <input
-                          type="radio"
-                          name={`group-${group.id}`}
-                          checked={
-                            (draft.find((d) => d.groupId === group.id)
-                              ?.selections.length ?? 0) === 0
-                          }
-                          onChange={() =>
-                            setDraft((current) =>
-                              setSingleSelection(current, group.id, null),
-                            )
-                          }
-                        />
-                        <span>Ninguna</span>
-                      </label>
+                    {group.selectionMode === "QUANTITY" ? (
+                      <p className="mt-1 text-xs font-medium text-foreground">
+                        Total: {totalSelected} de {group.maxSelections}
+                      </p>
                     ) : null}
-                    {group.choices.map((choice) => {
-                      const selected =
-                        draft
-                          .find((d) => d.groupId === group.id)
-                          ?.selections.some((s) => s.choiceId === choice.id) ??
-                        false;
-                      return (
-                        <label
-                          key={choice.id}
-                          className="flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-md border border-border bg-white/70 px-3 py-2 text-sm"
-                        >
-                          <span className="flex items-center gap-3">
-                            <input
-                              type="radio"
-                              name={`group-${group.id}`}
-                              checked={selected}
-                              onChange={() =>
-                                setDraft((current) =>
-                                  setSingleSelection(
-                                    current,
-                                    group.id,
-                                    choice.id,
-                                  ),
-                                )
-                              }
-                            />
-                            <span>{choice.name}</span>
-                          </span>
-                          {choice.priceDeltaLabel ? (
-                            <span className="text-muted">
-                              +{choice.priceDeltaLabel}
-                            </span>
-                          ) : null}
-                        </label>
-                      );
-                    })}
                   </div>
-                ) : null}
 
-                {group.selectionMode === "MULTIPLE" ? (
-                  <ul className="space-y-1.5">
-                    {group.choices.map((choice) => {
-                      const selected =
-                        draft
-                          .find((d) => d.groupId === group.id)
-                          ?.selections.some((s) => s.choiceId === choice.id) ??
-                        false;
-                      return (
-                        <li key={choice.id}>
-                          <label className="flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-md border border-border bg-white/70 px-3 py-2 text-sm">
+                  {group.selectionMode === "SINGLE" ? (
+                    <div
+                      role="radiogroup"
+                      aria-label={group.name}
+                      className="space-y-1.5"
+                    >
+                      {group.minSelections === 0 ? (
+                        <label
+                          className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-2xl border px-3 py-2 text-sm ${choiceSurface(
+                            (draft.find((d) => d.groupId === group.id)
+                              ?.selections.length ?? 0) === 0,
+                          )}`}
+                        >
+                          <input
+                            type="radio"
+                            name={`group-${group.id}`}
+                            className="accent-violet-600"
+                            checked={
+                              (draft.find((d) => d.groupId === group.id)
+                                ?.selections.length ?? 0) === 0
+                            }
+                            onChange={() =>
+                              setDraft((current) =>
+                                setSingleSelection(current, group.id, null),
+                              )
+                            }
+                          />
+                          <span>Ninguna</span>
+                        </label>
+                      ) : null}
+                      {group.choices.map((choice) => {
+                        const selected =
+                          draft
+                            .find((d) => d.groupId === group.id)
+                            ?.selections.some(
+                              (s) => s.choiceId === choice.id,
+                            ) ?? false;
+                        return (
+                          <label
+                            key={choice.id}
+                            className={`flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-2xl border px-3 py-2 text-sm ${choiceSurface(selected)}`}
+                          >
                             <span className="flex items-center gap-3">
                               <input
-                                type="checkbox"
+                                type="radio"
+                                name={`group-${group.id}`}
+                                className="accent-violet-600"
                                 checked={selected}
                                 onChange={() =>
                                   setDraft((current) =>
-                                    toggleMultipleSelection(
+                                    setSingleSelection(
                                       current,
                                       group.id,
                                       choice.id,
-                                      group.maxSelections,
                                     ),
                                   )
                                 }
@@ -359,88 +345,132 @@ export function ProductOptionsSheet({
                               </span>
                             ) : null}
                           </label>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : null}
+                        );
+                      })}
+                    </div>
+                  ) : null}
 
-                {group.selectionMode === "QUANTITY" ? (
-                  <ul className="space-y-2">
-                    {group.choices.map((choice) => {
-                      const qty = getQuantity(draft, choice.id);
-                      return (
-                        <li
-                          key={choice.id}
-                          className="flex min-h-12 items-center justify-between gap-3 rounded-md border border-border bg-white/70 px-3 py-2 text-sm"
-                        >
-                          <div className="min-w-0">
-                            <p className="truncate font-medium">
-                              {choice.name}
-                            </p>
-                            {choice.priceDeltaLabel ? (
-                              <p className="text-xs text-muted">
-                                +{choice.priceDeltaLabel} c/u
+                  {group.selectionMode === "MULTIPLE" ? (
+                    <ul className="space-y-1.5">
+                      {group.choices.map((choice) => {
+                        const selected =
+                          draft
+                            .find((d) => d.groupId === group.id)
+                            ?.selections.some(
+                              (s) => s.choiceId === choice.id,
+                            ) ?? false;
+                        return (
+                          <li key={choice.id}>
+                            <label
+                              className={`flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-2xl border px-3 py-2 text-sm ${choiceSurface(selected)}`}
+                            >
+                              <span className="flex items-center gap-3">
+                                <input
+                                  type="checkbox"
+                                  className="accent-violet-600"
+                                  checked={selected}
+                                  onChange={() =>
+                                    setDraft((current) =>
+                                      toggleMultipleSelection(
+                                        current,
+                                        group.id,
+                                        choice.id,
+                                        group.maxSelections,
+                                      ),
+                                    )
+                                  }
+                                />
+                                <span>{choice.name}</span>
+                              </span>
+                              {choice.priceDeltaLabel ? (
+                                <span className="text-muted">
+                                  +{choice.priceDeltaLabel}
+                                </span>
+                              ) : null}
+                            </label>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : null}
+
+                  {group.selectionMode === "QUANTITY" ? (
+                    <ul className="space-y-2">
+                      {group.choices.map((choice) => {
+                        const qty = getQuantity(draft, choice.id);
+                        return (
+                          <li
+                            key={choice.id}
+                            className={`flex min-h-12 items-center justify-between gap-3 rounded-2xl border px-3 py-2 text-sm ${choiceSurface(qty > 0)}`}
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate font-medium">
+                                {choice.name}
                               </p>
-                            ) : null}
-                          </div>
-                          <div className="flex shrink-0 items-center gap-2">
-                            <button
-                              type="button"
-                              aria-label={`Disminuir ${choice.name}`}
-                              disabled={qty <= 0}
-                              onClick={() =>
-                                setDraft((current) =>
-                                  setQuantitySelection(
-                                    current,
-                                    group.id,
-                                    choice.id,
-                                    qty - 1,
-                                    group.maxSelections,
-                                  ),
-                                )
-                              }
-                              className="flex h-10 w-10 items-center justify-center rounded-md border border-border disabled:opacity-40"
-                            >
-                              −
-                            </button>
-                            <span
-                              className="w-8 text-center tabular-nums"
-                              aria-live="polite"
-                            >
-                              {qty}
-                            </span>
-                            <button
-                              type="button"
-                              aria-label={`Aumentar ${choice.name}`}
-                              disabled={totalSelected >= group.maxSelections}
-                              onClick={() =>
-                                setDraft((current) =>
-                                  setQuantitySelection(
-                                    current,
-                                    group.id,
-                                    choice.id,
-                                    qty + 1,
-                                    group.maxSelections,
-                                  ),
-                                )
-                              }
-                              className="flex h-10 w-10 items-center justify-center rounded-md border border-border disabled:opacity-40"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : null}
-              </section>
-            );
-          })}
+                              {choice.priceDeltaLabel ? (
+                                <p className="text-xs text-muted">
+                                  +{choice.priceDeltaLabel} c/u
+                                </p>
+                              ) : null}
+                            </div>
+                            <div className="flex shrink-0 items-center gap-2">
+                              <button
+                                type="button"
+                                aria-label={`Disminuir ${choice.name}`}
+                                disabled={qty <= 0}
+                                onClick={() =>
+                                  setDraft((current) =>
+                                    setQuantitySelection(
+                                      current,
+                                      group.id,
+                                      choice.id,
+                                      qty - 1,
+                                      group.maxSelections,
+                                    ),
+                                  )
+                                }
+                                className="flex h-10 w-10 items-center justify-center rounded-full border border-violet-200 bg-white font-bold disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+                              >
+                                −
+                              </button>
+                              <span
+                                className="w-8 text-center tabular-nums"
+                                aria-live="polite"
+                              >
+                                {qty}
+                              </span>
+                              <button
+                                type="button"
+                                aria-label={`Aumentar ${choice.name}`}
+                                disabled={totalSelected >= group.maxSelections}
+                                onClick={() =>
+                                  setDraft((current) =>
+                                    setQuantitySelection(
+                                      current,
+                                      group.id,
+                                      choice.id,
+                                      qty + 1,
+                                      group.maxSelections,
+                                    ),
+                                  )
+                                }
+                                className="flex h-10 w-10 items-center justify-center rounded-full border border-violet-200 bg-white font-bold disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : null}
+                </section>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="sticky bottom-0 mt-5 border-t border-border bg-[var(--color-bg)] pt-4">
+        <div className="pb-safe sticky bottom-0 shrink-0 border-t border-slate-100 bg-white px-5 pt-4 pb-5">
           <button
             type="button"
             disabled={!canSubmit}
@@ -451,7 +481,7 @@ export function ProductOptionsSheet({
               );
               onAddConfigured(configuration);
             }}
-            className="min-h-12 w-full rounded-md bg-accent px-4 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
+            className="grad-btn min-h-12 w-full rounded-2xl px-4 py-4 text-sm font-extrabold text-white shadow-glow disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
           >
             Agregar al carrito
             {estimatedUnit != null

@@ -45,10 +45,10 @@ export function ZonePicker({ zones, selectedZoneId }: Props) {
   return (
     <section id="zona" className="scroll-mt-24 space-y-4">
       <div className="space-y-1">
-        <p className="text-xs font-extrabold tracking-[0.2em] text-violet-700">
+        <p className="mb-2 text-xs font-extrabold tracking-[0.2em] text-fuchsia-600">
           TU ZONA
         </p>
-        <h2 className="font-display text-2xl font-extrabold tracking-tight text-[var(--ps-night-900)] lg:text-3xl">
+        <h2 className="font-display text-2xl font-extrabold tracking-tight text-[var(--ps-night-900)] lg:text-4xl">
           ¿Dónde querés comprar?
         </h2>
         <p className="text-sm text-muted">
@@ -70,10 +70,10 @@ export function ZonePicker({ zones, selectedZoneId }: Props) {
                 type="button"
                 onClick={() => selectZone(zone.id)}
                 aria-pressed={selected}
-                className={`flex min-h-14 items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] ${
+                className={`flex min-h-14 w-full items-center gap-3 rounded-2xl border p-3 text-left text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] ${
                   selected
-                    ? "border-[var(--ps-violet)] bg-violet-50 text-foreground shadow-soft"
-                    : "border-transparent bg-white text-foreground shadow-soft hover:border-violet-200"
+                    ? "border-violet-200 bg-violet-50 text-foreground shadow-soft"
+                    : "border-transparent bg-white text-foreground shadow-soft hover:border-violet-100 hover:bg-violet-50"
                 }`}
               >
                 <span

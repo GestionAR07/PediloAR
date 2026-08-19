@@ -1,8 +1,11 @@
 /**
- * Application identity used by the technical foundation UI.
+ * Public product identity (buyer-facing brand).
  * Pure module — no React dependency (safe for domain-adjacent shared config).
+ *
+ * The repository / project may still be called Marketplace Rawson;
+ * this constant is the public name shown in the storefront.
  */
-export const APP_NAME = "Marketplace Rawson";
+export const APP_NAME = "Pedilo";
 
 export const APP_TAGLINE = "Pedí cerca en Rawson y Playa Unión";
 

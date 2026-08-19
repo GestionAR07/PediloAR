@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { SiteShell } from "@/components/layout/site-shell";
-import { APP_NAME } from "@/lib/app-info";
+import { APP_NAME, APP_TAGLINE } from "@/lib/app-info";
 import "@/styles/globals.css";
 
 const inter = Inter({
@@ -20,8 +20,7 @@ const sora = Sora({
 
 export const metadata: Metadata = {
   title: APP_NAME,
-  description:
-    "Marketplace local para pedir en comercios de Rawson y Playa Unión.",
+  description: `${APP_NAME}. ${APP_TAGLINE}.`,
 };
 
 export default function RootLayout({

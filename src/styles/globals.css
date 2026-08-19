@@ -39,6 +39,12 @@ body {
   background-color: var(--ps-cream);
   color: var(--color-fg);
   font-family: var(--font-inter), var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.public-storefront ::selection {
+  background: #7c3aed;
+  color: #fff;
 }
 
 .public-storefront .font-display {
@@ -46,27 +52,57 @@ body {
 }
 
 .public-storefront .grad-text {
-  background: linear-gradient(90deg, #c4b5fd 0%, #a78bfa 42%, #d946ef 100%);
+  background: linear-gradient(90deg, #a78bfa 0%, #f472b6 45%, #fb923c 100%);
   -webkit-background-clip: text;
   background-clip: text;
+  -webkit-text-fill-color: transparent;
   color: transparent;
 }
 
 .public-storefront .grad-btn {
   background-image: linear-gradient(
     135deg,
-    #6d28d9 0%,
-    #7c3aed 48%,
-    #a855f7 82%,
-    #d946ef 100%
+    #7c3aed 0%,
+    #d946ef 55%,
+    #f97316 120%
   );
   background-size: 160% 160%;
   background-position: 0% 50%;
+  transition:
+    background-position 0.4s ease,
+    transform 0.2s ease,
+    box-shadow 0.3s ease;
+}
+
+.public-storefront .grad-btn:hover {
+  background-position: 100% 50%;
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px -10px rgba(217, 70, 239, 0.55);
+}
+
+.public-storefront .grad-btn:disabled,
+.public-storefront .grad-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+  background-image: none;
+  background-color: #e2e8f0;
+  background-position: 0% 50%;
+  color: #64748b;
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+.public-storefront .glass {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
 }
 
 .public-storefront .nav-blur {
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.86);
   backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 .public-storefront .shadow-soft {
@@ -74,14 +110,126 @@ body {
 }
 
 .public-storefront .shadow-glow {
-  box-shadow: 0 12px 32px -12px rgba(124, 58, 237, 0.45);
+  box-shadow: 0 12px 40px -10px rgba(124, 58, 237, 0.5);
+}
+
+.public-storefront .card-lift {
+  transition:
+    transform 0.35s cubic-bezier(0.2, 0.8, 0.3, 1),
+    box-shadow 0.35s ease;
+}
+
+.public-storefront .card-lift:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 24px 50px -18px rgba(109, 40, 217, 0.28);
+}
+
+.public-storefront .zoom-img {
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+.public-storefront .group:hover .zoom-img {
+  transform: scale(1.07);
+}
+
+.public-storefront .chip-active {
+  background: linear-gradient(135deg, #7c3aed, #d946ef);
+  color: #fff !important;
+  box-shadow: 0 8px 24px -8px rgba(217, 70, 239, 0.6);
+  border-color: transparent;
+  transition:
+    box-shadow 0.25s ease,
+    background 0.25s ease,
+    color 0.25s ease;
+}
+
+.public-storefront .no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.public-storefront .no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.public-storefront .pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.public-storefront section[id] {
+  scroll-margin-top: 92px;
+}
+
+.public-storefront .brand-wordmark {
+  font-family: var(--font-sora), var(--font-inter), var(--font-sans);
+  letter-spacing: -0.05em;
+  line-height: 0.92;
+  text-wrap: balance;
+}
+
+.public-storefront .brand-wordmark-stem {
+  color: var(--ps-night-900);
+}
+
+.public-storefront .brand-wordmark--plain .brand-wordmark-accent {
+  color: #6d28d9;
+}
+
+.public-storefront .brand-wordmark--gradient .brand-wordmark-accent {
+  background-image: linear-gradient(
+    90deg,
+    #7c3aed 0%,
+    #c026d3 48%,
+    #d946ef 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: #6d28d9;
+  -webkit-text-fill-color: transparent;
+}
+
+.public-storefront .brand-wordmark--dark .brand-wordmark-stem {
+  color: #faf8ff;
+}
+
+.public-storefront
+  .brand-wordmark--dark.brand-wordmark--plain
+  .brand-wordmark-accent {
+  color: #c4b5fd;
+}
+
+.public-storefront
+  .brand-wordmark--dark.brand-wordmark--gradient
+  .brand-wordmark-accent {
+  background-image: linear-gradient(
+    90deg,
+    #ddd6fe 0%,
+    #e879f9 46%,
+    #f0abfc 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: #e9d5ff;
+  -webkit-text-fill-color: transparent;
+}
+
+.public-storefront .brand-wordmark--hero .brand-wordmark-text {
+  filter: drop-shadow(0 12px 28px rgba(192, 38, 211, 0.32));
 }
 
 @media (prefers-reduced-motion: reduce) {
   .public-storefront .grad-btn,
+  .public-storefront .grad-btn:hover,
   .public-storefront .card-lift,
-  .public-storefront .nav-blur {
+  .public-storefront .card-lift:hover,
+  .public-storefront .zoom-img,
+  .public-storefront .group:hover .zoom-img,
+  .public-storefront .chip-active,
+  .public-storefront .nav-blur,
+  .public-storefront .brand-wordmark--hero .brand-wordmark-text {
     transition: none;
     transform: none;
+    filter: none;
+    animation: none;
   }
 }

@@ -35,20 +35,21 @@ describe("qwen public discovery v1 static checks", () => {
     expect(header).toContain('href="/carrito"');
     expect(header).toContain('href="/login"');
     expect(header).toContain("badgeCount");
-    expect(header).toContain("APP_NAME");
+    expect(header).toContain("PublicBrandWordmark");
     expect(header).not.toContain('"Cuenta"');
     expect(header).toContain("Ingresar");
     expect(header).toContain("Acceso comercios");
     expect(header).toContain('? "Acceso" : "Ingresar"');
   });
 
-  it("does not import webqwen mocks, fake metrics, or Pedilo branding", () => {
+  it("does not import webqwen mocks or fake metrics", () => {
     const files = [
       "src/app/page.tsx",
       "src/app/layout.tsx",
       "src/styles/globals.css",
       "src/components/layout/site-shell.tsx",
       "src/components/storefront/public-header.tsx",
+      "src/components/storefront/public-brand-wordmark.tsx",
       "src/components/storefront/zone-picker.tsx",
       "src/components/storefront/merchant-card.tsx",
       "src/components/ui/public-icons.tsx",
@@ -57,7 +58,6 @@ describe("qwen public discovery v1 static checks", () => {
 
     expect(joined).not.toContain("image.qwenlm.ai");
     expect(joined).not.toContain("webqwen");
-    expect(joined).not.toContain("Pedilo");
     expect(joined).not.toContain("50+");
     expect(joined).not.toContain("4.8");
     expect(joined).not.toContain("Envío gratis en tu primer pedido");
@@ -72,6 +72,34 @@ describe("qwen public discovery v1 static checks", () => {
     expect(joined).not.toMatch(/function checkout\s*\(/);
   });
 
+  it("shows Pedilo as the public product name via APP_NAME", () => {
+    const info = read("src/lib/app-info.ts");
+    const page = read("src/app/page.tsx");
+    const header = read("src/components/storefront/public-header.tsx");
+    const layout = read("src/app/layout.tsx");
+    const wordmark = read(
+      "src/components/storefront/public-brand-wordmark.tsx",
+    );
+
+    expect(info).toContain('export const APP_NAME = "Pedilo"');
+    expect(info).not.toMatch(/APP_NAME = "Marketplace Rawson"/);
+    expect(wordmark).toContain("APP_NAME");
+    expect(wordmark).toContain("brand-wordmark-stem");
+    expect(wordmark).toContain("brand-wordmark-accent");
+    expect(page).toContain("PublicBrandWordmark");
+    expect(page).toContain('size="hero"');
+    expect(page).toContain('tone="gradient"');
+    expect(header).toContain("PublicBrandWordmark");
+    expect(header).toContain('size="header"');
+    expect(header).toContain('tone="plain"');
+    expect(layout).toContain("title: APP_NAME");
+    expect(page).not.toContain("Marketplace Rawson");
+    expect(header).not.toContain("Marketplace Rawson");
+    expect(layout).not.toContain("Marketplace Rawson");
+    expect(page).toContain("APP_SERVICE_AREA");
+    expect(page).toContain("APP_TAGLINE");
+  });
+
   it("scopes the public skin and keeps merchant/admin shell width", () => {
     const shell = read("src/components/layout/site-shell.tsx");
     const css = read("src/styles/globals.css");
@@ -80,6 +108,7 @@ describe("qwen public discovery v1 static checks", () => {
     const globalsRoot = css.slice(0, css.indexOf(".public-storefront"));
 
     expect(shell).toContain('pathname === "/"');
+    expect(shell).toContain('pathname.startsWith("/comercios")');
     expect(shell).toContain('pathname.startsWith("/merchant")');
     expect(shell).toContain('pathname.startsWith("/admin")');
     expect(shell).toContain("max-w-3xl");
@@ -90,6 +119,45 @@ describe("qwen public discovery v1 static checks", () => {
     expect(globalsRoot).toContain("#2f5d50");
     expect(merchantPage).not.toContain("public-storefront");
     expect(adminLayout).not.toContain("public-storefront");
+  });
+
+  it("restores Qwen visual utilities with real CSS selectors", () => {
+    const css = read("src/styles/globals.css");
+    const page = read("src/app/page.tsx");
+    const card = read("src/components/storefront/merchant-card.tsx");
+
+    expect(css).toContain(".grad-text");
+    expect(css).toContain(".grad-btn:hover");
+    expect(css).toContain(".card-lift:hover");
+    expect(css).toContain(".group:hover .zoom-img");
+    expect(css).toContain(".glass");
+    expect(css).toContain(".nav-blur");
+    expect(css).toContain(".chip-active");
+    expect(css).toContain(".no-scrollbar");
+    expect(css).toContain(".pb-safe");
+    expect(css).toContain("prefers-reduced-motion");
+    expect(css).not.toContain(".grad-btn\\:hover");
+    expect(css).not.toContain(".card-lift\\:hover");
+    expect(css).not.toContain(".group\\:hover");
+    expect(css).not.toContain("@keyframes marquee");
+    expect(css).not.toContain(".float-a");
+    expect(css).not.toContain(".spin-slow");
+
+    expect(page).toContain("pt-10 pb-10");
+    expect(page).toContain("lg:pt-14");
+    expect(page).not.toContain("lg:pb-28");
+    expect(page).toContain("blur-[130px]");
+    expect(page).toContain("lg:grid-cols-2");
+    expect(page).toContain("aria-hidden");
+    expect(page).not.toContain("float-a");
+    expect(page).not.toContain("pulse-dot");
+
+    expect(card).toContain("rounded-[1.75rem]");
+    expect(card).toContain("card-lift");
+    expect(card).toContain("zoom-img");
+    expect(card).toContain("h-44");
+    expect(card).not.toContain("favorite");
+    expect(card).not.toMatch(/rating/i);
   });
 
   it("does not change discovery hrefs or zone persistence", () => {

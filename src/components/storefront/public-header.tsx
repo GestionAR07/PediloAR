@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useState } from "react";
-import { APP_NAME } from "@/lib/app-info";
 import type {
   PublicNavContext,
   PublicZoneOption,
 } from "@/application/storefront/types";
 import { useCart } from "@/components/cart/cart-provider";
+import { PublicBrandWordmark } from "@/components/storefront/public-brand-wordmark";
 import { persistAndNavigateToZone } from "@/components/storefront/zone-picker";
 import {
   ChevronDownIcon,
@@ -55,13 +55,13 @@ export function PublicHeader({
   }
 
   return (
-    <header className="public-storefront nav-blur sticky top-0 z-40 border-b border-violet-100/70">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:gap-3 sm:px-6 lg:h-20 lg:px-8">
+    <header className="public-storefront nav-blur sticky top-0 z-40 border-b border-violet-100/60 transition-shadow">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:h-20 lg:px-8">
         <Link
           href="/"
-          className="font-display min-w-0 shrink-0 text-lg font-extrabold tracking-tight text-[var(--ps-night-900)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] sm:text-xl"
+          className="min-w-0 shrink-0 rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
         >
-          {APP_NAME}
+          <PublicBrandWordmark size="header" tone="plain" />
         </Link>
 
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
@@ -69,22 +69,22 @@ export function PublicHeader({
             <button
               type="button"
               onClick={() => setZoneOpen(true)}
-              className="flex max-w-[42vw] items-center gap-2 rounded-full border border-violet-100 bg-violet-50 py-1.5 pl-1.5 pr-2 text-left transition hover:bg-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] sm:max-w-none sm:pr-3"
+              className="flex max-w-[42vw] items-center gap-2 rounded-full border border-violet-100 bg-violet-50 py-2 pr-2 pl-2.5 text-left transition hover:bg-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] sm:max-w-none sm:pr-3"
               aria-haspopup="dialog"
               aria-expanded={zoneOpen}
             >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-500 text-white shadow-glow">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-500 text-white">
                 <MapPinIcon className="h-4 w-4" />
               </span>
               <span className="hidden leading-tight sm:block">
-                <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted">
+                <span className="block text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
                   Entregar en
                 </span>
-                <span className="block max-w-[140px] truncate text-xs font-bold text-[var(--ps-night-900)]">
+                <span className="block max-w-[110px] truncate text-xs font-bold text-[var(--ps-night-900)]">
                   {zoneLabel ?? "Elegí tu zona"}
                 </span>
               </span>
-              <ChevronDownIcon className="hidden h-4 w-4 text-muted sm:block" />
+              <ChevronDownIcon className="hidden h-4 w-4 text-slate-400 sm:block" />
               <span className="sm:hidden">
                 <span className="sr-only">
                   {zoneLabel ? `Zona: ${zoneLabel}` : "Elegí tu zona"}
@@ -99,12 +99,12 @@ export function PublicHeader({
 
           <Link
             href="/carrito"
-            className="relative flex h-11 w-11 items-center justify-center rounded-full text-white shadow-glow grad-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+            className="relative flex h-11 w-11 items-center justify-center rounded-full bg-[var(--ps-night-900)] text-white shadow-lg transition hover:bg-[#221647] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
           >
             <ShoppingBagIcon className="h-5 w-5" />
             <span className="sr-only">Carrito</span>
             {hydrated && badgeCount > 0 ? (
-              <span className="absolute -top-1 -right-1 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-orange-500 px-1 text-[11px] font-extrabold text-white">
+              <span className="absolute -top-1 -right-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gradient-to-r from-fuchsia-500 to-orange-500 px-1 text-[11px] font-extrabold text-white">
                 {badgeCount}
               </span>
             ) : null}
@@ -113,7 +113,7 @@ export function PublicHeader({
           {nav.merchantHomeHref ? (
             <Link
               href={nav.merchantHomeHref}
-              className="hidden rounded-full px-3 py-2 text-sm font-bold text-slate-600 hover:text-violet-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] lg:inline"
+              className="hidden rounded-full px-3 py-2 text-sm font-bold text-slate-600 transition hover:text-fuchsia-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] lg:inline"
             >
               Mi comercio
             </Link>
@@ -121,7 +121,7 @@ export function PublicHeader({
           {nav.isAdmin ? (
             <Link
               href="/admin"
-              className="hidden rounded-full px-3 py-2 text-sm font-bold text-slate-600 hover:text-violet-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] lg:inline"
+              className="hidden rounded-full px-3 py-2 text-sm font-bold text-slate-600 transition hover:text-fuchsia-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] lg:inline"
             >
               Admin
             </Link>
@@ -130,7 +130,7 @@ export function PublicHeader({
             href="/login"
             className={`hidden whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] lg:inline ${
               nav.isAuthenticated
-                ? "text-slate-600 hover:text-violet-700"
+                ? "text-slate-600 transition hover:text-fuchsia-600"
                 : "text-white shadow-glow grad-btn"
             }`}
           >
@@ -160,7 +160,8 @@ export function PublicHeader({
             aria-labelledby={titleId}
             className="absolute inset-x-0 bottom-0 max-h-[92vh] overflow-y-auto rounded-t-[2rem] bg-white p-6 shadow-2xl sm:inset-auto sm:top-1/2 sm:left-1/2 sm:w-full sm:max-w-md sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[2rem] sm:p-7"
           >
-            <div className="mb-5 flex items-start justify-between gap-3">
+            <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-200 sm:hidden" />
+            <div className="mb-6 flex items-start justify-between gap-3">
               <h2
                 id={titleId}
                 className="font-display text-xl font-extrabold text-[var(--ps-night-900)]"
