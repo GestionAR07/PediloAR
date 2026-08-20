@@ -55,8 +55,8 @@ export function PublicHeader({
   }
 
   return (
-    <header className="public-storefront nav-blur sticky top-0 z-40 border-b border-violet-100/60 transition-shadow">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:h-20 lg:px-8">
+    <header className="public-storefront nav-blur sticky top-0 z-40 border-b border-violet-100/70 transition-shadow">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:gap-3 sm:px-6 lg:h-20 lg:px-8">
         <Link
           href="/"
           className="min-w-0 shrink-0 rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
@@ -64,52 +64,40 @@ export function PublicHeader({
           <PublicBrandWordmark size="header" tone="plain" />
         </Link>
 
-        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-          {canChooseZone ? (
-            <button
-              type="button"
-              onClick={() => setZoneOpen(true)}
-              className="flex max-w-[42vw] items-center gap-2 rounded-full border border-violet-100 bg-violet-50 py-2 pr-2 pl-2.5 text-left transition hover:bg-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] sm:max-w-none sm:pr-3"
-              aria-haspopup="dialog"
-              aria-expanded={zoneOpen}
-            >
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-500 text-white">
-                <MapPinIcon className="h-4 w-4" />
-              </span>
-              <span className="hidden leading-tight sm:block">
-                <span className="block text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
-                  Entregar en
-                </span>
-                <span className="block max-w-[110px] truncate text-xs font-bold text-[var(--ps-night-900)]">
-                  {zoneLabel ?? "Elegí tu zona"}
-                </span>
-              </span>
-              <ChevronDownIcon className="hidden h-4 w-4 text-slate-400 sm:block" />
-              <span className="sm:hidden">
-                <span className="sr-only">
-                  {zoneLabel ? `Zona: ${zoneLabel}` : "Elegí tu zona"}
-                </span>
-              </span>
-            </button>
-          ) : zoneLabel ? (
-            <p className="hidden max-w-[140px] truncate text-xs text-muted sm:block">
-              Zona: {zoneLabel}
-            </p>
-          ) : null}
-
-          <Link
-            href="/carrito"
-            className="relative flex h-11 w-11 items-center justify-center rounded-full bg-[var(--ps-night-900)] text-white shadow-lg transition hover:bg-[#221647] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+        {canChooseZone ? (
+          <button
+            type="button"
+            onClick={() => setZoneOpen(true)}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-violet-100 text-violet-700 transition hover:bg-violet-200/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] sm:h-auto sm:min-h-11 sm:w-auto sm:gap-2 sm:border sm:border-violet-100 sm:bg-violet-50 sm:py-1.5 sm:pr-3 sm:pl-2 sm:text-left sm:text-inherit sm:hover:bg-violet-100"
+            aria-haspopup="dialog"
+            aria-expanded={zoneOpen}
           >
-            <ShoppingBagIcon className="h-5 w-5" />
-            <span className="sr-only">Carrito</span>
-            {hydrated && badgeCount > 0 ? (
-              <span className="absolute -top-1 -right-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gradient-to-r from-fuchsia-500 to-orange-500 px-1 text-[11px] font-extrabold text-white">
-                {badgeCount}
+            <span className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-500 text-white shadow-glow sm:flex">
+              <MapPinIcon className="h-4 w-4" />
+            </span>
+            <MapPinIcon className="h-5 w-5 sm:hidden" />
+            <span className="hidden leading-tight sm:block">
+              <span className="block text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
+                Entregar en
               </span>
-            ) : null}
-          </Link>
+              <span className="block max-w-[110px] truncate text-xs font-bold text-[var(--ps-night-900)]">
+                {zoneLabel ?? "Elegí tu zona"}
+              </span>
+            </span>
+            <ChevronDownIcon className="hidden h-4 w-4 text-slate-400 sm:block" />
+            <span className="sm:hidden">
+              <span className="sr-only">
+                {zoneLabel ? `Zona: ${zoneLabel}` : "Elegí tu zona"}
+              </span>
+            </span>
+          </button>
+        ) : zoneLabel ? (
+          <p className="hidden max-w-[160px] truncate text-xs text-muted sm:block">
+            Zona: {zoneLabel}
+          </p>
+        ) : null}
 
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
           {nav.merchantHomeHref ? (
             <Link
               href={nav.merchantHomeHref}
@@ -128,11 +116,7 @@ export function PublicHeader({
           ) : null}
           <Link
             href="/login"
-            className={`hidden whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] lg:inline ${
-              nav.isAuthenticated
-                ? "text-slate-600 transition hover:text-fuchsia-600"
-                : "text-white shadow-glow grad-btn"
-            }`}
+            className="hidden min-h-11 items-center whitespace-nowrap rounded-full px-3 py-2 text-sm font-bold text-slate-600 transition hover:text-fuchsia-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] lg:inline-flex"
           >
             {nav.isAuthenticated ? "Acceso comercios" : "Ingresar"}
           </Link>
@@ -142,6 +126,18 @@ export function PublicHeader({
             className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-3 text-sm font-bold text-violet-700 lg:hidden"
           >
             {nav.isAuthenticated ? "Acceso" : "Ingresar"}
+          </Link>
+          <Link
+            href="/carrito"
+            className="grad-btn relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white shadow-glow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+          >
+            <ShoppingBagIcon className="h-5 w-5" />
+            <span className="sr-only">Carrito</span>
+            {hydrated && badgeCount > 0 ? (
+              <span className="absolute -top-1 -right-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-orange-500 px-1 text-[11px] font-extrabold text-white">
+                {badgeCount}
+              </span>
+            ) : null}
           </Link>
         </div>
       </div>

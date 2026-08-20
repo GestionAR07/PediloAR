@@ -32,6 +32,7 @@ body {
   --color-accent: #7c3aed;
   --ps-cream: #faf8ff;
   --ps-night: #0b0618;
+  --ps-night-800: #171035;
   --ps-night-900: #0e0820;
   --ps-violet: #7c3aed;
   --ps-fuchsia: #d946ef;
@@ -100,7 +101,7 @@ body {
 }
 
 .public-storefront .nav-blur {
-  background-color: var(--ps-cream);
+  background-color: rgba(250, 248, 255, 0.88);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
 }
@@ -111,6 +112,14 @@ body {
 
 .public-storefront .shadow-glow {
   box-shadow: 0 12px 40px -10px rgba(124, 58, 237, 0.5);
+}
+
+.public-storefront .shadow-glow-pink {
+  box-shadow: 0 12px 40px -10px rgba(236, 72, 153, 0.45);
+}
+
+.public-storefront .shadow-glow-orange {
+  box-shadow: 0 12px 40px -10px rgba(249, 115, 22, 0.45);
 }
 
 .public-storefront .card-lift {
@@ -154,6 +163,65 @@ body {
 
 .public-storefront .pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.public-storefront .public-marquee-track {
+  width: max-content;
+  animation: marquee 26s linear infinite;
+}
+
+.public-storefront .public-marquee-static {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .public-storefront .public-marquee:hover .public-marquee-track {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes ps-hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.public-storefront .public-hero-visual {
+  animation: ps-hero-in 0.32s ease both;
+}
+
+.public-storefront .public-hero-media-slot {
+  animation: ps-hero-in 0.32s ease both;
+}
+
+.public-storefront .public-hero-card {
+  animation: ps-hero-in 0.28s ease both;
+}
+
+.public-storefront .public-hero-card--a {
+  animation-delay: 0.08s;
+}
+
+.public-storefront .public-hero-card--b {
+  animation-delay: 0.14s;
+}
+
+.public-storefront .public-hero-card--c {
+  animation-delay: 0.2s;
 }
 
 .public-storefront section[id] {
@@ -402,11 +470,29 @@ body {
   .public-storefront .checkout-choice:active,
   .public-storefront .checkout-total-value,
   .public-storefront .checkout-sticky-bar,
-  .public-storefront .checkout-spinner {
+  .public-storefront .checkout-spinner,
+  .public-storefront .public-marquee-track,
+  .public-storefront .public-marquee:hover .public-marquee-track,
+  .public-storefront .public-hero-visual,
+  .public-storefront .public-hero-media-slot,
+  .public-storefront .public-hero-card {
     transition: none;
     transform: none;
     filter: none;
     animation: none;
+  }
+
+  .public-storefront .public-marquee-track {
+    display: none;
+  }
+
+  .public-storefront .public-marquee-static {
+    display: block;
+    overflow: hidden;
+    padding-inline: 1rem;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 

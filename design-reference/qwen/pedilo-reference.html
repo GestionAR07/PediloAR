@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Pedilo — Pedí lo que quieras, recibilo en minutos</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.0/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.0/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.0/600.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.0/700.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/sora@5.0.0/600.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/sora@5.0.0/700.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/sora@5.0.0/800.css">
+<script src="https://unpkg.com/lucide@0.454.0/dist/umd/lucide.min.js"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        night: { 950:'#0b0618', 900:'#0e0820', 800:'#171035' },
+        cream: '#FAF8FF'
+      },
+      fontFamily: {
+        sans: ['Inter','system-ui','sans-serif'],
+        display: ['Sora','Inter','system-ui','sans-serif']
+      },
+      boxShadow: {
+        glow: '0 12px 40px -10px rgba(124,58,237,.5)',
+        glowPink: '0 12px 40px -10px rgba(236,72,153,.45)',
+        glowOrange: '0 12px 40px -10px rgba(249,115,22,.45)',
+        soft: '0 20px 45px -20px rgba(109,40,217,.18)'
+      }
+    }
+  }
+}
+</script>
+<style>
+html{scroll-behavior:smooth}
+body{overflow-x:hidden}
+section[id]{scroll-margin-top:92px}
+::selection{background:#7c3aed;color:#fff}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:linear-gradient(#7c3aed,#ec4899);border-radius:99px}
+.no-scrollbar::-webkit-scrollbar{display:none}
+.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
+
+.grad-text{background:linear-gradient(90deg,#a78bfa 0%,#f472b6 45%,#fb923c 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.grad-btn{background:linear-gradient(135deg,#7c3aed 0%,#d946ef 55%,#f97316 120%);background-size:160% 160%;transition:background-position .4s ease,transform .2s ease,box-shadow .3s ease}
+.grad-btn:hover{background-position:100% 50%;transform:translateY(-2px);box-shadow:0 14px 40px -10px rgba(217,70,239,.55)}
+.glass{background:rgba(255,255,255,.08);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.14)}
+.nav-blur{background:rgba(255,255,255,.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.marquee-track{animation:marquee 26s linear infinite;width:max-content}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+.float-a{animation:floaty 5s ease-in-out infinite}
+.float-b{animation:floaty 6.5s ease-in-out .7s infinite}
+.float-c{animation:floaty 7.5s ease-in-out 1.4s infinite}
+@keyframes spinSlow{to{transform:rotate(360deg)}}
+.spin-slow{animation:spinSlow 22s linear infinite}
+@keyframes popIn{0%{transform:scale(.7);opacity:0}70%{transform:scale(1.04)}100%{transform:scale(1);opacity:1}}
+.pop-in{animation:popIn .4s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes toastIn{from{transform:translate(-50%,16px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+.toast-in{animation:toastIn .3s ease both}
+@keyframes pulseDot{0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,.6)}70%{box-shadow:0 0 0 8px rgba(74,222,128,0)}}
+.pulse-dot{animation:pulseDot 1.8s infinite}
+@keyframes badgeBounce{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
+.badge-bounce{animation:bounceBadge .35s ease}
+
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s ease}
+.reveal.revealed{opacity:1;transform:none}
+
+.card-lift{transition:transform .35s cubic-bezier(.2,.8,.3,1),box-shadow .35s ease}
+.card-lift:hover{transform:translateY(-8px);box-shadow:0 24px 50px -18px rgba(109,40,217,.28)}
+.zoom-img{transition:transform .6s cubic-bezier(.2,.8,.3,1)}
+.group:hover .zoom-img{transform:scale(1.07)}
+.fav-on .lucide-heart{fill:#f43f5e;stroke:#f43f5e}
+.chip-active{background:linear-gradient(135deg,#7c3aed,#d946ef);color:#fff !important;border-color:transparent !important;box-shadow:0 8px 24px -8px rgba(217,70,239,.6)}
+.pb-safe{padding-bottom:env(safe-area-inset-bottom)}
+.phone-frame{width:min(300px,78vw);aspect-ratio:9/19;border-radius:3rem;background:#0b0618;padding:10px;box-shadow:0 50px 100px -30px rgba(124,58,237,.55),inset 0 0 0 2px rgba(255,255,255,.09)}
+.phone-screen{width:100%;height:100%;border-radius:2.5rem;overflow:hidden;position:relative}
+.phone-notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:90px;height:22px;background:#0b0618;border-radius:99px;z-index:2}
+input:focus,select:focus{outline:none}
+</style>
+</head>
+<body class="bg-cream text-slate-800 font-sans antialiased">
+
+<!-- ══════════ MARQUEE ══════════ -->
+<div class="bg-gradient-to-r from-violet-700 via-fuchsia-600 to-orange-500 text-white overflow-hidden py-2.5">
+  <div class="marquee-track flex items-center gap-8 text-xs font-semibold tracking-wide">
+    <div class="flex items-center gap-8" id="marqueeA"></div>
+    <div class="flex items-center gap-8" id="marqueeB"></div>
+  </div>
+</div>
+
+<!-- ══════════ NAVBAR ══════════ -->
+<header id="navbar" class="sticky top-0 z-40 nav-blur border-b border-violet-100/70 transition-shadow">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 lg:h-20 flex items-center gap-3">
+    <a href="#inicio" class="flex items-center gap-2.5 shrink-0 group">
+      <span class="group-hover:scale-110 group-hover:-rotate-6 transition-transform">
+        <svg viewBox="0 0 48 48" class="w-10 h-10 drop-shadow-[0_8px_16px_rgba(124,58,237,.45)]">
+          <defs><linearGradient id="lgNav" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C3AED"/><stop offset="1" stop-color="#D946EF"/></linearGradient></defs>
+          <rect x="2" y="2" width="44" height="44" rx="14" fill="url(#lgNav)"/>
+          <path d="M17.5 16.5v-2.5a6.5 6.5 0 0 1 13 0v2.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+          <path d="M13.5 16.5h21l-1.8 17.2a4.5 4.5 0 0 1-4.47 4.03H19.77a4.5 4.5 0 0 1-4.47-4.03z" fill="#fff"/>
+          <path d="M26.5 19.5l-7 9.5h4.5l-2.5 8 7-9.5H24z" fill="#FB923C"/>
+        </svg>
+      </span>
+      <span class="font-display font-extrabold text-2xl tracking-tight text-night-900">pedi<span class="grad-text">lo</span></span>
+    </a>
+
+    <div class="hidden md:flex flex-1 max-w-xl mx-auto">
+      <div class="relative w-full">
+        <i data-lucide="search" class="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+        <input id="navSearch" oninput="handleSearch(this.value)" type="text" placeholder="Buscar comercios, platos o productos"
+          class="w-full pl-11 pr-4 py-2.5 rounded-full bg-white border-2 border-violet-100 focus:border-fuchsia-400 focus:ring-4 focus:ring-fuchsia-100 transition text-sm font-medium">
+      </div>
+    </div>
+
+    <div class="ml-auto flex items-center gap-2">
+      <button onclick="openLocationModal()" class="hidden sm:flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-violet-50 hover:bg-violet-100 border border-violet-100 transition text-left">
+        <span class="w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-500 flex items-center justify-center shrink-0 shadow-glow"><i data-lucide="map-pin" class="w-4 h-4 text-white"></i></span>
+        <span class="leading-tight">
+          <span class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Entregar en</span>
+          <span class="block text-xs font-bold text-night-800 max-w-[110px] truncate" id="locationText">Mi Pueblo · Centro</span>
+        </span>
+        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+      </button>
+      <button onclick="openLocationModal()" class="sm:hidden w-11 h-11 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center"><i data-lucide="map-pin" class="w-5 h-5"></i></button>
+      <button onclick="openAuthModal('login')" class="hidden lg:block text-sm font-bold text-slate-600 hover:text-fuchsia-600 px-3 py-2 transition">Ingresar</button>
+      <button onclick="openAuthModal('register')" class="hidden lg:block grad-btn text-white text-sm font-bold px-5 py-2.5 rounded-full shadow-glow">Crear cuenta</button>
+      <button onclick="toggleCart()" class="relative w-11 h-11 rounded-full grad-btn shadow-glow text-white flex items-center justify-center">
+        <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+        <span id="cartCount" class="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full bg-orange-500 border-2 border-white text-white text-[11px] font-extrabold flex items-center justify-center hidden">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+<!-- ══════════ HERO ══════════ -->
+<section id="inicio" class="relative overflow-hidden bg-night-900 text-white">
+  <div class="absolute -top-32 -left-32 w-[420px] h-[420px] bg-fuchsia-600/30 rounded-full blur-[130px]"></div>
+  <div class="absolute top-1/3 -right-32 w-[460px] h-[460px] bg-violet-600/30 rounded-full blur-[130px]"></div>
+  <div class="absolute -bottom-40 left-1/3 w-[420px] h-[420px] bg-orange-500/20 rounded-full blur-[130px]"></div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-20 lg:pt-20 lg:pb-28 grid lg:grid-cols-2 gap-14 items-center relative">
+    <div class="text-center lg:text-left">
+      <span class="inline-flex items-center gap-2 glass rounded-full px-4 py-2 text-xs font-bold tracking-wide">
+        <span class="w-2 h-2 rounded-full bg-green-400 pulse-dot"></span>
+        OPERANDO EN MI PUEBLO · NUEVAS CIUDADES PRONTO
+      </span>
+      <h1 class="font-display font-extrabold text-[2.5rem] leading-[1.06] sm:text-6xl xl:text-[4rem] mt-6 tracking-tight">
+        Pedí lo que<br>quieras.<br>
+        <span class="grad-text">Recibilo volando.</span>
+      </h1>
+      <p class="text-slate-300/90 text-base sm:text-lg mt-6 max-w-lg mx-auto lg:mx-0">
+        Comida, farmacia, almacén y mucho más. Los comercios de tu zona, en una sola app.
+      </p>
+
+      <form onsubmit="heroSearchSubmit(event)" class="mt-8 bg-white rounded-full p-2 flex items-center gap-1 shadow-2xl shadow-fuchsia-900/40 max-w-xl mx-auto lg:mx-0">
+        <button type="button" onclick="openLocationModal()" class="hidden sm:flex items-center gap-1.5 pl-3 pr-3 text-slate-500 hover:text-fuchsia-600 transition shrink-0">
+          <i data-lucide="map-pin" class="w-5 h-5 text-fuchsia-500"></i>
+          <span class="text-sm font-semibold border-r border-slate-200 pr-3">Mi Pueblo</span>
+        </button>
+        <input id="heroSearchInput" type="text" placeholder="¿Qué querés pedir hoy?" class="flex-1 min-w-0 px-3 sm:px-2 py-2.5 text-slate-800 text-sm font-medium placeholder-slate-400 bg-transparent">
+        <button type="submit" class="grad-btn text-white font-bold text-sm px-6 py-3 rounded-full flex items-center gap-2 shrink-0">
+          <i data-lucide="search" class="w-4 h-4"></i><span class="hidden sm:inline">Buscar</span>
+        </button>
+      </form>
+
+      <div class="mt-5 flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs">
+        <span class="text-slate-400 font-semibold mr-1">Populares:</span>
+        <button onclick="quickSearch('hamburguesas')" class="glass rounded-full px-3.5 py-1.5 font-semibold hover:bg-white/20 transition">Hamburguesas</button>
+        <button onclick="quickSearch('pizza')" class="glass rounded-full px-3.5 py-1.5 font-semibold hover:bg-white/20 transition">Pizza</button>
+        <button onclick="quickSearch('farmacia')" class="glass rounded-full px-3.5 py-1.5 font-semibold hover:bg-white/20 transition">Farmacia</button>
+        <button onclick="quickSearch('cafe')" class="glass rounded-full px-3.5 py-1.5 font-semibold hover:bg-white/20 transition">Café</button>
+      </div>
+
+      <div class="mt-10 flex items-center justify-center lg:justify-start gap-6 sm:gap-8">
+        <div><p class="font-display font-extrabold text-2xl sm:text-3xl">50+</p><p class="text-xs text-slate-400 font-semibold mt-0.5">Comercios locales</p></div>
+        <div class="w-px h-10 bg-white/15"></div>
+        <div><p class="font-display font-extrabold text-2xl sm:text-3xl">15<span class="text-fuchsia-400">min</span></p><p class="text-xs text-slate-400 font-semibold mt-0.5">Entrega promedio</p></div>
+        <div class="w-px h-10 bg-white/15"></div>
+        <div><p class="font-display font-extrabold text-2xl sm:text-3xl flex items-center gap-1">4.8 <i data-lucide="star" class="w-5 h-5 text-orange-400" fill="currentColor"></i></p><p class="text-xs text-slate-400 font-semibold mt-0.5">Valoración</p></div>
+      </div>
+    </div>
+
+    <!-- Composición -->
+    <div class="relative mx-auto w-[300px] h-[330px] sm:w-[400px] sm:h-[430px] lg:w-[480px] lg:h-[520px]">
+      <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[240px] h-[240px] sm:w-[330px] sm:h-[330px] lg:w-[400px] lg:h-[400px] rounded-full overflow-hidden ring-8 ring-white/10 shadow-[0_0_120px_rgba(217,70,239,.4)] float-a">
+        <img src="https://image.qwenlm.ai/public_source/09b28102-8e0a-427e-a2cf-004516999ad7/1d5aad459-3659-4ae0-bcf7-aa0d9df199b9.png" alt="Hamburguesa gourmet" class="w-full h-full object-cover">
+      </div>
+      <div class="absolute -left-2 bottom-6 w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden ring-4 ring-white/20 shadow-2xl -rotate-6 float-b">
+        <img src="https://image.qwenlm.ai/public_source/09b28102-8e0a-427e-a2cf-004516999ad7/14554f2dc-4372-405b-9d1c-b2273c3f9381.png" alt="Pizza" class="w-full h-full object-cover">
+      </div>
+      <div class="absolute -right-2 sm:right-0 top-2 glass rounded-2xl px-4 py-3 float-b shadow-xl">
+        <div class="flex items-center gap-3">
+          <span class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-400 to-rose-500 flex items-center justify-center"><i data-lucide="bike" class="w-5 h-5 text-white"></i></span>
+          <div><p class="text-xs font-bold">Pedido en camino</p><p class="text-[11px] text-slate-300">Llega en 12 min</p></div>
+        </div>
+        <div class="mt-2 h-1.5 bg-white/15 rounded-full overflow-hidden"><div class="h-full w-3/4 bg-gradient-to-r from-lime-400 to-green-400 rounded-full"></div></div>
+      </div>
+      <div class="absolute right-0 sm:-right-2 top-1/3 glass rounded-2xl px-4 py-3 float-c shadow-xl">
+        <div class="flex items-center gap-2"><i data-lucide="star" class="w-5 h-5 text-orange-400" fill="currentColor"></i><p class="font-display font-extrabold text-lg">4.9</p></div>
+        <p class="text-[11px] text-slate-300 font-semibold">+2.500 reseñas</p>
+      </div>
+      <div class="absolute left-0 sm:left-4 -bottom-2 glass rounded-2xl px-4 py-3 float-b shadow-xl">
+        <div class="flex items-center gap-3">
+          <span class="w-9 h-9 rounded-xl bg-gradient-to-br from-lime-400 to-emerald-500 flex items-center justify-center"><i data-lucide="check" class="w-5 h-5 text-white"></i></span>
+          <div><p class="text-xs font-bold">Pago confirmado</p><p class="text-[11px] text-slate-300">Tarjeta · $6.500</p></div>
+        </div>
+      </div>
+      <div class="absolute left-8 top-4 w-3 h-3 rounded-full bg-fuchsia-400 spin-slow"></div>
+      <div class="absolute right-12 bottom-16 w-2 h-2 rounded-full bg-orange-400 spin-slow"></div>
+    </div>
+  </div>
+
+  <svg class="absolute bottom-0 left-0 right-0 text-cream" viewBox="0 0 1440 90" fill="currentColor" preserveAspectRatio="none"><path d="M0 90h1440V30c-120 30-300 45-480 45S600 30 420 30 120 60 0 90z"/></svg>
+</section>
+
+<!-- ══════════ CATEGORÍAS ══════════ -->
+<section id="categorias" class="py-16 lg:py-24">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-end justify-between mb-8 reveal">
+      <div>
+        <p class="text-xs font-extrabold tracking-[.2em] text-fuchsia-600 mb-2">EXPLORÁ</p>
+        <h2 class="font-display font-extrabold text-3xl lg:text-4xl text-night-900 tracking-tight">¿Qué te apetece hoy?</h2>
+      </div>
+      <button onclick="document.getElementById('destacados').scrollIntoView({behavior:'smooth'})" class="hidden sm:flex items-center gap-1.5 text-sm font-bold text-violet-700 hover:text-fuchsia-600 transition">Ver todo <i data-lucide="arrow-right" class="w-4 h-4"></i></button>
+    </div>
+    <div id="categoriesRow" class="flex gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 reveal"></div>
+  </div>
+</section>
+
+<!-- ══════════ PROMOS ══════════ -->
+<section id="ofertas" class="pb-16 lg:pb-24">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-5 gap-5">
+    <div class="md:col-span-3 relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-violet-700 via-fuchsia-600 to-rose-500 text-white p-8 lg:p-12 card-lift reveal">
+      <div class="absolute -top-16 -right-16 w-64 h-64 bg-white/10 rounded-full"></div>
+      <div class="absolute -bottom-24 right-24 w-52 h-52 bg-orange-400/30 rounded-full blur-2xl"></div>
+      <span class="relative inline-flex items-center gap-1.5 bg-white/20 rounded-full px-3 py-1 text-[11px] font-extrabold tracking-wider"><i data-lucide="gift" class="w-3.5 h-3.5"></i> BIENVENIDA</span>
+      <h3 class="relative font-display font-extrabold text-2xl lg:text-4xl mt-4 tracking-tight">Envío gratis en tu primer pedido</h3>
+      <p class="relative text-white/80 mt-3 max-w-md text-sm lg:text-base">Usá el código <span class="font-extrabold bg-white/20 rounded-lg px-2 py-0.5">PEDILO</span> al pagar y disfrutá.</p>
+      <button onclick="openAuthModal('register')" class="relative mt-7 bg-white text-fuchsia-700 font-extrabold text-sm px-7 py-3.5 rounded-full hover:shadow-2xl hover:-translate-y-0.5 transition flex items-center gap-2">Empezar ahora <i data-lucide="arrow-right" class="w-4 h-4"></i></button>
+    </div>
+    <div class="md:col-span-2 relative overflow-hidden rounded-[2rem] bg-night-900 text-white p-8 card-lift reveal">
+      <div class="absolute -top-10 -right-10 w-40 h-40 bg-orange-500/30 rounded-full blur-2xl"></div>
+      <span class="relative inline-flex items-center gap-1.5 bg-orange-500/20 text-orange-300 rounded-full px-3 py-1 text-[11px] font-extrabold tracking-wider"><i data-lucide="flame" class="w-3.5 h-3.5"></i> HOT SALE</span>
+      <h3 class="relative font-display font-extrabold text-2xl lg:text-3xl mt-4 tracking-tight">2x1 en burgers, todos los martes</h3>
+      <p class="relative text-slate-400 mt-3 text-sm">En comercios adheridos de tu zona.</p>
+      <button onclick="quickSearch('hamburguesas')" class="relative mt-7 w-full border-2 border-orange-400/60 text-orange-300 font-extrabold text-sm px-6 py-3 rounded-full hover:bg-orange-400 hover:text-night-900 transition">Ver locales</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ DESTACADOS ══════════ -->
+<section id="destacados" class="pb-16 lg:pb-24">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="mb-6 reveal">
+      <p class="text-xs font-extrabold tracking-[.2em] text-orange-500 mb-2">CERCA TUYO</p>
+      <h2 class="font-display font-extrabold text-3xl lg:text-4xl text-night-900 tracking-tight">Los favoritos de tu zona</h2>
+    </div>
+    <div class="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 mb-8 reveal" id="filterChips"></div>
+    <div id="activeTypeBar" class="hidden mb-6"></div>
+    <div id="restaurantsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div>
+  </div>
+</section>
+
+<!-- ══════════ CÓMO FUNCIONA ══════════ -->
+<section id="como-funciona" class="py-16 lg:py-24 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-14 reveal">
+      <p class="text-xs font-extrabold tracking-[.2em] text-violet-600 mb-2">SÚPER FÁCIL</p>
+      <h2 class="font-display font-extrabold text-3xl lg:text-4xl text-night-900 tracking-tight">Tres toques y listo</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-10 md:gap-6 relative">
+      <div class="hidden md:block absolute top-12 left-[20%] right-[20%] border-t-2 border-dashed border-violet-200"></div>
+      <div class="text-center relative reveal">
+        <div class="relative inline-block">
+          <span class="w-24 h-24 rounded-[1.75rem] bg-gradient-to-br from-violet-600 to-fuchsia-500 shadow-glow flex items-center justify-center mx-auto"><i data-lucide="search" class="w-10 h-10 text-white"></i></span>
+          <span class="absolute -top-2 -right-2 w-8 h-8 rounded-full grad-btn text-white font-display font-extrabold text-sm flex items-center justify-center border-4 border-white">1</span>
+        </div>
+        <h3 class="font-display font-bold text-xl text-night-900 mt-6">Explorá y elegí</h3>
+        <p class="text-slate-500 text-sm mt-2 max-w-[240px] mx-auto">Recorré los comercios de tu zona y armá tu pedido como quieras.</p>
+      </div>
+      <div class="text-center relative reveal">
+        <div class="relative inline-block">
+          <span class="w-24 h-24 rounded-[1.75rem] bg-gradient-to-br from-fuchsia-500 to-rose-500 shadow-glowPink flex items-center justify-center mx-auto"><i data-lucide="wallet" class="w-10 h-10 text-white"></i></span>
+          <span class="absolute -top-2 -right-2 w-8 h-8 rounded-full grad-btn text-white font-display font-extrabold text-sm flex items-center justify-center border-4 border-white">2</span>
+        </div>
+        <h3 class="font-display font-bold text-xl text-night-900 mt-6">Pagá a tu manera</h3>
+        <p class="text-slate-500 text-sm mt-2 max-w-[240px] mx-auto">Tarjeta, transferencia o efectivo contra entrega. Vos decidís.</p>
+      </div>
+      <div class="text-center relative reveal">
+        <div class="relative inline-block">
+          <span class="w-24 h-24 rounded-[1.75rem] bg-gradient-to-br from-orange-500 to-amber-400 shadow-glowOrange flex items-center justify-center mx-auto"><i data-lucide="bike" class="w-10 h-10 text-white"></i></span>
+          <span class="absolute -top-2 -right-2 w-8 h-8 rounded-full grad-btn text-white font-display font-extrabold text-sm flex items-center justify-center border-4 border-white">3</span>
+        </div>
+        <h3 class="font-display font-bold text-xl text-night-900 mt-6">Recibilo volando</h3>
+        <p class="text-slate-500 text-sm mt-2 max-w-[240px] mx-auto">Seguí el pedido en vivo y recibilo en la puerta, calentito.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ APP ══════════ -->
+<section id="app" class="relative py-20 lg:py-28 bg-night-900 text-white overflow-hidden">
+  <div class="absolute top-0 left-1/4 w-[500px] h-[500px] bg-violet-700/25 rounded-full blur-[140px]"></div>
+  <div class="absolute bottom-0 right-1/4 w-[420px] h-[420px] bg-fuchsia-600/20 rounded-full blur-[140px]"></div>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-16 items-center relative">
+    <div class="text-center lg:text-left reveal">
+      <p class="text-xs font-extrabold tracking-[.2em] text-fuchsia-400 mb-3">LA APP</p>
+      <h2 class="font-display font-extrabold text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-tight">Tu pueblo entero,<br><span class="grad-text">en el bolsillo</span></h2>
+      <p class="text-slate-400 mt-5 max-w-lg mx-auto lg:mx-0">Descargá Pedilo y viví la experiencia completa: seguimiento en vivo, promos exclusivas y tus favoritos a un toque.</p>
+      <ul class="mt-8 space-y-4 text-left max-w-md mx-auto lg:mx-0">
+        <li class="flex items-center gap-4"><span class="w-11 h-11 rounded-2xl bg-violet-600/30 border border-violet-500/40 flex items-center justify-center shrink-0"><i data-lucide="radar" class="w-5 h-5 text-violet-300"></i></span><p class="text-sm font-semibold text-slate-200">Seguimiento del pedido en tiempo real</p></li>
+        <li class="flex items-center gap-4"><span class="w-11 h-11 rounded-2xl bg-fuchsia-600/30 border border-fuchsia-500/40 flex items-center justify-center shrink-0"><i data-lucide="badge-percent" class="w-5 h-5 text-fuchsia-300"></i></span><p class="text-sm font-semibold text-slate-200">Promos y cupones exclusivos de la app</p></li>
+        <li class="flex items-center gap-4"><span class="w-11 h-11 rounded-2xl bg-orange-600/30 border border-orange-500/40 flex items-center justify-center shrink-0"><i data-lucide="credit-card" class="w-5 h-5 text-orange-300"></i></span><p class="text-sm font-semibold text-slate-200">Pagos seguros con todos los métodos</p></li>
+      </ul>
+      <div class="mt-9 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+        <button onclick="showToast('Redirigiendo a App Store...','smartphone')" class="flex items-center gap-3 bg-white text-night-900 rounded-2xl px-6 py-3.5 hover:-translate-y-0.5 hover:shadow-2xl transition">
+          <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+          <span class="text-left"><span class="block text-[10px] font-semibold text-slate-500">Descargala en</span><span class="block font-extrabold">App Store</span></span>
+        </button>
+        <button onclick="showToast('Redirigiendo a Google Play...','smartphone')" class="flex items-center gap-3 glass rounded-2xl px-6 py-3.5 hover:bg-white/20 transition">
+          <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.199l2.807 1.626a1 1 0 010 1.732l-2.807 1.626L15.206 12l2.492-2.492zM5.864 2.658L16.8 8.99l-2.302 2.302-8.634-8.634z"/></svg>
+          <span class="text-left"><span class="block text-[10px] font-semibold text-slate-400">Disponible en</span><span class="block font-extrabold">Google Play</span></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="relative flex justify-center reveal">
+      <div class="absolute inset-0 flex items-center justify-center"><div class="w-[340px] h-[340px] bg-fuchsia-600/30 rounded-full blur-[100px]"></div></div>
+      <div class="phone-frame relative float-a">
+        <div class="phone-screen bg-white">
+          <div class="phone-notch"></div>
+          <img src="https://image.qwenlm.ai/public_source/09b28102-8e0a-427e-a2cf-004516999ad7/1c47b3233-e9f2-44de-89b0-105fcbc0a600.png" alt="App Pedilo" class="w-full h-full object-cover">
+        </div>
+      </div>
+      <div class="absolute -left-2 sm:left-8 top-10 glass rounded-2xl px-4 py-3 float-b shadow-2xl">
+        <div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg bg-lime-400/90 flex items-center justify-center"><i data-lucide="check" class="w-4 h-4 text-night-900"></i></span><p class="text-xs font-extrabold">Entregado en 14 min</p></div>
+      </div>
+      <div class="absolute -right-2 sm:right-8 bottom-14 glass rounded-2xl px-4 py-3 float-c shadow-2xl">
+        <div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg bg-orange-400/90 flex items-center justify-center"><i data-lucide="flame" class="w-4 h-4 text-night-900"></i></span><p class="text-xs font-extrabold">Racha: 5 pedidos</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ EXPANSIÓN ══════════ -->
+<section class="py-16 lg:py-20">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="rounded-[2rem] bg-gradient-to-r from-violet-100 via-fuchsia-100 to-orange-100 border border-violet-200/60 p-8 lg:p-12 grid lg:grid-cols-2 gap-8 items-center reveal">
+      <div>
+        <p class="text-xs font-extrabold tracking-[.2em] text-violet-600 mb-2">DE TU PUEBLO AL PAÍS</p>
+        <h2 class="font-display font-extrabold text-2xl lg:text-4xl text-night-900 tracking-tight">¿Querés Pedilo en tu ciudad?</h2>
+        <p class="text-slate-600 mt-3 max-w-md text-sm lg:text-base">Empezamos locales, soñamos grandes. Dejanos tu email y te avisamos apenas lleguemos.</p>
+      </div>
+      <form onsubmit="waitlistSubmit(event)" class="flex flex-col sm:flex-row gap-3">
+        <input id="waitlistEmail" type="email" required placeholder="tu@email.com" class="flex-1 px-6 py-4 rounded-full bg-white border-2 border-violet-200 focus:border-fuchsia-400 focus:ring-4 focus:ring-fuchsia-100 transition text-sm font-medium">
+        <button type="submit" class="grad-btn text-white font-extrabold text-sm px-8 py-4 rounded-full shadow-glow flex items-center justify-center gap-2"><i data-lucide="bell-ring" class="w-4 h-4"></i> Avisame</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ COMERCIOS ══════════ -->
+<section id="comercios" class="pb-20 lg:pb-28">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="relative overflow-hidden rounded-[2rem] bg-night-900 text-white p-8 lg:p-16 reveal">
+      <div class="absolute -top-24 -left-24 w-80 h-80 bg-violet-600/30 rounded-full blur-[100px]"></div>
+      <div class="absolute -bottom-24 -right-24 w-80 h-80 bg-orange-500/25 rounded-full blur-[100px]"></div>
+      <div class="relative grid lg:grid-cols-2 gap-10 items-center">
+        <div>
+          <p class="text-xs font-extrabold tracking-[.2em] text-orange-400 mb-3">PARA COMERCIOS</p>
+          <h2 class="font-display font-extrabold text-3xl lg:text-5xl tracking-tight">Hacé crecer tu negocio con Pedilo</h2>
+          <p class="text-slate-400 mt-4 max-w-md">Sumate gratis, recibí pedidos desde el primer día y gestioná todo desde un panel simple.</p>
+          <button onclick="openPartnerModal()" class="mt-8 grad-btn text-white font-extrabold px-8 py-4 rounded-full shadow-glow inline-flex items-center gap-2"><i data-lucide="store" class="w-5 h-5"></i> Sumar mi comercio</button>
+        </div>
+        <div class="grid sm:grid-cols-3 gap-4">
+          <div class="glass rounded-2xl p-5 text-center"><i data-lucide="trending-up" class="w-7 h-7 text-lime-400 mx-auto"></i><p class="font-extrabold text-sm mt-3">Más ventas</p><p class="text-[11px] text-slate-400 mt-1">Nuevos clientes de tu zona</p></div>
+          <div class="glass rounded-2xl p-5 text-center"><i data-lucide="layout-dashboard" class="w-7 h-7 text-fuchsia-400 mx-auto"></i><p class="font-extrabold text-sm mt-3">Panel simple</p><p class="text-[11px] text-slate-400 mt-1">Gestioná menú y pedidos</p></div>
+          <div class="glass rounded-2xl p-5 text-center"><i data-lucide="hand-coins" class="w-7 h-7 text-orange-400 mx-auto"></i><p class="font-extrabold text-sm mt-3">Sin fijos</p><p class="text-[11px] text-slate-400 mt-1">Solo comisión por venta</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer class="bg-night-950 text-slate-400 pt-16 pb-28 lg:pb-10">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+      <div>
+        <a href="#inicio" class="flex items-center gap-2.5 mb-5">
+          <svg viewBox="0 0 48 48" class="w-10 h-10">
+            <defs><linearGradient id="lgFoot" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C3AED"/><stop offset="1" stop-color="#D946EF"/></linearGradient></defs>
+            <rect x="2" y="2" width="44" height="44" rx="14" fill="url(#lgFoot)"/>
+            <path d="M17.5 16.5v-2.5a6.5 6.5 0 0 1 13 0v2.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+            <path d="M13.5 16.5h21l-1.8 17.2a4.5 4.5 0 0 1-4.47 4.03H19.77a4.5 4.5 0 0 1-4.47-4.03z" fill="#fff"/>
+            <path d="M26.5 19.5l-7 9.5h4.5l-2.5 8 7-9.5H24z" fill="#FB923C"/>
+          </svg>
+          <span class="font-display font-extrabold text-2xl text-white">pedi<span class="grad-text">lo</span></span>
+        </a>
+        <p class="text-sm max-w-xs">La plataforma de pedidos online de tu pueblo. Hoy local, mañana en todo el país.</p>
+        <div class="flex gap-3 mt-6">
+          <a href="#" aria-label="Instagram" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-fuchsia-600 transition flex items-center justify-center"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></a>
+          <a href="#" aria-label="Facebook" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-fuchsia-600 transition flex items-center justify-center"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
+          <a href="#" aria-label="WhatsApp" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-fuchsia-600 transition flex items-center justify-center"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <h4 class="text-white font-extrabold mb-4 font-display">Descubrí</h4>
+        <ul class="space-y-3 text-sm font-medium">
+          <li><a href="#categorias" class="hover:text-fuchsia-400 transition">Categorías</a></li>
+          <li><a href="#ofertas" class="hover:text-fuchsia-400 transition">Promociones</a></li>
+          <li><a href="#destacados" class="hover:text-fuchsia-400 transition">Destacados</a></li>
+          <li><a href="#como-funciona" class="hover:text-fuchsia-400 transition">Cómo funciona</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-white font-extrabold mb-4 font-display">Comercios</h4>
+        <ul class="space-y-3 text-sm font-medium">
+          <li><a href="#comercios" class="hover:text-fuchsia-400 transition">Sumá tu comercio</a></li>
+          <li><a href="#" class="hover:text-fuchsia-400 transition">Panel de gestión</a></li>
+          <li><a href="#" class="hover:text-fuchsia-400 transition">Ser repartidor</a></li>
+          <li><a href="#" class="hover:text-fuchsia-400 transition">Preguntas frecuentes</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-white font-extrabold mb-4 font-display">Contacto</h4>
+        <ul class="space-y-3 text-sm font-medium">
+          <li class="flex items-center gap-2.5"><i data-lucide="mail" class="w-4 h-4 text-fuchsia-400"></i> hola@pedilo.app</li>
+          <li class="flex items-center gap-2.5"><i data-lucide="phone" class="w-4 h-4 text-fuchsia-400"></i> 0800-345-PEDILO</li>
+          <li class="flex items-center gap-2.5"><i data-lucide="map-pin" class="w-4 h-4 text-fuchsia-400"></i> Mi Pueblo, Argentina</li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-white/10 pt-7 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+      <p>© <span id="year"></span> Pedilo. Todos los derechos reservados.</p>
+      <p class="flex items-center gap-1.5">Hecho con <i data-lucide="heart" class="w-3.5 h-3.5 text-rose-500" fill="currentColor"></i> en Argentina</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ══════════ BOTTOM NAV MOBILE ══════════ -->
+<nav class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xl border-t border-violet-100 pb-safe">
+  <div class="grid grid-cols-5 h-16">
+    <button onclick="bottomNav(this);window.scrollTo({top:0,behavior:'smooth'})" class="bnav text-violet-700 flex flex-col items-center justify-center gap-1"><i data-lucide="home" class="w-5 h-5"></i><span class="text-[10px] font-bold">Inicio</span></button>
+    <button onclick="bottomNav(this);focusHeroSearch()" class="bnav text-slate-400 flex flex-col items-center justify-center gap-1"><i data-lucide="search" class="w-5 h-5"></i><span class="text-[10px] font-bold">Buscar</span></button>
+    <button onclick="toggleCart()" class="relative flex flex-col items-center justify-center">
+      <span class="absolute -top-5 w-14 h-14 rounded-2xl grad-btn shadow-glowPink flex items-center justify-center border-4 border-cream"><i data-lucide="shopping-bag" class="w-6 h-6 text-white"></i></span>
+      <span id="cartCountMobile" class="absolute -top-6 right-1/2 translate-x-5 min-w-[18px] h-[18px] px-1 rounded-full bg-orange-500 text-white text-[10px] font-extrabold flex items-center justify-center hidden">0</span>
+      <span class="mt-6 text-[10px] font-bold text-slate-400">Pedidos</span>
+    </button>
+    <button onclick="bottomNav(this);document.getElementById('ofertas').scrollIntoView({behavior:'smooth'})" class="bnav text-slate-400 flex flex-col items-center justify-center gap-1"><i data-lucide="tag" class="w-5 h-5"></i><span class="text-[10px] font-bold">Ofertas</span></button>
+    <button onclick="bottomNav(this);openAuthModal('login')" class="bnav text-slate-400 flex flex-col items-center justify-center gap-1"><i data-lucide="circle-user-round" class="w-5 h-5"></i><span class="text-[10px] font-bold">Cuenta</span></button>
+  </div>
+</nav>
+
+<!-- ══════════ CART DRAWER ══════════ -->
+<div id="cartOverlay" class="fixed inset-0 z-50 hidden">
+  <div class="absolute inset-0 bg-night-950/60 backdrop-blur-sm" onclick="toggleCart()"></div>
+  <aside id="cartPanel" class="absolute right-0 top-0 bottom-0 w-full sm:max-w-md bg-white shadow-2xl flex flex-col translate-x-full transition-transform duration-300 ease-out">
+    <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-violet-50 to-fuchsia-50">
+      <div class="flex items-center gap-3">
+        <span class="w-11 h-11 rounded-2xl grad-btn shadow-glow flex items-center justify-center"><i data-lucide="shopping-bag" class="w-5 h-5 text-white"></i></span>
+        <div><h3 class="font-display font-extrabold text-lg text-night-900">Tu pedido</h3><p class="text-xs text-slate-500 font-semibold" id="cartRestaurant">Agregá productos para empezar</p></div>
+      </div>
+      <button onclick="toggleCart()" class="w-10 h-10 rounded-xl hover:bg-white flex items-center justify-center transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-5" id="cartItems"></div>
+    <div id="cartFooter" class="hidden border-t border-slate-100 p-5 bg-slate-50">
+      <div class="space-y-1.5 mb-4 text-sm font-semibold">
+        <div class="flex justify-between text-slate-500"><span>Subtotal</span><span id="cartSubtotal" class="text-night-900">$0</span></div>
+        <div class="flex justify-between text-slate-500"><span>Envío</span><span class="text-lime-600 font-extrabold">Gratis</span></div>
+        <div class="flex justify-between text-base pt-2 border-t border-slate-200"><span class="font-extrabold text-night-900">Total</span><span class="font-extrabold grad-text" id="cartTotal">$0</span></div>
+      </div>
+      <button onclick="checkout()" class="w-full grad-btn text-white font-extrabold py-4 rounded-2xl shadow-glow flex items-center justify-center gap-2"><i data-lucide="badge-check" class="w-5 h-5"></i> Confirmar pedido</button>
+    </div>
+  </aside>
+</div>
+
+<!-- ══════════ RESTAURANT MODAL ══════════ -->
+<div id="restModal" class="fixed inset-0 z-[60] hidden">
+  <div class="absolute inset-0 bg-night-950/60 backdrop-blur-sm" onclick="closeRestaurantModal()"></div>
+  <div class="absolute inset-0 flex items-end md:items-center md:justify-center md:p-6 pointer-events-none">
+    <div id="restPanel" class="pointer-events-auto w-full md:max-w-2xl max-h-[92vh] md:max-h-[85vh] bg-white rounded-t-[2rem] md:rounded-[2rem] flex flex-col translate-y-full md:translate-y-6 md:opacity-0 transition-all duration-300 ease-out overflow-hidden">
+      <div class="relative h-44 md:h-52 shrink-0">
+        <div class="absolute inset-0 bg-gradient-to-br from-violet-300 to-fuchsia-300 flex items-center justify-center"><i data-lucide="store" class="w-10 h-10 text-white/80"></i></div>
+        <img id="restModalImg" src="" alt="" class="relative w-full h-full object-cover" onerror="this.style.display='none'">
+        <div class="absolute inset-0 bg-gradient-to-t from-night-950/80 via-transparent"></div>
+        <div class="absolute top-0 inset-x-0 flex justify-center pt-2 md:hidden"><span class="w-12 h-1.5 rounded-full bg-white/50"></span></div>
+        <button onclick="closeRestaurantModal()" class="absolute top-4 right-4 w-10 h-10 rounded-xl bg-night-950/40 backdrop-blur text-white hover:bg-night-950/70 transition flex items-center justify-center"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <div class="absolute bottom-4 left-6 right-6 text-white">
+          <h3 class="font-display font-extrabold text-2xl" id="restModalName"></h3>
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-xs font-bold">
+            <span class="flex items-center gap-1"><i data-lucide="star" class="w-4 h-4 text-orange-400" fill="currentColor"></i><span id="restModalRating"></span></span>
+            <span class="flex items-center gap-1"><i data-lucide="clock" class="w-4 h-4 text-fuchsia-300"></i><span id="restModalTime"></span></span>
+            <span class="flex items-center gap-1"><i data-lucide="bike" class="w-4 h-4 text-lime-300"></i><span id="restModalShipping"></span></span>
+          </div>
+        </div>
+      </div>
+      <div class="flex-1 overflow-y-auto p-6">
+        <div class="flex gap-2 mb-6" id="restModalTags"></div>
+        <h4 class="font-display font-extrabold text-lg text-night-900 mb-4">Menú y productos</h4>
+        <div class="space-y-3" id="restModalProducts"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ AUTH MODAL ══════════ -->
+<div id="authModal" class="fixed inset-0 z-[60] hidden">
+  <div class="absolute inset-0 bg-night-950/60 backdrop-blur-sm" onclick="closeAuthModal()"></div>
+  <div class="absolute inset-0 flex items-end sm:items-center justify-center sm:p-6 pointer-events-none">
+    <div class="pointer-events-auto w-full sm:max-w-md bg-white rounded-t-[2rem] sm:rounded-[2rem] p-7 sm:p-8 max-h-[92vh] overflow-y-auto pop-in">
+      <div class="flex justify-between items-start mb-6">
+        <div>
+          <svg viewBox="0 0 48 48" class="w-12 h-12 mb-4 drop-shadow-[0_10px_20px_rgba(124,58,237,.4)]">
+            <defs><linearGradient id="lgAuth" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C3AED"/><stop offset="1" stop-color="#D946EF"/></linearGradient></defs>
+            <rect x="2" y="2" width="44" height="44" rx="14" fill="url(#lgAuth)"/>
+            <path d="M17.5 16.5v-2.5a6.5 6.5 0 0 1 13 0v2.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+            <path d="M13.5 16.5h21l-1.8 17.2a4.5 4.5 0 0 1-4.47 4.03H19.77a4.5 4.5 0 0 1-4.47-4.03z" fill="#fff"/>
+            <path d="M26.5 19.5l-7 9.5h4.5l-2.5 8 7-9.5H24z" fill="#FB923C"/>
+          </svg>
+          <h3 class="font-display font-extrabold text-2xl text-night-900" id="authTitle">Hola de nuevo</h3>
+          <p class="text-sm text-slate-500 mt-1" id="authSubtitle">Ingresá para seguir pidiendo</p>
+        </div>
+        <button onclick="closeAuthModal()" class="w-10 h-10 rounded-xl hover:bg-slate-100 flex items-center justify-center transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="space-y-4">
+        <div id="authNameField" class="hidden">
+          <label class="block text-xs font-extrabold text-slate-600 mb-1.5 uppercase tracking-wide">Nombre</label>
+          <input id="authName" type="text" placeholder="Tu nombre" class="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:border-fuchsia-400 focus:ring-4 focus:ring-fuchsia-100 transition text-sm font-medium">
+        </div>
+        <div>
+          <label class="block text-xs font-extrabold text-slate-600 mb-1.5 uppercase tracking-wide">Email</label>
+          <input id="authEmail" type="email" placeholder="tu@email.com" class="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:border-fuchsia-400 focus:ring-4 focus:ring-fuchsia-100 transition text-sm font-medium">
+        </div>
+        <div>
+          <label class="block text-xs font-extrabold text-slate-600 mb-1.5 uppercase tracking-wide">Contraseña</label>
+          <input id="authPass" type="password" placeholder="Mínimo 6 caracteres" class="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:border-fuchsia-400 focus:ring-4 focus:ring-fuchsia-100 transition text-sm font-medium">
+        </div>
+        <button onclick="handleAuth()" id="authBtn" class="w-full grad-btn text-white font-extrabold py-4 rounded-2xl shadow-glow">Ingresar</button>
+      </div>
+      <p class="text-center text-sm text-slate-500 mt-5" id="authSwitch"></p>
+      <div class="flex items-center gap-3 my-6"><span class="flex-1 h-px bg-slate-200"></span><span class="text-xs font-bold text-slate-400">o continuá con</span><span class="flex-1 h-px bg-slate-200"></span></div>
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="showToast('Conectando con Google...','sparkles')" class="flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-slate-200 hover:border-fuchsia-300 hover:bg-fuchsia-50 transition font-bold text-sm">
+          <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Google
+        </button>
+        <button onclick="showToast('Conectando con Facebook...','sparkles')" class="flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-slate-200 hover:border-fuchsia-300 hover:bg-fuchsia-50 transition font-bold text-sm">
+          <svg class="w-5 h-5 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Facebook
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ LOCATION MODAL ══════════ -->
+<div id="locationModal" class="fixed inset-0 z-[60] hidden">
+  <div class="absolute inset-0 bg-night-950/60 backdrop-blur-sm" onclick="closeLocationModal()"></div>
+  <div class="absolute inset-0 flex items-end sm:items-center justify-center sm:p-6 pointer-events-none">
+    <div class="pointer-events-auto w-full sm:max-w-md bg-white rounded-t-[2rem] sm:rounded-[2rem] p-7 max-h-[92vh] overflow-y-auto pop-in">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="font-display font-extrabold text-xl text-night-900">¿Dónde te lo llevamos?</h3>
+        <button onclick="closeLocationModal()" class="w-10 h-10 rounded-xl hover:bg-slate-100 flex items-center justify-center transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="relative mb-4">
+        <i data-lucide="map-pin" class="w-5 h-5 text-fuchsia-500 absolute left-4 top-1/2 -translate-y-1/2"></i>
+        <input id="locationInput" type="text" placeholder="Calle y número" class="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:border-fuchsia-400 focus:ring-4 focus:ring-fuchsia-100 transition text-sm font-medium">
+      </div>
+      <button onclick="detectLocation()" class="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border-2 border-violet-200 text-violet-700 font-extrabold text-sm hover:bg-violet-50 transition mb-6"><i data-lucide="locate-fixed" class="w-4 h-4"></i> Usar mi ubicación actual</button>
+      <p class="text-xs font-extrabold text-slate-500 uppercase tracking-wide mb-3">Zonas con envío</p>
+      <div class="space-y-2">
+        <button onclick="selectLocation('Mi Pueblo · Centro')" class="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-violet-50 border border-transparent hover:border-violet-100 transition text-left">
+          <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shrink-0"><i data-lucide="map-pin" class="w-4 h-4 text-white"></i></span>
+          <span><span class="block font-extrabold text-sm text-night-900">Centro</span><span class="text-xs text-slate-500 font-medium">Mi Pueblo · 15 min</span></span>
+        </button>
+        <button onclick="selectLocation('Mi Pueblo · Barrio Norte')" class="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-violet-50 border border-transparent hover:border-violet-100 transition text-left">
+          <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-fuchsia-500 to-rose-500 flex items-center justify-center shrink-0"><i data-lucide="map-pin" class="w-4 h-4 text-white"></i></span>
+          <span><span class="block font-extrabold text-sm text-night-900">Barrio Norte</span><span class="text-xs text-slate-500 font-medium">Mi Pueblo · 20 min</span></span>
+        </button>
+        <button onclick="selectLocation('Mi Pueblo · Barrio Sur')" class="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-violet-50 border border-transparent hover:border-violet-100 transition text-left">
+          <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shrink-0"><i data-lucide="map-pin" class="w-4 h-4 text-white"></i></span>
+          <span><span class="block font-extrabold text-sm text-night-900">Barrio Sur</span><span class="text-xs text-slate-500 font-medium">Mi Pueblo · 20 min</span></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ PARTNER MODAL ══════════ -->
+<div id="partnerModal" class="fixed inset-0 z-[60] hidden">
+  <div class="absolute inset-0 bg-night-950/60 backdrop-blur-sm" onclick="closePartnerModal()"></div>
+  <div class="absolute inset-0 flex items-end sm:items-center justify-center sm:p-6 pointer-events-none">
+    <div class="pointer-events-auto w-full sm:max-w-lg bg-white rounded-t-[2rem] sm:rounded-[2rem] p-7 sm:p-8 max-h-[92vh] overflow-y-auto pop-in">
+      <div class="flex justify-between items-start mb-6">
+        <div>
+          <h3 class="font-display font-extrabold text-2xl text-night-900">Sumá tu comercio</h3>
+          <p class="text-sm text-slate-500 mt-1">Te contactamos en menos de 48 hs</p>
+        </div>
+        <button onclick="closePartnerModal()" class="w-10 h-10 rounded-xl hover:bg-slate-100 flex items-center justify-center transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="space-y-4">
+        <input id="pShop" type="text" placeholder="Nombre del comercio" class="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:border-fuchsia-400 focus:ring-4 focus:ring-fuchsia-100 transition text-sm font-medium">
+        <select class="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:border-fuchsia-400 focus:ring-4 focus:ring-fuchsia-100 transition text-sm font-medium text-slate-700">
+          <option>Restaurante / Comida</option><option>Farmacia</option><option>Almacén / Supermercado</option><option>Cafetería / Panadería</option><option>Kiosco / Bebidas</option><option>Otro rubro</option>
+        </select>
+        <div class="grid grid-cols-2 gap-3">
+          <input id="pName" type="text" placeholder="Tu nombre" class="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:border-fuchsia-400 focus:ring-4 focus:ring-fuchsia-100 transition text-sm font-medium">
+          <input id="pPhone" type="tel" placeholder="Teléfono" class="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:border-fuchsia-400 focus:ring-4 focus:ring-fuchsia-100 transition text-sm font-medium">
+        </div>
+        <input id="pEmail" type="email" placeholder="Email de contacto" class="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:border-fuchsia-400 focus:ring-4 focus:ring-fuchsia-100 transition text-sm font-medium">
+        <button onclick="submitPartner()" class="w-full grad-btn text-white font-extrabold py-4 rounded-2xl shadow-glow flex items-center justify-center gap-2"><i data-lucide="rocket" class="w-5 h-5"></i> Enviar solicitud</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TOAST ══════════ -->
+<div id="toast" class="fixed bottom-24 lg:bottom-8 left-1/2 -translate-x-1/2 z-[80] hidden">
+  <div class="toast-in flex items-center gap-3 bg-night-900 text-white pl-4 pr-6 py-3.5 rounded-2xl shadow-2xl border border-white/10">
+    <span class="w-8 h-8 rounded-xl grad-btn flex items-center justify-center shrink-0"><i id="toastIcon" data-lucide="check" class="w-4 h-4 text-white"></i></span>
+    <p id="toastText" class="text-sm font-bold whitespace-nowrap">Listo</p>
+  </div>
+</div>
+
+<script>
+/* ══════════ DATA ══════════ */
+const categories = [
+  {id:'hamburguesas', name:'Hamburguesas', icon:'sandwich', g:'from-orange-400 to-rose-500'},
+  {id:'pizza', name:'Pizza', icon:'pizza', g:'from-amber-400 to-orange-600'},
+  {id:'sushi', name:'Sushi', icon:'fish', g:'from-rose-400 to-fuchsia-600'},
+  {id:'cafe', name:'Café', icon:'coffee', g:'from-amber-500 to-yellow-600'},
+  {id:'saludable', name:'Saludable', icon:'salad', g:'from-lime-400 to-emerald-600'},
+  {id:'empanadas', name:'Empanadas', icon:'chef-hat', g:'from-yellow-400 to-amber-600'},
+  {id:'farmacia', name:'Farmacia', icon:'pill', g:'from-sky-400 to-cyan-600'},
+  {id:'super', name:'Almacén', icon:'shopping-basket', g:'from-violet-400 to-purple-600'},
+  {id:'heladeria', name:'Heladería', icon:'ice-cream-cone', g:'from-pink-400 to-rose-500'},
+  {id:'bebidas', name:'Bebidas', icon:'cup-soda', g:'from-cyan-400 to-blue-600'},
+  {id:'kiosco', name:'Kiosco', icon:'package', g:'from-teal-400 to-emerald-600'},
+  {id:'tiendas', name:'Tiendas', icon:'store', g:'from-fuchsia-400 to-violet-600'}
+];
+
+const restaurants = [
+  {id:1, name:'Burger House', group:'food', type:'hamburguesas', rating:4.8, time:'20-30 min', shipping:'Envío gratis', tags:['Top ventas','Nuevo'], image:'https://image.qwenlm.ai/public_source/09b28102-8e0a-427e-a2cf-004516999ad7/1a6f021e6-a87e-4dfb-a042-d5a62f24cf21.png',
+   products:[{name:'Hamburguesa Clásica',price:4500,desc:'Carne 150g, lechuga, tomate y cheddar'},{name:'Hamburguesa Doble Bacon',price:6200,desc:'Doble carne, doble cheddar y bacon crocante'},{name:'Papas rústicas',price:2800,desc:'Porción grande con cheddar y verdeo'},{name:'Combo Clásico',price:6500,desc:'Clásica + papas + bebida a elección'}]},
+  {id:2, name:'Pizzería Napoli', group:'food', type:'pizza', rating:4.7, time:'25-35 min', shipping:'$800', tags:['Favorito'], image:'https://image.qwenlm.ai/public_source/09b28102-8e0a-427e-a2cf-004516999ad7/14554f2dc-4372-405b-9d1c-b2273c3f9381.png',
+   products:[{name:'Pizza Muzzarella',price:5200,desc:'Salsa casera, muzzarella y orégano'},{name:'Pizza Napolitana',price:5800,desc:'Tomate fresco, ajo y aceitunas'},{name:'Pizza Especial',price:7200,desc:'Jamón, morrones, huevo y aceitunas'},{name:'Fainá',price:1800,desc:'Bien crocante, porción generosa'}]},
+  {id:3, name:'Sushi Zen', group:'food', type:'sushi', rating:4.9, time:'30-40 min', shipping:'$1.000', tags:['Premium'], image:'https://image.qwenlm.ai/public_source/09b28102-8e0a-427e-a2cf-004516999ad7/10be1f771-55ed-4df0-bc4f-078208d229d6.png',
+   products:[{name:'Combo 20 piezas',price:12500,desc:'10 nigiris + 10 rolls variados'},{name:'Sashimi de salmón',price:8900,desc:'12 láminas de salmón rosado'},{name:'Dragon Roll',price:6800,desc:'8 piezas con palta y salsa teriyaki'},{name:'Edamame',price:2500,desc:'Con sal marina y aceite de sésamo'}]},
+  {id:4, name:'Café del Pueblo', group:'food', type:'cafe', rating:4.6, time:'15-25 min', shipping:'Envío gratis', tags:['Cerca tuyo'], image:'https://image.qwenlm.ai/public_source/09b28102-8e0a-427e-a2cf-004516999ad7/126c27a53-4464-43b7-a2c3-f11589ee256a.png',
+   products:[{name:'Latte de especialidad',price:2200,desc:'Espresso doble con leche vaporizada'},{name:'Cappuccino',price:2000,desc:'Con espuma sedosa y cacao'},{name:'Medialunas x6',price:3200,desc:'De manteca, recién horneadas'},{name:'Tostado jamón y queso',price:3500,desc:'En pan de miga artesanal'}]},
+  {id:5, name:'Green Bowl', group:'food', type:'saludable', rating:4.5, time:'20-30 min', shipping:'$600', tags:['Fit'], image:'https://image.qwenlm.ai/public_source/09b28102-8e0a-427e-a2cf-004516999ad7/1874631dd-be9f-4c8e-950b-0ff1147419ee.png',
+   products:[{name:'Bowl de quinoa',price:5800,desc:'Palta, cherry, semillas y aderezo lime'},{name:'Ensalada César',price:4500,desc:'Pollo grillado, parmesano y croutons'},{name:'Wrap de pollo',price:4800,desc:'Con vegetales frescos y yogurt'},{name:'Smoothie verde',price:2800,desc:'Espinaca, banana, manzana y jengibre'}]},
+  {id:6, name:'Empanadas La Abuela', group:'food', type:'empanadas', rating:4.8, time:'25-35 min', shipping:'$500', tags:['Tradicional'], image:'https://image.qwenlm.ai/public_source/09b28102-8e0a-427e-a2cf-004516999ad7/10dc026c5-aa91-433d-b762-223876d0dcdb.png',
+   products:[{name:'Empanada de carne',price:1200,desc:'Cortada a cuchillo, con huevo y cebolla'},{name:'Jamón y queso',price:1100,desc:'Bien quesuda, horno de barro'},{name:'Pollo suave',price:1150,desc:'Desmenuzado con salsa blanca'},{name:'Docena surtida',price:12500,desc:'Armá tu docena como quieras'}]},
+  {id:7, name:'Farmacia Central', group:'pharmacy', type:'farmacia', rating:4.7, time:'15-25 min', shipping:'$400', tags:['Abierto ahora'], image:'https://image.qwenlm.ai/public_source/09b28102-8e0a-427e-a2cf-004516999ad7/1e1e77095-778f-44e5-9560-0b31472e776b.png',
+   products:[{name:'Paracetamol 500mg x10',price:1800,desc:'Analgésico y antifebril'},{name:'Ibuprofeno 400mg x20',price:2500,desc:'Antiinflamatorio'},{name:'Vitamina C efervescente',price:3200,desc:'Tubo x10 comprimidos'},{name:'Alcohol en gel 500ml',price:2800,desc:'Con aloe vera, protege tu piel'}]},
+  {id:8, name:'Almacén Don Pepe', group:'grocery', type:'super', rating:4.4, time:'20-30 min', shipping:'$700', tags:['Frescos del día'], image:'https://image.qwenlm.ai/public_source/09b28102-8e0a-427e-a2cf-004516999ad7/17690cb89-4824-4860-aeda-3098cbf63877.png',
+   products:[{name:'Leche entera 1L',price:950,desc:'Larga vida, sachet o botella'},{name:'Pan lactal 500g',price:1800,desc:'Horneado hoy a la mañana'},{name:'Huevos de campo x12',price:2400,desc:'Frescos, de granjas locales'},{name:'Frutas de estación 1kg',price:3500,desc:'Mix seleccionado del día'}]}
+];
+
+/* ══════════ STATE ══════════ */
+let cart = [];
+const favs = new Set();
+let activeGroup = 'all', activeType = null, searchQ = '';
+let currentAuthMode = 'login';
+let toastTimer = null;
+
+const $ = id => document.getElementById(id);
+const fmt = n => '$' + n.toLocaleString('es-AR');
+function refreshIcons(){ if (window.lucide) lucide.createIcons(); }
+
+/* ══════════ MARQUEE ══════════ */
+(function(){
+  const items = ['Envío gratis en tu primer pedido','Más de 50 comercios adheridos','Entrega promedio en 15 minutos','Pagá con tarjeta, transferencia o efectivo','Promos exclusivas todos los días'];
+  const html = items.map(t => `<span class="flex items-center gap-2"><i data-lucide="sparkles" class="w-3.5 h-3.5 text-orange-300"></i>${t}</span>`).join('');
+  $('marqueeA').innerHTML = html; $('marqueeB').innerHTML = html;
+})();
+
+/* ══════════ CATEGORIES ══════════ */
+function renderCategories(){
+  $('categoriesRow').innerHTML = categories.map(c => `
+    <button onclick="filterByCategory('${c.id}')" class="snap-start shrink-0 w-[104px] sm:w-[120px] group">
+      <span class="block w-[104px] h-[104px] sm:w-[120px] sm:h-[120px] rounded-[1.6rem] bg-gradient-to-br ${c.g} shadow-lg group-hover:shadow-glow group-hover:-translate-y-1.5 group-hover:rotate-1 transition-all duration-300 flex items-center justify-center">
+        <i data-lucide="${c.icon}" class="w-10 h-10 text-white"></i>
+      </span>
+      <span class="block mt-2.5 text-xs sm:text-sm font-extrabold text-night-800 text-center">${c.name}</span>
+    </button>`).join('');
+}
+
+/* ══════════ CHIPS ══════════ */
+const groups = [{id:'all',label:'Todos'},{id:'food',label:'Comida'},{id:'pharmacy',label:'Farmacia'},{id:'grocery',label:'Almacén'}];
+function renderChips(){
+  $('filterChips').innerHTML = groups.map(g => `
+    <button onclick="setGroup('${g.id}')" class="shrink-0 px-5 py-2.5 rounded-full bg-white border-2 border-slate-200 text-sm font-extrabold text-slate-600 hover:border-fuchsia-300 transition ${activeGroup===g.id?'chip-active':''}">${g.label}</button>`).join('');
+}
+function setGroup(g){ activeGroup = g; activeType = null; renderChips(); renderRestaurants(); refreshIcons(); }
+function filterByCategory(catId){
+  activeType = catId; activeGroup = 'all';
+  renderChips(); renderRestaurants(); refreshIcons();
+  document.getElementById('destacados').scrollIntoView({behavior:'smooth'});
+}
+function clearType(){ activeType = null; renderRestaurants(); refreshIcons(); }
+
+/* ══════════ RESTAURANTS ══════════ */
+function getFiltered(){
+  let list = restaurants;
+  if (activeType) list = list.filter(r => r.type === activeType);
+  else if (activeGroup !== 'all') list = list.filter(r => r.group === activeGroup);
+  if (searchQ){
+    const s = searchQ.toLowerCase();
+    list = list.filter(r => r.name.toLowerCase().includes(s) || r.type.toLowerCase().includes(s) || categories.some(c => c.id===r.type && c.name.toLowerCase().includes(s)));
+  }
+  return list;
+}
+function renderRestaurants(){
+  const list = getFiltered();
+  const bar = $('activeTypeBar');
+  if (activeType){
+    const cat = categories.find(c => c.id === activeType);
+    bar.classList.remove('hidden');
+    bar.innerHTML = `<span class="inline-flex items-center gap-2 bg-violet-100 text-violet-800 text-xs font-extrabold px-4 py-2 rounded-full">Filtrando: ${cat.name} <button onclick="clearType()" class="w-5 h-5 rounded-full bg-violet-200 hover:bg-violet-300 flex items-center justify-center transition"><i data-lucide="x" class="w-3 h-3"></i></button></span>`;
+  } else bar.classList.add('hidden');
+
+  const grid = $('restaurantsGrid');
+  if (!list.length){
+    grid.innerHTML = `<div class="col-span-full text-center py-20 bg-white rounded-[2rem] border-2 border-dashed border-violet-200">
+      <span class="w-16 h-16 mx-auto rounded-2xl bg-violet-100 flex items-center justify-center"><i data-lucide="store" class="w-8 h-8 text-violet-400"></i></span>
+      <p class="font-display font-extrabold text-lg text-night-900 mt-4">Estamos sumando comercios acá</p>
+      <p class="text-sm text-slate-500 mt-1 max-w-xs mx-auto">Esta categoría llega muy pronto a tu zona. ¿Tenés un comercio del rubro? ¡Sumalo!</p>
+      <button onclick="openPartnerModal()" class="mt-5 text-sm font-extrabold text-fuchsia-600 hover:text-fuchsia-700">Quiero ser el primero</button>
+    </div>`;
+    refreshIcons(); return;
+  }
+  grid.innerHTML = list.map(r => `
+    <article onclick="openRestaurantModal(${r.id})" class="group bg-white rounded-[1.75rem] overflow-hidden border border-violet-100/70 card-lift cursor-pointer shadow-soft">
+      <div class="relative h-44 overflow-hidden bg-gradient-to-br from-violet-200 to-fuchsia-200">
+        <div class="absolute inset-0 flex items-center justify-center"><i data-lucide="store" class="w-10 h-10 text-white/80"></i></div>
+        <img src="${r.image}" alt="${r.name}" loading="lazy" onerror="this.remove()" class="zoom-img relative w-full h-full object-cover">
+        <div class="absolute top-3 left-3 flex gap-1.5">${r.tags.map(t => `<span class="grad-btn text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full tracking-wide uppercase shadow">${t}</span>`).join('')}</div>
+        <button onclick="toggleFav(${r.id}, event)" id="fav-${r.id}" class="absolute top-3 right-3 w-9 h-9 rounded-xl bg-white/90 backdrop-blur flex items-center justify-center shadow hover:scale-110 transition ${favs.has(r.id)?'fav-on':''}">
+          <i data-lucide="heart" class="w-4 h-4 text-slate-500"></i>
+        </button>
+        <span class="absolute bottom-3 left-3 flex items-center gap-1 bg-white/95 backdrop-blur rounded-full px-2.5 py-1 text-xs font-extrabold text-night-900 shadow"><i data-lucide="star" class="w-3.5 h-3.5 text-orange-500" fill="currentColor"></i>${r.rating}</span>
+      </div>
+      <div class="p-5">
+        <h3 class="font-display font-extrabold text-lg text-night-900 leading-tight">${r.name}</h3>
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">${categories.find(c=>c.id===r.type)?.name || r.type}</p>
+        <div class="flex items-center gap-4 mt-3.5 text-xs font-bold text-slate-600">
+          <span class="flex items-center gap-1.5"><i data-lucide="clock" class="w-4 h-4 text-fuchsia-500"></i>${r.time}</span>
+          <span class="flex items-center gap-1.5"><i data-lucide="bike" class="w-4 h-4 text-lime-600"></i>${r.shipping}</span>
+        </div>
+      </div>
+    </article>`).join('');
+  refreshIcons();
+}
+
+function toggleFav(id, ev){
+  ev.stopPropagation();
+  const btn = $('fav-'+id);
+  if (favs.has(id)){ favs.delete(id); btn.classList.remove('fav-on'); showToast('Quitado de favoritos','heart-off'); }
+  else { favs.add(id); btn.classList.add('fav-on'); showToast('Guardado en tus favoritos','heart'); }
+  refreshIcons();
+}
+
+function handleSearch(v){ searchQ = v.trim().toLowerCase(); renderRestaurants(); }
+function heroSearchSubmit(e){ e.preventDefault(); searchQ = $('heroSearchInput').value.trim().toLowerCase(); $('navSearch').value = $('heroSearchInput').value; renderRestaurants(); document.getElementById('destacados').scrollIntoView({behavior:'smooth'}); }
+function quickSearch(t){ filterByCategory(t); }
+function focusHeroSearch(){ document.getElementById('inicio').scrollIntoView({behavior:'smooth'}); setTimeout(()=> $('heroSearchInput').focus(), 500); }
+
+/* ══════════ RESTAURANT MODAL ══════════ */
+function openRestaurantModal(id){
+  const r = restaurants.find(x => x.id === id); if(!r) return;
+  $('restModalImg').src = r.image; $('restModalImg').style.display='';
+  $('restModalName').textContent = r.name;
+  $('restModalRating').textContent = r.rating;
+  $('restModalTime').textContent = r.time;
+  $('restModalShipping').textContent = r.shipping;
+  $('restModalTags').innerHTML = r.tags.map(t => `<span class="bg-violet-100 text-violet-700 text-xs font-extrabold px-3.5 py-1.5 rounded-full">${t}</span>`).join('');
+  $('restModalProducts').innerHTML = r.products.map(p => `
+    <div class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 hover:bg-violet-50 border border-transparent hover:border-violet-100 transition">
+      <div class="flex-1 min-w-0">
+        <p class="font-extrabold text-sm text-night-900">${p.name}</p>
+        <p class="text-xs text-slate-500 mt-0.5">${p.desc}</p>
+        <p class="font-extrabold text-sm grad-text mt-1.5">${fmt(p.price)}</p>
+      </div>
+      <button onclick="addToCart('${p.name}', ${r.id})" class="w-11 h-11 shrink-0 rounded-2xl grad-btn shadow-glow text-white flex items-center justify-center hover:scale-110 active:scale-95 transition">
+        <i data-lucide="plus" class="w-5 h-5"></i>
+      </button>
+    </div>`).join('');
+  $('restModal').classList.remove('hidden');
+  requestAnimationFrame(()=> requestAnimationFrame(()=>{
+    $('restPanel').classList.remove('translate-y-full','md:translate-y-6','md:opacity-0');
+  }));
+  refreshIcons();
+}
+function closeRestaurantModal(){
+  $('restPanel').classList.add('translate-y-full','md:translate-y-6','md:opacity-0');
+  setTimeout(()=> $('restModal').classList.add('hidden'), 300);
+}
+
+/* ══════════ CART ══════════ */
+function addToCart(name, restId){
+  const r = restaurants.find(x => x.id === restId);
+  const p = r.products.find(x => x.name === name);
+  const found = cart.find(i => i.name === name && i.restId === restId);
+  if (found) found.qty++; else cart.push({...p, qty:1, restId, restName:r.name});
+  updateCartUI(); showToast(name + ' agregado','shopping-bag');
+}
+function changeQty(i, d){ cart[i].qty += d; if (cart[i].qty <= 0) cart.splice(i,1); updateCartUI(); renderCart(); }
+function removeItem(i){ cart.splice(i,1); updateCartUI(); renderCart(); }
+function updateCartUI(){
+  const n = cart.reduce((s,i)=>s+i.qty,0);
+  ['cartCount','cartCountMobile'].forEach(id => {
+    const el = $(id);
+    if (n>0){ el.textContent = n; el.classList.remove('hidden'); el.classList.add('badge-bounce'); setTimeout(()=>el.classList.remove('badge-bounce'),350); }
+    else el.classList.add('hidden');
+  });
+}
+function renderCart(){
+  const box = $('cartItems');
+  if (!cart.length){
+    box.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center py-16">
+      <span class="w-20 h-20 rounded-[1.6rem] bg-gradient-to-br from-violet-100 to-fuchsia-100 flex items-center justify-center"><i data-lucide="shopping-bag" class="w-9 h-9 text-fuchsia-400"></i></span>
+      <p class="font-display font-extrabold text-lg text-night-900 mt-5">Tu carrito está vacío</p>
+      <p class="text-sm text-slate-500 mt-1">Elegí algo rico para empezar</p>
+      <button onclick="toggleCart();document.getElementById('destacados').scrollIntoView({behavior:'smooth'})" class="mt-6 grad-btn text-white text-sm font-extrabold px-6 py-3 rounded-full shadow-glow">Ver comercios</button>
+    </div>`;
+    $('cartFooter').classList.add('hidden');
+    $('cartRestaurant').textContent = 'Agregá productos para empezar';
+    refreshIcons(); return;
+  }
+  $('cartRestaurant').textContent = 'Entrega en ' + $('locationText').textContent;
+  box.innerHTML = cart.map((i, idx) => `
+    <div class="flex items-center gap-3 py-3.5 border-b border-slate-100 last:border-0">
+      <span class="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shrink-0"><i data-lucide="package" class="w-5 h-5 text-white"></i></span>
+      <div class="flex-1 min-w-0">
+        <p class="font-extrabold text-sm text-night-900 truncate">${i.name}</p>
+        <p class="text-xs text-slate-400 font-semibold">${i.restName} · ${fmt(i.price)}</p>
+      </div>
+      <div class="flex items-center gap-1.5 bg-slate-100 rounded-full p-1">
+        <button onclick="changeQty(${idx},-1)" class="w-7 h-7 rounded-full bg-white shadow-sm flex items-center justify-center hover:bg-rose-50 transition"><i data-lucide="minus" class="w-3.5 h-3.5"></i></button>
+        <span class="w-6 text-center text-sm font-extrabold">${i.qty}</span>
+        <button onclick="changeQty(${idx},1)" class="w-7 h-7 rounded-full grad-btn text-white flex items-center justify-center transition"><i data-lucide="plus" class="w-3.5 h-3.5"></i></button>
+      </div>
+      <p class="w-20 text-right font-extrabold text-sm text-night-900">${fmt(i.price*i.qty)}</p>
+    </div>`).join('');
+  const sub = cart.reduce((s,i)=>s+i.price*i.qty,0);
+  $('cartSubtotal').textContent = fmt(sub);
+  $('cartTotal').textContent = fmt(sub);
+  $('cartFooter').classList.remove('hidden');
+  refreshIcons();
+}
+function toggleCart(){
+  const o = $('cartOverlay');
+  if (o.classList.contains('hidden')){
+    o.classList.remove('hidden'); renderCart();
+    requestAnimationFrame(()=> requestAnimationFrame(()=> $('cartPanel').classList.remove('translate-x-full')));
+  } else {
+    $('cartPanel').classList.add('translate-x-full');
+    setTimeout(()=> o.classList.add('hidden'), 300);
+  }
+}
+function checkout(){
+  if (!cart.length) return;
+  cart = []; updateCartUI(); toggleCart();
+  showToast('¡Pedido confirmado! Ya está en camino','party-popper');
+}
+
+/* ══════════ AUTH ══════════ */
+function openAuthModal(mode){ currentAuthMode = mode; updateAuthUI(); $('authModal').classList.remove('hidden'); refreshIcons(); }
+function closeAuthModal(){ $('authModal').classList.add('hidden'); }
+function switchAuthMode(){ currentAuthMode = currentAuthMode==='login'?'register':'login'; updateAuthUI(); refreshIcons(); }
+function updateAuthUI(){
+  const login = currentAuthMode==='login';
+  $('authTitle').textContent = login ? 'Hola de nuevo' : 'Creá tu cuenta';
+  $('authSubtitle').textContent = login ? 'Ingresá para seguir pidiendo' : 'Empezá a pedir en segundos';
+  $('authNameField').classList.toggle('hidden', login);
+  $('authBtn').textContent = login ? 'Ingresar' : 'Crear cuenta gratis';
+  $('authSwitch').innerHTML = login
+    ? '¿Primera vez en Pedilo? <button onclick="switchAuthMode()" class="font-extrabold text-fuchsia-600 hover:underline">Creá tu cuenta</button>'
+    : '¿Ya tenés cuenta? <button onclick="switchAuthMode()" class="font-extrabold text-fuchsia-600 hover:underline">Ingresá</button>';
+}
+function handleAuth(){
+  const email = $('authEmail').value.trim(), pass = $('authPass').value, name = $('authName').value.trim();
+  if (!email || pass.length < 6 || (currentAuthMode==='register' && !name)){ showToast('Completá todos los campos correctamente','alert-triangle'); return; }
+  closeAuthModal();
+  showToast(currentAuthMode==='login' ? '¡Bienvenido de vuelta!' : '¡Cuenta creada! Envío gratis activado','party-popper');
+}
+
+/* ══════════ LOCATION / PARTNER / WAITLIST ══════════ */
+function openLocationModal(){ $('locationModal').classList.remove('hidden'); refreshIcons(); }
+function closeLocationModal(){ $('locationModal').classList.add('hidden'); }
+function selectLocation(loc){ $('locationText').textContent = loc; closeLocationModal(); showToast('Zona actualizada: ' + loc,'map-pin'); }
+function detectLocation(){ showToast('Detectando tu ubicación...','locate-fixed'); setTimeout(()=> selectLocation('Mi Pueblo · Centro'), 1400); }
+function openPartnerModal(){ $('partnerModal').classList.remove('hidden'); refreshIcons(); }
+function closePartnerModal(){ $('partnerModal').classList.add('hidden'); }
+function submitPartner(){
+  if (!$('pShop').value.trim() || !$('pEmail').value.trim() || !$('pName').value.trim()){ showToast('Completá los datos de tu comercio','alert-triangle'); return; }
+  closePartnerModal(); showToast('¡Solicitud enviada! Te contactamos pronto','rocket');
+}
+function waitlistSubmit(e){ e.preventDefault(); $('waitlistEmail').value=''; showToast('¡Anotado! Te avisamos cuando lleguemos a tu ciudad','bell-ring'); }
+
+/* ══════════ UI HELPERS ══════════ */
+function showToast(msg, icon){
+  const t = $('toast');
+  $('toastText').textContent = msg;
+  $('toastIcon').setAttribute('data-lucide', icon || 'check');
+  t.classList.remove('hidden'); refreshIcons();
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.add('hidden'), 2800);
+}
+function bottomNav(btn){
+  document.querySelectorAll('.bnav').forEach(b => { b.classList.remove('text-violet-700'); b.classList.add('text-slate-400'); });
+  btn.classList.add('text-violet-700'); btn.classList.remove('text-slate-400');
+}
+
+/* ══════════ REVEAL + INIT ══════════ */
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting){ e.target.classList.add('revealed'); io.unobserve(e.target); } });
+}, {threshold:.12});
+window.addEventListener('scroll', () => {
+  $('navbar').classList.toggle('shadow-lg', window.scrollY > 40);
+}, {passive:true});
+
+document.addEventListener('DOMContentLoaded', () => {
+  $('year').textContent = new Date().getFullYear();
+  renderCategories(); renderChips(); renderRestaurants();
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  refreshIcons();
+});
+</script>
+</body>
+</html>

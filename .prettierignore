@@ -1,11 +1,10 @@
-{
-  "ignore": [
-    "node_modules",
-    ".next",
-    "out",
-    "build",
-    "coverage",
-    "package-lock.json",
-    "marketplace-rawson-tmp"
-  ]
-}
+node_modules
+.next
+out
+build
+coverage
+package-lock.json
+marketplace-rawson-tmp
+
+# Visual source of truth — do not let Prettier rewrite the Qwen reference.
+design-reference/qwen/**

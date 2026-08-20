@@ -1,3 +1,4 @@
+import { PublicBrandMark } from "@/components/storefront/public-brand-mark";
 import { APP_NAME } from "@/lib/app-info";
 
 type Size = "header" | "hero" | "compact";
@@ -32,12 +33,6 @@ const sizeClass: Record<Size, string> = {
   compact: "text-lg",
 };
 
-const markClass: Record<Size, string> = {
-  header: "h-10 w-10 text-base",
-  hero: "h-12 w-12 text-lg",
-  compact: "h-8 w-8 text-xs",
-};
-
 export function PublicBrandWordmark({
   size = "header",
   tone = "plain",
@@ -63,18 +58,7 @@ export function PublicBrandWordmark({
         className,
       )}
     >
-      {resolvedShowMark ? (
-        <span
-          aria-hidden
-          className={cx(
-            "grad-btn relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-2xl font-display font-extrabold text-white shadow-glow",
-            markClass[size],
-          )}
-        >
-          <span className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.35),transparent_55%)]" />
-          <span className="relative">{APP_NAME.slice(0, 1)}</span>
-        </span>
-      ) : null}
+      {resolvedShowMark ? <PublicBrandMark size={size} /> : null}
       <span
         className={cx(
           "brand-wordmark-text font-display font-extrabold",
