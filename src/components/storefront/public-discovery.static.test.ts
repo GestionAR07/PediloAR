@@ -171,6 +171,28 @@ describe("qwen public discovery v1 static checks", () => {
     expect(card).not.toMatch(/rating/i);
   });
 
+  it("uses native smooth anchor scrolling with sticky-header offset", () => {
+    const css = read("src/styles/globals.css");
+    const page = read("src/app/page.tsx");
+    const hero = read("src/components/storefront/public-hero.tsx");
+    const picker = read("src/components/storefront/zone-picker.tsx");
+
+    expect(css).toMatch(/html\s*\{[^}]*scroll-behavior:\s*smooth/);
+    expect(css).toMatch(
+      /prefers-reduced-motion:\s*reduce[\s\S]*html\s*\{[\s\S]*scroll-behavior:\s*auto/,
+    );
+    expect(css).toContain(".public-storefront section[id]");
+    expect(css).toContain("scroll-margin-top: 92px");
+
+    expect(hero).toContain('href="#comercios"');
+    expect(hero).toContain('href="#zona"');
+    expect(hero).not.toContain("scrollIntoView");
+    expect(page).toContain('id="comercios"');
+    expect(page).not.toContain("scrollIntoView");
+    expect(picker).toContain('id="zona"');
+    expect(picker).not.toContain("scrollIntoView");
+  });
+
   it("allows a sober home-only marquee and rejects aggressive motion", () => {
     const css = read("src/styles/globals.css");
     const page = read("src/app/page.tsx");
