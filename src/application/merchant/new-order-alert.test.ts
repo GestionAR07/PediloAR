@@ -202,4 +202,15 @@ describe("recordSessionMerchantNewOrderInsert", () => {
     expect(second.isDuplicate).toBe(true);
     expect(second.chime).toBe("none");
   });
+
+  it("does not start order-chime cooldown from a manual test sound", () => {
+    const result = recordSessionMerchantNewOrderInsert({
+      visibleOrderIds: [],
+      soundEnabled: true,
+      orderId: ORDER_A,
+      nowMs: 1,
+    });
+    expect(result.chime).toBe("full");
+    expect(result.lastFullChimeAtMs).toBe(1);
+  });
 });

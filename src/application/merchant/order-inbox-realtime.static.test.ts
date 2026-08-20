@@ -30,15 +30,19 @@ describe("merchant inbox realtime static checks", () => {
     expect(helper).toContain("merchant-orders");
     expect(helper).toContain("private: true");
     expect(helper).toContain("setAuth");
-    expect(helper).toContain("input.onInsert()");
     expect(helper).not.toContain("postgres_changes");
     expect(helper).not.toContain('event: "UPDATE"');
     expect(helper).not.toContain('event: "DELETE"');
     expect(helper).not.toContain("setOrders");
     expect(helper).not.toContain("setInbox");
-    expect(helper).toContain(
+    expect(helper).toContain("export function subscribeMerchantOrderInserts");
+    expect(helper).not.toContain(
       "export async function subscribeMerchantOrderInserts",
     );
+    expect(helper).toContain("cancelled after setAuth");
+    expect(helper).toContain("readMerchantOrderInsertedOrderId");
+    expect(helper).toContain("input.onInsert({");
+    expect(helper).not.toContain("input.onInsert()");
 
     expect(component).toContain('"use client"');
     expect(component).toContain("createSupabaseBrowserClient");
@@ -46,15 +50,22 @@ describe("merchant inbox realtime static checks", () => {
       1,
     );
     expect(component).toContain("router.refresh()");
-    expect(component).toContain("return null");
+    expect(component).toContain("unsubscribe()");
+    expect(component).not.toContain("late unsubscribe");
+    expect(component).toContain("}, [merchantId, router]);");
+    expect(component).toContain("OrderNotificationToast");
+    expect(component).toContain("recordSessionMerchantNewOrderInsert");
+    expect(component).toContain("playMerchantOrderChime");
+    const onInsertAt = component.indexOf("onInsert:");
+    expect(component.indexOf("router.refresh()", onInsertAt)).toBeLessThan(
+      component.indexOf("recordSessionMerchantNewOrderInsert", onInsertAt),
+    );
     expect(component).not.toContain("postgres_changes");
     expect(component).not.toContain("createSupabaseAdminClient");
     expect(component).not.toContain("SUPABASE_SECRET_KEY");
     expect(component).not.toContain("setInterval");
-    expect(component).not.toContain("Notification");
-    expect(component).not.toContain("Audio");
-    expect(component).not.toContain("useState");
-    expect(component).not.toContain("order-notification");
+    expect(component).not.toContain("new Notification");
+    expect(component).not.toContain("AudioContext");
 
     expect(page).toContain("MerchantInboxRealtime");
     expect(page).toContain("merchantId={merchantId}");

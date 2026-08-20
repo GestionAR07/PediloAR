@@ -1,8 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  recordSessionMerchantNewOrderInsert,
+  resetMerchantNewOrderAlertForTests,
+} from "@/application/merchant/new-order-alert";
+import {
   configureOrderNotificationSoundHostForTests,
   disableMerchantOrderSound,
   enableMerchantOrderSound,
+  getMerchantOrderAudioContextDebug,
   isMerchantOrderSoundPreferenceEnabled,
   MERCHANT_ORDER_FULL_CHIME,
   MERCHANT_ORDER_SOUND_STORAGE_KEY,
@@ -30,6 +35,22 @@ function createMemoryStorage(initial?: Record<string, string>) {
   };
 }
 
+function toneOscillators(
+  oscillators: Array<{
+    frequency: { setValueAtTime: ReturnType<typeof vi.fn> };
+    start: ReturnType<typeof vi.fn>;
+    stop: ReturnType<typeof vi.fn>;
+  }>,
+) {
+  const frequencies = new Set<number>(
+    MERCHANT_ORDER_FULL_CHIME.tones.map((tone) => tone.frequency),
+  );
+  return oscillators.filter((oscillator) => {
+    const freq = oscillator.frequency.setValueAtTime.mock.calls[0]?.[0];
+    return typeof freq === "number" && frequencies.has(freq);
+  });
+}
+
 function createFakeAudioContext(initialState: AudioContextState = "suspended") {
   const oscillators: Array<{
     start: ReturnType<typeof vi.fn>;
@@ -37,6 +58,10 @@ function createFakeAudioContext(initialState: AudioContextState = "suspended") {
     disconnect: ReturnType<typeof vi.fn>;
     frequency: { setValueAtTime: ReturnType<typeof vi.fn> };
     onended: (() => void) | null;
+  }> = [];
+  const instances: Array<{
+    state: AudioContextState;
+    resume: ReturnType<typeof vi.fn>;
   }> = [];
 
   class FakeAudioContext {
@@ -46,6 +71,11 @@ function createFakeAudioContext(initialState: AudioContextState = "suspended") {
     resume = vi.fn(async () => {
       this.state = "running";
     });
+
+    constructor() {
+      instances.push(this);
+    }
+
     createOscillator() {
       const oscillator = {
         type: "sine" as OscillatorType,
@@ -77,11 +107,12 @@ function createFakeAudioContext(initialState: AudioContextState = "suspended") {
     }
   }
 
-  return { FakeAudioContext, oscillators };
+  return { FakeAudioContext, oscillators, instances };
 }
 
 afterEach(() => {
   configureOrderNotificationSoundHostForTests(null);
+  resetMerchantNewOrderAlertForTests();
 });
 
 describe("merchant order notification sound", () => {
@@ -111,81 +142,96 @@ describe("merchant order notification sound", () => {
 
     await playMerchantOrderChime("full");
     expect(isMerchantOrderSoundPreferenceEnabled()).toBe(false);
+    expect(getMerchantOrderAudioContextDebug().createdCount).toBe(0);
+  });
+
+  it("does not create a new AudioContext from an automatic order play", async () => {
+    const { FakeAudioContext, instances } = createFakeAudioContext();
+    configureOrderNotificationSoundHostForTests({
+      localStorage: createMemoryStorage({
+        [MERCHANT_ORDER_SOUND_STORAGE_KEY]: "true",
+      }),
+      AudioContext: FakeAudioContext as unknown as new () => AudioContext,
+    });
+
+    await expect(playMerchantOrderChime("full", "order")).resolves.toBe(
+      "blocked",
+    );
+    expect(instances).toHaveLength(0);
+    expect(getMerchantOrderAudioContextDebug().createdCount).toBe(0);
   });
 
   it("plays a two-tone full chime with staggered timings", async () => {
     const { FakeAudioContext, oscillators } = createFakeAudioContext("running");
-    const localStorage = createMemoryStorage({
-      [MERCHANT_ORDER_SOUND_STORAGE_KEY]: "true",
-    });
     configureOrderNotificationSoundHostForTests({
-      localStorage,
+      localStorage: createMemoryStorage(),
       AudioContext: FakeAudioContext as unknown as new () => AudioContext,
     });
 
-    await playMerchantOrderChime("full");
+    await enableMerchantOrderSound();
 
+    const tones = toneOscillators(oscillators);
     const [first, second] = MERCHANT_ORDER_FULL_CHIME.tones;
-    expect(oscillators).toHaveLength(2);
-    expect(oscillators[0]?.frequency.setValueAtTime).toHaveBeenCalledWith(
+    expect(tones).toHaveLength(2);
+    expect(tones[0]?.frequency.setValueAtTime).toHaveBeenCalledWith(
       first.frequency,
       first.startOffsetSec,
     );
-    expect(oscillators[0]?.start).toHaveBeenCalledWith(first.startOffsetSec);
-    expect(oscillators[0]?.stop).toHaveBeenCalledWith(
+    expect(tones[0]?.start).toHaveBeenCalledWith(first.startOffsetSec);
+    expect(tones[0]?.stop).toHaveBeenCalledWith(
       first.startOffsetSec + first.durationSec,
     );
-    expect(oscillators[1]?.frequency.setValueAtTime).toHaveBeenCalledWith(
+    expect(tones[1]?.frequency.setValueAtTime).toHaveBeenCalledWith(
       second.frequency,
       second.startOffsetSec,
     );
-    expect(oscillators[1]?.start).toHaveBeenCalledWith(second.startOffsetSec);
-    expect(oscillators[1]?.stop).toHaveBeenCalledWith(
+    expect(tones[1]?.start).toHaveBeenCalledWith(second.startOffsetSec);
+    expect(tones[1]?.stop).toHaveBeenCalledWith(
       second.startOffsetSec + second.durationSec,
     );
     expect(second.startOffsetSec + second.durationSec).toBeCloseTo(0.53);
   });
 
-  it("uses the same full chime for Activar sonido as for a new order", async () => {
-    const firstRun = createFakeAudioContext("running");
-    const localStorage = createMemoryStorage();
+  it("reuses the unlocked AudioContext for a later order chime", async () => {
+    const { FakeAudioContext, oscillators, instances } =
+      createFakeAudioContext("suspended");
     configureOrderNotificationSoundHostForTests({
-      localStorage,
-      AudioContext:
-        firstRun.FakeAudioContext as unknown as new () => AudioContext,
+      localStorage: createMemoryStorage(),
+      AudioContext: FakeAudioContext as unknown as new () => AudioContext,
+    });
+
+    await enableMerchantOrderSound();
+    const afterEnable = toneOscillators(oscillators).length;
+    await playMerchantOrderChime("full", "order");
+
+    expect(instances).toHaveLength(1);
+    expect(getMerchantOrderAudioContextDebug().createdCount).toBe(1);
+    expect(getMerchantOrderAudioContextDebug().state).toBe("running");
+    expect(toneOscillators(oscillators).length).toBe(afterEnable + 2);
+  });
+
+  it("uses the same full chime for Activar sonido as for a new order", async () => {
+    const { FakeAudioContext, oscillators } = createFakeAudioContext("running");
+    configureOrderNotificationSoundHostForTests({
+      localStorage: createMemoryStorage(),
+      AudioContext: FakeAudioContext as unknown as new () => AudioContext,
     });
     await enableMerchantOrderSound();
-
-    const secondRun = createFakeAudioContext("running");
-    configureOrderNotificationSoundHostForTests({
-      localStorage,
-      AudioContext:
-        secondRun.FakeAudioContext as unknown as new () => AudioContext,
-    });
     await playMerchantOrderChime("full");
 
-    expect(firstRun.oscillators).toHaveLength(2);
-    expect(secondRun.oscillators).toHaveLength(2);
-    expect(firstRun.oscillators[0]?.start.mock.calls).toEqual(
-      secondRun.oscillators[0]?.start.mock.calls,
-    );
-    expect(firstRun.oscillators[1]?.start.mock.calls).toEqual(
-      secondRun.oscillators[1]?.start.mock.calls,
-    );
-    expect(firstRun.oscillators[0]?.stop.mock.calls).toEqual(
-      secondRun.oscillators[0]?.stop.mock.calls,
-    );
-    expect(firstRun.oscillators[1]?.stop.mock.calls).toEqual(
-      secondRun.oscillators[1]?.stop.mock.calls,
-    );
+    const tones = toneOscillators(oscillators);
+    expect(tones).toHaveLength(4);
+    expect(tones[0]?.start.mock.calls).toEqual(tones[2]?.start.mock.calls);
+    expect(tones[1]?.start.mock.calls).toEqual(tones[3]?.start.mock.calls);
+    expect(tones[0]?.stop.mock.calls).toEqual(tones[2]?.stop.mock.calls);
+    expect(tones[1]?.stop.mock.calls).toEqual(tones[3]?.stop.mock.calls);
   });
 
   it("resumes a suspended AudioContext on enable and plays a test chime", async () => {
-    const { FakeAudioContext, oscillators } =
+    const { FakeAudioContext, oscillators, instances } =
       createFakeAudioContext("suspended");
-    const localStorage = createMemoryStorage();
     configureOrderNotificationSoundHostForTests({
-      localStorage,
+      localStorage: createMemoryStorage(),
       AudioContext: FakeAudioContext as unknown as new () => AudioContext,
     });
 
@@ -193,9 +239,10 @@ describe("merchant order notification sound", () => {
 
     expect(result).toBe("playing");
     expect(isMerchantOrderSoundPreferenceEnabled()).toBe(true);
-    expect(oscillators.length).toBeGreaterThan(0);
-    expect(oscillators[0]?.start).toHaveBeenCalled();
-    expect(oscillators[0]?.stop).toHaveBeenCalled();
+    expect(instances[0]?.resume).toHaveBeenCalled();
+    expect(toneOscillators(oscillators).length).toBeGreaterThan(0);
+    expect(toneOscillators(oscillators)[0]?.start).toHaveBeenCalled();
+    expect(toneOscillators(oscillators)[0]?.stop).toHaveBeenCalled();
   });
 
   it("reports blocked when resume does not reach running", async () => {
@@ -224,18 +271,22 @@ describe("merchant order notification sound", () => {
   });
 
   it("resumes a suspended context before playing a toast chime", async () => {
-    const { FakeAudioContext } = createFakeAudioContext("suspended");
-    const localStorage = createMemoryStorage({
-      [MERCHANT_ORDER_SOUND_STORAGE_KEY]: "true",
-    });
+    const { FakeAudioContext, instances } = createFakeAudioContext("running");
     configureOrderNotificationSoundHostForTests({
-      localStorage,
+      localStorage: createMemoryStorage(),
       AudioContext: FakeAudioContext as unknown as new () => AudioContext,
     });
 
+    await enableMerchantOrderSound();
+    const ctx = instances[0];
+    if (ctx) {
+      ctx.state = "suspended";
+    }
     const running = await resumeMerchantOrderAudioContext();
     expect(running).toBe(true);
-    await playMerchantOrderChime("soft");
+    await expect(playMerchantOrderChime("soft", "order")).resolves.toBe(
+      "cooldown",
+    );
   });
 
   it("does not throw when Web Audio fails", async () => {
@@ -259,7 +310,7 @@ describe("merchant order notification sound", () => {
       AudioContext: ExplodingContext as unknown as new () => AudioContext,
     });
 
-    await expect(playMerchantOrderChime("full")).resolves.toBeUndefined();
+    await expect(playMerchantOrderChime("full")).resolves.toBe("blocked");
   });
 
   it("returns unavailable when AudioContext is missing", async () => {
@@ -268,5 +319,22 @@ describe("merchant order notification sound", () => {
     });
     await expect(enableMerchantOrderSound()).resolves.toBe("unavailable");
     expect(isMerchantOrderSoundPreferenceEnabled()).toBe(true);
+  });
+
+  it("does not start order-chime cooldown from the Activar sonido test chime", async () => {
+    const { FakeAudioContext } = createFakeAudioContext("running");
+    configureOrderNotificationSoundHostForTests({
+      localStorage: createMemoryStorage(),
+      AudioContext: FakeAudioContext as unknown as new () => AudioContext,
+    });
+
+    await enableMerchantOrderSound();
+    const result = recordSessionMerchantNewOrderInsert({
+      visibleOrderIds: [],
+      soundEnabled: true,
+      orderId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      nowMs: 1,
+    });
+    expect(result.chime).toBe("full");
   });
 });
