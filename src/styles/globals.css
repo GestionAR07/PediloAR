@@ -151,6 +151,28 @@ body {
   transform: scale(1.07);
 }
 
+@keyframes ps-discovery-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.public-storefront .discovery-grid {
+  min-width: 0;
+  animation: ps-discovery-in 0.22s ease-out;
+}
+
+.public-storefront .discovery-search,
+.public-storefront .discovery-search input[type="search"] {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .public-storefront .chip-active {
   background: linear-gradient(135deg, #7c3aed, #d946ef);
   color: #fff !important;
@@ -184,8 +206,16 @@ body {
   }
 }
 
+.public-storefront .public-marquee {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+  overflow-y: hidden;
+}
+
 .public-storefront .public-marquee-track {
   width: max-content;
+  max-width: none;
   animation: marquee 26s linear infinite;
 }
 
@@ -199,6 +229,189 @@ body {
   }
 }
 
+.public-storefront .public-hero-wave {
+  position: relative;
+  display: block;
+  line-height: 0;
+  margin-bottom: -1px;
+}
+
+.public-storefront .public-hero-wave::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  height: 2px;
+  pointer-events: none;
+  background-color: var(--ps-cream);
+}
+
+.public-storefront .public-hero-atmosphere {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 80% 70% at 8% 0%,
+      rgb(217 70 239 / 0.34) 0%,
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 75% 65% at 100% 38%,
+      rgb(124 58 237 / 0.34) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 60% 55% at 42% 100%,
+      rgb(249 115 22 / 0.2) 0%,
+      transparent 68%
+    );
+}
+
+.public-storefront .public-hero-title {
+  font-size: clamp(1.9rem, 0.85rem + 5.2vw, 2.5rem);
+  line-height: 1.06;
+}
+
+@media (min-width: 640px) {
+  .public-storefront .public-hero-title {
+    font-size: 3.75rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .public-storefront .public-hero-title {
+    font-size: 4rem;
+  }
+}
+
+.public-storefront .public-hero-visual {
+  position: relative;
+  z-index: 1;
+  width: min(100%, clamp(15.5rem, 78vw, 30rem));
+  min-width: 0;
+  aspect-ratio: 12 / 13;
+  height: auto;
+  margin-inline: auto;
+  animation: ps-hero-in 0.32s ease both;
+}
+
+.public-storefront .public-hero-visual-atmosphere {
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 46% 42% at 50% 48%,
+      rgb(217 70 239 / 0.55) 0%,
+      rgb(124 58 237 / 0.28) 42%,
+      rgb(249 115 22 / 0.12) 68%,
+      transparent 100%
+    ),
+    radial-gradient(
+      ellipse 28% 26% at 50% 48%,
+      rgb(217 70 239 / 0.32) 0%,
+      transparent 100%
+    );
+}
+
+.public-storefront .public-hero-media-slot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 80%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 999px;
+  box-shadow: 0 0 0 8px rgb(255 255 255 / 0.1);
+  transform: translate(-50%, -50%);
+}
+
+.public-storefront .public-hero-sat {
+  position: absolute;
+  bottom: 7%;
+  left: 0;
+  z-index: 2;
+  width: 24%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 1.4rem;
+  box-shadow:
+    0 0 0 4px rgb(255 255 255 / 0.2),
+    0 25px 50px -12px rgb(0 0 0 / 0.35);
+  transform: rotate(-6deg);
+}
+
+.public-storefront .public-hero-card-slot {
+  position: absolute;
+  z-index: 3;
+  max-width: min(62%, 13.5rem);
+}
+
+.public-storefront .public-hero-card-slot--a {
+  top: 2%;
+  right: 0;
+}
+
+.public-storefront .public-hero-card-slot--b {
+  top: 32%;
+  right: 0;
+}
+
+.public-storefront .public-hero-card-slot--c {
+  bottom: 1%;
+  left: 26%;
+}
+
+.public-storefront .public-hero-dot {
+  pointer-events: none;
+  position: absolute;
+  z-index: 1;
+  border-radius: 999px;
+}
+
+.public-storefront .public-hero-dot--a {
+  top: 6%;
+  left: 14%;
+  height: 0.7rem;
+  width: 0.7rem;
+  background: #e879f9;
+}
+
+.public-storefront .public-hero-dot--b {
+  right: 18%;
+  bottom: 22%;
+  height: 0.5rem;
+  width: 0.5rem;
+  background: #fb923c;
+}
+
+.public-storefront .public-hero-card {
+  animation: ps-hero-in 0.28s ease both;
+}
+
+@media (min-width: 640px) {
+  .public-storefront .public-hero-sat {
+    left: -0.5rem;
+  }
+
+  .public-storefront .public-hero-card-slot {
+    max-width: none;
+  }
+
+  .public-storefront .public-hero-card-slot--a,
+  .public-storefront .public-hero-card-slot--b {
+    right: -0.5rem;
+  }
+
+  .public-storefront .public-hero-card-slot--c {
+    left: 1rem;
+  }
+}
+
 @keyframes ps-hero-in {
   from {
     opacity: 0;
@@ -208,18 +421,6 @@ body {
     opacity: 1;
     transform: none;
   }
-}
-
-.public-storefront .public-hero-visual {
-  animation: ps-hero-in 0.32s ease both;
-}
-
-.public-storefront .public-hero-media-slot {
-  animation: ps-hero-in 0.32s ease both;
-}
-
-.public-storefront .public-hero-card {
-  animation: ps-hero-in 0.28s ease both;
 }
 
 .public-storefront .public-hero-card--a {
@@ -484,8 +685,8 @@ body {
   .public-storefront .public-marquee-track,
   .public-storefront .public-marquee:hover .public-marquee-track,
   .public-storefront .public-hero-visual,
-  .public-storefront .public-hero-media-slot,
-  .public-storefront .public-hero-card {
+  .public-storefront .public-hero-card,
+  .public-storefront .discovery-grid {
     transition: none;
     transform: none;
     filter: none;

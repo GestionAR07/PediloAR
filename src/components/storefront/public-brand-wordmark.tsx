@@ -28,7 +28,7 @@ function cx(...parts: Array<string | false | undefined>): string {
 }
 
 const sizeClass: Record<Size, string> = {
-  header: "text-2xl",
+  header: "text-[clamp(1.25rem,0.7rem+2.4vw,1.5rem)]",
   hero: "text-[2.85rem] sm:text-6xl lg:text-7xl",
   compact: "text-lg",
 };

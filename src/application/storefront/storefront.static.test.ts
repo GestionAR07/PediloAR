@@ -13,7 +13,7 @@ describe("public storefront static checks", () => {
     const page = read("src/app/page.tsx");
     expect(page).toContain("getPublicDiscoveryApp");
     expect(page).toContain("ZonePicker");
-    expect(page).toContain("MerchantCard");
+    expect(page).toContain("PublicDiscoverySection");
     expect(page).not.toContain("Base técnica operativa");
   });
 

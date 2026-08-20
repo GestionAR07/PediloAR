@@ -8,7 +8,7 @@ type Props = {
 };
 
 const sizeClass: Record<MarkSize, string> = {
-  header: "h-10 w-10",
+  header: "h-10 w-10 max-[359px]:h-9 max-[359px]:w-9",
   hero: "h-12 w-12",
   compact: "h-8 w-8",
 };

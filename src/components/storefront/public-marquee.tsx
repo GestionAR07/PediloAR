@@ -29,7 +29,7 @@ function MarqueeGroup() {
 export function PublicMarquee() {
   return (
     <div
-      className="public-marquee w-full max-w-full overflow-hidden bg-gradient-to-r from-violet-700 via-fuchsia-600 to-orange-500 py-2.5 text-xs font-semibold tracking-wide text-white"
+      className="public-marquee min-w-0 w-full max-w-full overflow-x-clip overflow-y-hidden bg-gradient-to-r from-violet-700 via-fuchsia-600 to-orange-500 py-2.5 text-xs font-semibold tracking-wide text-white"
       role="presentation"
     >
       <p className="sr-only">{MARQUEE_MESSAGE}</p>

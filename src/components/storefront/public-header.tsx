@@ -15,6 +15,7 @@ import {
   CloseIcon,
   MapPinIcon,
   ShoppingBagIcon,
+  UserIcon,
 } from "@/components/ui/public-icons";
 
 type Props = {
@@ -56,10 +57,10 @@ export function PublicHeader({
 
   return (
     <header className="public-storefront nav-blur sticky top-0 z-40 border-b border-violet-100/70 transition-shadow">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:gap-3 sm:px-6 lg:h-20 lg:px-8">
+      <div className="mx-auto flex h-16 w-full min-w-0 max-w-7xl items-center gap-1.5 px-4 sm:gap-3 sm:px-6 lg:h-20 lg:px-8">
         <Link
           href="/"
-          className="min-w-0 shrink-0 rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+          className="inline-flex min-h-11 min-w-0 shrink-0 items-center rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
         >
           <PublicBrandWordmark size="header" tone="plain" />
         </Link>
@@ -123,9 +124,12 @@ export function PublicHeader({
           <Link
             href="/login"
             aria-label={nav.isAuthenticated ? "Acceso comercios" : "Ingresar"}
-            className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-3 text-sm font-bold text-violet-700 lg:hidden"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-3 text-sm font-bold text-violet-700 max-[359px]:h-11 max-[359px]:w-11 max-[359px]:px-0 lg:hidden"
           >
-            {nav.isAuthenticated ? "Acceso" : "Ingresar"}
+            <UserIcon className="hidden h-5 w-5 max-[359px]:block" />
+            <span className="max-[359px]:hidden">
+              {nav.isAuthenticated ? "Acceso" : "Ingresar"}
+            </span>
           </Link>
           <Link
             href="/carrito"
@@ -167,7 +171,7 @@ export function PublicHeader({
               <button
                 type="button"
                 onClick={() => setZoneOpen(false)}
-                className="flex h-10 w-10 items-center justify-center rounded-xl hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+                className="flex h-11 w-11 items-center justify-center rounded-xl hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
               >
                 <CloseIcon className="h-5 w-5" />
                 <span className="sr-only">Cerrar</span>

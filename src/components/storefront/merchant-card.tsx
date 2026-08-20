@@ -1,9 +1,14 @@
 import Link from "next/link";
 import type { PublicMerchantCard } from "@/application/storefront/types";
+import { MerchantCoverFallback } from "@/components/storefront/merchant-cover-fallback";
 import { BikeIcon, ClockIcon } from "@/components/ui/public-icons";
+import { merchantCardHref } from "@/lib/filter-public-merchants";
 
 type Props = {
   merchant: PublicMerchantCard;
+  zoneId?: string | null;
+  /** Reserved for a future real merchant cover. Never invent a remote image. */
+  coverUrl?: string | null;
 };
 
 function toneDot(tone: PublicMerchantCard["availabilityTone"]): string {
@@ -17,29 +22,33 @@ function toneDot(tone: PublicMerchantCard["availabilityTone"]): string {
   }
 }
 
-export function MerchantCard({ merchant }: Props) {
-  const initial = merchant.name.slice(0, 1).toUpperCase();
+export function MerchantCard({
+  merchant,
+  zoneId = null,
+  coverUrl = null,
+}: Props) {
   const { logistics } = merchant;
   const hasFulfillment =
     logistics.pickupAvailable || logistics.deliveryAvailable;
+  const description = merchant.description.trim();
+  const href = merchantCardHref(merchant.href, zoneId);
 
   return (
     <Link
-      href={merchant.href}
-      className="card-lift group block cursor-pointer overflow-hidden rounded-[1.75rem] border border-violet-100/70 bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+      href={href}
+      className="card-lift group block h-full max-w-full min-w-0 cursor-pointer overflow-hidden rounded-[1.75rem] border border-violet-100/70 bg-white shadow-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
     >
-      <div className="relative h-44 overflow-hidden bg-gradient-to-br from-violet-200 to-fuchsia-200">
-        <div
-          aria-hidden
-          className="zoom-img absolute inset-0 bg-gradient-to-br from-violet-800 via-violet-600 to-fuchsia-500"
-        />
-        <span
-          aria-hidden
-          className="absolute -right-8 -bottom-10 h-28 w-28 rounded-full bg-fuchsia-500/25 blur-2xl"
-        />
-        <span className="font-display absolute inset-0 flex items-center justify-center text-4xl font-extrabold text-white/90">
-          {initial}
-        </span>
+      <div className="relative isolate h-48 overflow-hidden bg-gradient-to-br from-violet-200 to-fuchsia-200 sm:h-52">
+        {coverUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={coverUrl}
+            alt=""
+            className="zoom-img h-full w-full object-cover"
+          />
+        ) : (
+          <MerchantCoverFallback name={merchant.name} />
+        )}
         <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-[var(--ps-night)]/60 px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-white uppercase backdrop-blur">
           <span
             className={`h-1.5 w-1.5 rounded-full ${toneDot(merchant.availabilityTone)}`}
@@ -47,13 +56,16 @@ export function MerchantCard({ merchant }: Props) {
           {merchant.availabilityLabel}
         </span>
       </div>
-      <div className="p-5">
-        <h3 className="font-display text-lg leading-tight font-extrabold tracking-tight text-[var(--ps-night-900)]">
+      <div className="flex flex-col gap-1 p-5 sm:p-6">
+        <h3 className="font-display text-lg leading-tight font-extrabold tracking-tight break-words text-[var(--ps-night-900)] sm:text-xl">
           {merchant.name}
         </h3>
-        <p className="mt-1 text-xs font-bold tracking-wider text-slate-400 uppercase">
+        <p className="text-xs font-bold tracking-wider text-slate-400 uppercase">
           {merchant.zoneName}
         </p>
+        {description ? (
+          <p className="mt-1 line-clamp-2 text-sm text-muted">{description}</p>
+        ) : null}
         {merchant.hoursLabel ? (
           <p className="mt-1 text-xs text-muted">
             {merchant.hoursLabel}
