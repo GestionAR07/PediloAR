@@ -39,7 +39,14 @@ describe("merchant inbox realtime static checks", () => {
     expect(helper).not.toContain(
       "export async function subscribeMerchantOrderInserts",
     );
-    expect(helper).toContain("cancelled after setAuth");
+    expect(helper).toContain("if (cancelled)");
+    expect(helper.indexOf("if (cancelled)")).toBeGreaterThan(
+      helper.indexOf("setAuth()"),
+    );
+    expect(helper).not.toContain("[merchant-realtime]");
+    expect(helper).not.toContain("merchantRealtimeDevLog");
+    expect(helper).not.toContain("console.info");
+    expect(helper).not.toContain("console.error");
     expect(helper).toContain("readMerchantOrderInsertedOrderId");
     expect(helper).toContain("input.onInsert({");
     expect(helper).not.toContain("input.onInsert()");
@@ -66,6 +73,9 @@ describe("merchant inbox realtime static checks", () => {
     expect(component).not.toContain("setInterval");
     expect(component).not.toContain("new Notification");
     expect(component).not.toContain("AudioContext");
+    expect(component).not.toContain("[merchant-realtime]");
+    expect(component).not.toContain("merchantRealtimeDevLog");
+    expect(component).not.toContain("logMerchantOrderSoundSkipped");
 
     expect(page).toContain("MerchantInboxRealtime");
     expect(page).toContain("merchantId={merchantId}");

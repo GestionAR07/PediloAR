@@ -60,6 +60,61 @@ describe("qwen checkout v4 static checks", () => {
     expect(client).not.toContain("createContext");
   });
 
+  it("prepares customer confirmation sound on the final click and plays once on success", () => {
+    const client = read("src/components/checkout/checkout-page-client.tsx");
+    const helper = read("src/lib/order-confirmation-sound.ts");
+    const merchantSound = read("src/lib/order-notification-sound.ts");
+    const confirmFn = client.slice(
+      client.indexOf("async function confirmWithDraft"),
+    );
+    const reviewFn = client.slice(
+      client.indexOf("async function handleReview"),
+      client.indexOf("async function confirmWithDraft"),
+    );
+
+    expect(helper).toContain("/sounds/pedilo-order-confirmed.mp3");
+    expect(helper).toContain("prepareOrderConfirmationSound");
+    expect(helper).toContain("playOrderConfirmationSound");
+    expect(helper).toContain("playedConfirmationOrderIds");
+    const prepareFn = helper.slice(
+      helper.indexOf("export async function prepareOrderConfirmationSound"),
+      helper.indexOf("export async function playOrderConfirmationSound"),
+    );
+    expect(prepareFn).toContain("void loadConfirmationBuffer");
+    expect(prepareFn).not.toMatch(/await loadConfirmationBuffer\s*\(/);
+    expect(helper).not.toContain("pedilo-new-order");
+    expect(helper).not.toContain("order-notification-sound");
+    expect(helper).not.toContain("randomUUID");
+    expect(
+      fs.existsSync(
+        path.join(root, "public/sounds/pedilo-order-confirmed.mp3"),
+      ),
+    ).toBe(true);
+
+    expect(client).toContain("prepareOrderConfirmationSound");
+    expect(client).toContain("playOrderConfirmationSound");
+    expect(client).not.toContain("AudioContext");
+    expect(client).not.toContain("playMerchantOrderChime");
+    expect(client).not.toContain("enableMerchantOrderSound");
+    expect(client.split("prepareOrderConfirmationSound").length - 1).toBe(2);
+    expect(client.split("playOrderConfirmationSound").length - 1).toBe(2);
+
+    expect(reviewFn).not.toContain("prepareOrderConfirmationSound");
+    expect(reviewFn).not.toContain("playOrderConfirmationSound");
+    expect(
+      confirmFn.indexOf("await prepareOrderConfirmationSound()"),
+    ).toBeLessThan(confirmFn.indexOf("await placeOrderAction"));
+    expect(confirmFn.indexOf("if (!result.ok)")).toBeLessThan(
+      confirmFn.indexOf("playOrderConfirmationSound(result.order.orderId)"),
+    );
+    expect(confirmFn.indexOf("await placeOrderAction")).toBeLessThan(
+      confirmFn.indexOf("playOrderConfirmationSound(result.order.orderId)"),
+    );
+
+    expect(merchantSound).not.toContain("pedilo-order-confirmed");
+    expect(merchantSound).not.toContain("order-confirmation-sound");
+  });
+
   it("keeps native fields, radios, and checkout-only motion", () => {
     const client = read("src/components/checkout/checkout-page-client.tsx");
     const css = read("src/styles/globals.css");

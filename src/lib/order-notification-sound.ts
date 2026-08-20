@@ -1,10 +1,19 @@
 export const MERCHANT_ORDER_SOUND_STORAGE_KEY =
   "pedilo-merchant-order-sound-enabled";
 
+export const MERCHANT_NEW_ORDER_SOUND_SRC = "/sounds/pedilo-new-order.mp3";
+
+export const MERCHANT_ORDER_FULL_PLAYBACK_GAIN = 1;
+export const MERCHANT_ORDER_SOFT_PLAYBACK_GAIN = 0.35;
+
 export type OrderNotificationSoundHost = {
   AudioContext?: new () => AudioContext;
   webkitAudioContext?: new () => AudioContext;
   localStorage?: Pick<Storage, "getItem" | "setItem">;
+  fetch?: (input: string) => Promise<{
+    ok: boolean;
+    arrayBuffer: () => Promise<ArrayBuffer>;
+  }>;
 };
 
 export type MerchantOrderChimeKind = "full" | "soft";
@@ -24,6 +33,8 @@ let testHost: OrderNotificationSoundHost | null = null;
 let audioContext: AudioContext | null = null;
 let keepAlive: KeepAliveNodes | null = null;
 let audioContextCreatedCount = 0;
+let decodedNewOrderBuffer: AudioBuffer | null = null;
+let loadNewOrderBufferPromise: Promise<AudioBuffer | null> | null = null;
 
 export function configureOrderNotificationSoundHostForTests(
   host: OrderNotificationSoundHost | null,
@@ -32,6 +43,8 @@ export function configureOrderNotificationSoundHostForTests(
   testHost = host;
   audioContext = null;
   audioContextCreatedCount = 0;
+  decodedNewOrderBuffer = null;
+  loadNewOrderBufferPromise = null;
   preferenceListeners.clear();
 }
 
@@ -47,6 +60,14 @@ function getHost(): OrderNotificationSoundHost {
 
 function getStorage(): Pick<Storage, "getItem" | "setItem"> | undefined {
   return getHost().localStorage;
+}
+
+function getFetch(): OrderNotificationSoundHost["fetch"] {
+  const host = getHost();
+  if (typeof host.fetch === "function") {
+    return host.fetch.bind(host);
+  }
+  return undefined;
 }
 
 function getAudioContextConstructor(): (new () => AudioContext) | undefined {
@@ -97,35 +118,19 @@ export function setMerchantOrderSoundPreferenceEnabled(enabled: boolean): void {
   emitSoundPreferenceChange();
 }
 
-function isDevRuntime(): boolean {
-  return process.env.NODE_ENV === "development";
-}
-
-function merchantSoundDevLog(
-  message: string,
-  detail?: Record<string, unknown>,
-): void {
-  if (!isDevRuntime()) {
-    return;
-  }
-  if (detail) {
-    console.info(message, detail);
-    return;
-  }
-  console.info(message);
-}
-
 export function getMerchantOrderAudioContextDebug(): {
   exists: boolean;
   state: string;
   createdCount: number;
   keepAlive: boolean;
+  bufferCached: boolean;
 } {
   return {
     exists: Boolean(audioContext && audioContext.state !== "closed"),
     state: audioContext?.state ?? "none",
     createdCount: audioContextCreatedCount,
     keepAlive: Boolean(keepAlive),
+    bufferCached: decodedNewOrderBuffer != null,
   };
 }
 
@@ -138,6 +143,8 @@ function getOrCreateMerchantOrderAudioContext(): AudioContext | null {
     audioContext = new Context();
     audioContextCreatedCount += 1;
     keepAlive = null;
+    decodedNewOrderBuffer = null;
+    loadNewOrderBufferPromise = null;
   }
   return audioContext;
 }
@@ -212,80 +219,84 @@ export async function resumeMerchantOrderAudioContext(): Promise<boolean> {
   }
 }
 
-export const MERCHANT_ORDER_FULL_CHIME = {
-  attackSec: 0.028,
-  tones: [
-    {
-      frequency: 880,
-      durationSec: 0.34,
-      peakGain: 0.22,
-      startOffsetSec: 0,
-    },
-    {
-      frequency: 1108.73,
-      durationSec: 0.38,
-      peakGain: 0.18,
-      startOffsetSec: 0.15,
-    },
-  ],
-} as const;
-
-export const MERCHANT_ORDER_SOFT_CHIME = {
-  frequency: 880,
-  durationSec: 0.2,
-  peakGain: 0.1,
-  startOffsetSec: 0,
-} as const;
-
-function playEnvelope(
+async function fetchAndDecodeNewOrderBuffer(
   ctx: AudioContext,
-  options: {
-    frequency: number;
-    durationSec: number;
-    peakGain: number;
-    startOffsetSec: number;
-    attackSec?: number;
-  },
+): Promise<AudioBuffer | null> {
+  const fetchFn = getFetch();
+  if (!fetchFn) {
+    return null;
+  }
+  try {
+    const response = await fetchFn(MERCHANT_NEW_ORDER_SOUND_SRC);
+    if (!response.ok) {
+      return null;
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+    decodedNewOrderBuffer = audioBuffer;
+    return audioBuffer;
+  } catch {
+    return null;
+  }
+}
+
+function loadNewOrderBuffer(ctx: AudioContext): Promise<AudioBuffer | null> {
+  if (decodedNewOrderBuffer) {
+    return Promise.resolve(decodedNewOrderBuffer);
+  }
+  if (!loadNewOrderBufferPromise) {
+    loadNewOrderBufferPromise = fetchAndDecodeNewOrderBuffer(ctx).then(
+      (buffer) => {
+        if (!buffer) {
+          loadNewOrderBufferPromise = null;
+        }
+        return buffer;
+      },
+    );
+  }
+  return loadNewOrderBufferPromise;
+}
+
+function playbackGainFor(kind: MerchantOrderChimeKind): number {
+  return kind === "soft"
+    ? MERCHANT_ORDER_SOFT_PLAYBACK_GAIN
+    : MERCHANT_ORDER_FULL_PLAYBACK_GAIN;
+}
+
+function playDecodedBuffer(
+  ctx: AudioContext,
+  buffer: AudioBuffer,
+  kind: MerchantOrderChimeKind,
 ): void {
-  const oscillator = ctx.createOscillator();
+  const source = ctx.createBufferSource();
   const gain = ctx.createGain();
-  oscillator.type = "sine";
-  oscillator.connect(gain);
+  source.buffer = buffer;
+  source.connect(gain);
   gain.connect(ctx.destination);
-
-  const startAt = ctx.currentTime + options.startOffsetSec;
-  const attackSec = options.attackSec ?? MERCHANT_ORDER_FULL_CHIME.attackSec;
-  const attackAt = startAt + attackSec;
-  const endAt = startAt + options.durationSec;
-
-  oscillator.frequency.setValueAtTime(options.frequency, startAt);
-  gain.gain.setValueAtTime(0.0001, startAt);
-  gain.gain.exponentialRampToValueAtTime(options.peakGain, attackAt);
-  gain.gain.exponentialRampToValueAtTime(0.0001, endAt);
-
-  oscillator.onended = () => {
+  const now = ctx.currentTime;
+  gain.gain.setValueAtTime(playbackGainFor(kind), now);
+  source.onended = () => {
     try {
-      oscillator.disconnect();
+      source.disconnect();
       gain.disconnect();
     } catch {
       /* already disconnected */
     }
   };
-
-  oscillator.start(startAt);
-  oscillator.stop(endAt);
+  source.start(now);
 }
 
-function playTones(ctx: AudioContext, kind: MerchantOrderChimeKind): void {
-  if (kind === "soft") {
-    playEnvelope(ctx, MERCHANT_ORDER_SOFT_CHIME);
-    return;
+async function resolveCachedOrInFlightBuffer(): Promise<AudioBuffer | null> {
+  if (decodedNewOrderBuffer) {
+    return decodedNewOrderBuffer;
   }
-  for (const tone of MERCHANT_ORDER_FULL_CHIME.tones) {
-    playEnvelope(ctx, {
-      ...tone,
-      attackSec: MERCHANT_ORDER_FULL_CHIME.attackSec,
-    });
+  if (!loadNewOrderBufferPromise) {
+    return null;
+  }
+  try {
+    return await loadNewOrderBufferPromise;
+  } catch {
+    return null;
   }
 }
 
@@ -300,8 +311,12 @@ async function playChimeOnExistingContext(
   if (!running) {
     return "blocked";
   }
+  const buffer = await resolveCachedOrInFlightBuffer();
+  if (!buffer) {
+    return "failed";
+  }
   try {
-    playTones(running, kind);
+    playDecodedBuffer(running, buffer, kind);
     return "played";
   } catch {
     return "failed";
@@ -310,76 +325,37 @@ async function playChimeOnExistingContext(
 
 export async function playMerchantOrderChime(
   kind: MerchantOrderChimeKind,
-  source: "order" | "enable" = "order",
 ): Promise<MerchantOrderSoundPlayResult> {
   const enabled = isMerchantOrderSoundPreferenceEnabled();
   if (!enabled) {
-    if (source === "order") {
-      merchantSoundDevLog("[merchant-sound] order", {
-        enabled: false,
-        ...getMerchantOrderAudioContextDebug(),
-        result: "blocked",
-      });
-    }
     return "blocked";
   }
   try {
     const result = await playChimeOnExistingContext(kind);
-    if (source === "order") {
-      merchantSoundDevLog("[merchant-sound] order", {
-        enabled: true,
-        ...getMerchantOrderAudioContextDebug(),
-        result: kind === "soft" && result === "played" ? "cooldown" : result,
-      });
-    }
     return kind === "soft" && result === "played" ? "cooldown" : result;
   } catch {
-    if (source === "order") {
-      merchantSoundDevLog("[merchant-sound] order", {
-        enabled: true,
-        ...getMerchantOrderAudioContextDebug(),
-        result: "failed",
-      });
-    }
     return "failed";
   }
 }
 
 export async function enableMerchantOrderSound(): Promise<EnableMerchantOrderSoundResult> {
-  const beforeState = getMerchantOrderAudioContextDebug().state;
   setMerchantOrderSoundPreferenceEnabled(true);
   try {
     const ctx = getOrCreateMerchantOrderAudioContext();
     if (!ctx) {
-      merchantSoundDevLog("[merchant-sound] enable", {
-        beforeState,
-        afterState: "none",
-        testPlayed: false,
-      });
       return "unavailable";
     }
     const running = await resumeExistingContext(ctx);
     if (!running) {
-      merchantSoundDevLog("[merchant-sound] enable", {
-        beforeState,
-        afterState: ctx.state,
-        testPlayed: false,
-      });
       return "blocked";
     }
-    playTones(running, "full");
-    merchantSoundDevLog("[merchant-sound] enable", {
-      beforeState,
-      afterState: running.state,
-      testPlayed: true,
-    });
+    const buffer = await loadNewOrderBuffer(running);
+    if (!buffer) {
+      return "blocked";
+    }
+    playDecodedBuffer(running, buffer, "full");
     return "playing";
   } catch {
-    merchantSoundDevLog("[merchant-sound] enable", {
-      beforeState,
-      afterState: getMerchantOrderAudioContextDebug().state,
-      testPlayed: false,
-    });
     return "blocked";
   }
 }
@@ -387,14 +363,4 @@ export async function enableMerchantOrderSound(): Promise<EnableMerchantOrderSou
 export function disableMerchantOrderSound(): void {
   stopKeepAlive();
   setMerchantOrderSoundPreferenceEnabled(false);
-}
-
-export function logMerchantOrderSoundSkipped(
-  result: "blocked" | "cooldown",
-): void {
-  merchantSoundDevLog("[merchant-sound] order", {
-    enabled: isMerchantOrderSoundPreferenceEnabled(),
-    ...getMerchantOrderAudioContextDebug(),
-    result,
-  });
 }

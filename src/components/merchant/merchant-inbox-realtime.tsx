@@ -6,17 +6,13 @@ import {
   dismissMerchantNewOrderToast,
   recordSessionMerchantNewOrderInsert,
 } from "@/application/merchant/new-order-alert";
-import {
-  merchantRealtimeDevLog,
-  subscribeMerchantOrderInserts,
-} from "@/application/merchant/order-inbox-realtime";
+import { subscribeMerchantOrderInserts } from "@/application/merchant/order-inbox-realtime";
 import { MerchantOrderSoundToggle } from "@/components/merchant/merchant-order-sound-toggle";
 import { OrderNotificationToast } from "@/components/merchant/order-notification-toast";
 import { createSupabaseBrowserClient } from "@/infrastructure/supabase/browser";
 import { isValidUuid } from "@/lib/uuid";
 import {
   isMerchantOrderSoundPreferenceEnabled,
-  logMerchantOrderSoundSkipped,
   playMerchantOrderChime,
 } from "@/lib/order-notification-sound";
 
@@ -30,7 +26,6 @@ export function MerchantInboxRealtime({ merchantId }: Props) {
   const [visibleOrderIds, setVisibleOrderIds] = useState<string[]>([]);
 
   useEffect(() => {
-    merchantRealtimeDevLog("[merchant-realtime] mount", { merchantId });
     const client = createSupabaseBrowserClient();
     const { unsubscribe } = subscribeMerchantOrderInserts({
       client,
@@ -49,15 +44,12 @@ export function MerchantInboxRealtime({ merchantId }: Props) {
         visibleRef.current = result.visibleOrderIds;
         setVisibleOrderIds(result.visibleOrderIds);
         if (result.chime === "full" || result.chime === "soft") {
-          void playMerchantOrderChime(result.chime, "order");
-        } else if (!result.isDuplicate) {
-          logMerchantOrderSoundSkipped("blocked");
+          void playMerchantOrderChime(result.chime);
         }
       },
     });
 
     return () => {
-      merchantRealtimeDevLog("[merchant-realtime] cleanup", { merchantId });
       unsubscribe();
     };
   }, [merchantId, router]);

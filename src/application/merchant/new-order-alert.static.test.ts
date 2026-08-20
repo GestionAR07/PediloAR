@@ -46,8 +46,16 @@ describe("new order alert static checks", () => {
     expect(toggle).toContain("disableMerchantOrderSound");
 
     expect(sound).toContain("pedilo-merchant-order-sound-enabled");
-    expect(sound).toContain("frequency: 880");
-    expect(sound).toContain("1108.73");
+    expect(sound).toContain("/sounds/pedilo-new-order.mp3");
+    expect(sound).toContain("decodeAudioData");
+    expect(sound).not.toContain("pedilo-order-confirmed");
+    expect(sound).not.toContain("1108.73");
+    expect(sound).not.toContain("[merchant-sound]");
+    expect(sound).not.toContain("merchantSoundDevLog");
+    expect(sound).not.toContain("console.info");
+    expect(
+      fs.existsSync(path.join(root, "public/sounds/pedilo-new-order.mp3")),
+    ).toBe(true);
     expect(alert).toContain("MAX_VISIBLE_NEW_ORDER_TOASTS = 3");
     expect(alert).toContain("SEEN_NEW_ORDER_ID_CAP = 50");
     expect(alert).toContain("NEW_ORDER_CHIME_COOLDOWN_MS = 2500");

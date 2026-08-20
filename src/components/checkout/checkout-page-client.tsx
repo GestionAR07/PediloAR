@@ -58,6 +58,10 @@ import {
   subscribeFrozenCheckoutDraft,
 } from "@/lib/checkout/session-store";
 import { readPublicZoneId } from "@/lib/public-zone-storage";
+import {
+  playOrderConfirmationSound,
+  prepareOrderConfirmationSound,
+} from "@/lib/order-confirmation-sound";
 
 const focusRing =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]";
@@ -353,6 +357,7 @@ export function CheckoutPageClient() {
       expectedQuoteFingerprint: draft.expectedQuoteFingerprint ?? "",
     });
     try {
+      await prepareOrderConfirmationSound();
       const result = await placeOrderAction({ cart, draft });
       if (!result.ok) {
         applyReviewSlice(
@@ -360,6 +365,7 @@ export function CheckoutPageClient() {
         );
         return;
       }
+      void playOrderConfirmationSound(result.order.orderId);
       const merchantName =
         review?.merchantName ||
         config?.merchant.name ||
