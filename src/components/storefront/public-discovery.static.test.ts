@@ -57,6 +57,7 @@ describe("qwen public discovery v1 static checks", () => {
       "src/components/storefront/public-brand-wordmark.tsx",
       "src/components/storefront/zone-picker.tsx",
       "src/components/storefront/public-discovery-section.tsx",
+      "src/components/storefront/public-category-rail.tsx",
       "src/components/storefront/merchant-card.tsx",
       "src/components/storefront/merchant-cover-fallback.tsx",
       "src/lib/filter-public-merchants.ts",
@@ -78,6 +79,7 @@ describe("qwen public discovery v1 static checks", () => {
     expect(joined).not.toContain("openAuthModal");
     expect(joined).not.toContain("restaurants =");
     expect(joined).not.toMatch(/function checkout\s*\(/);
+    expect(joined).not.toContain("Burger House");
   });
 
   it("shows Pedilo as the public product name via APP_NAME", () => {
@@ -402,7 +404,11 @@ describe("qwen public discovery v1 static checks", () => {
     expect(discovery).not.toContain("router.push");
     expect(discovery).toContain("Estamos sumando comercios en {zoneName}");
     expect(discovery).toContain("No encontramos comercios con");
+    expect(discovery).toContain("No encontramos comercios en esta categoría.");
     expect(discovery).toContain("Limpiar búsqueda");
+    expect(discovery).toContain("Ver todos");
+    expect(discovery).toContain("PublicCategoryRail");
+    expect(discovery).toContain("effectiveCategoryId");
     expect(discovery).toContain('href="/login"');
     expect(discovery).toContain("Sumar mi comercio");
     expect(discovery).toContain("grid-cols-1");
@@ -412,6 +418,7 @@ describe("qwen public discovery v1 static checks", () => {
 
     expect(filter).toContain("merchant.name.toLowerCase()");
     expect(filter).toContain("merchant.description.toLowerCase()");
+    expect(filter).toContain("merchant.categoryIds.includes");
     expect(filter).not.toContain("priceCents");
     expect(filter).not.toContain("imageUrl");
     expect(filter).not.toContain("categoryName");
@@ -437,14 +444,20 @@ describe("qwen public discovery v1 static checks", () => {
     expect(cover).not.toContain("http");
 
     expect(types).toMatch(
-      /export type PublicMerchantCard = \{[\s\S]*coverUrl: string \| null;/,
+      /export type PublicMerchantCard = \{[\s\S]*categoryIds: string\[\];[\s\S]*coverUrl: string \| null;/,
+    );
+    expect(types).toMatch(
+      /export type PublicMarketplaceCategory = \{[\s\S]*slug: string;/,
     );
     expect(types).not.toContain("coverImagePath");
     expect(types).not.toMatch(
       /export type PublicMerchantCard = \{[^}]*imageUrl/,
     );
     expect(appDiscovery).toContain("href: `/comercios/${merchant.id}`");
-    expect(appDiscovery).not.toContain("marketplaceCategories");
+    expect(appDiscovery).toContain("listMarketplaceCategoryLinksForMerchants");
+    expect(appDiscovery).toContain("assemblePublicMarketplaceCategories");
+    expect(appDiscovery).toContain("categoryIds:");
+    expect(page).toContain("categories={discovery.categories}");
     expect(read("src/infrastructure/db/schema/catalog.ts")).toContain(
       "marketplaceCategories",
     );
@@ -456,9 +469,14 @@ describe("qwen public discovery v1 static checks", () => {
     expect(schema).not.toContain("logo");
 
     expect(css).toContain(".discovery-grid");
+    expect(css).toContain(".category-rail");
+    expect(css).toContain(".category-tile-swatch--violet");
     expect(css).toContain("@keyframes ps-discovery-in");
     expect(css).toMatch(
       /prefers-reduced-motion:\s*reduce[\s\S]*\.discovery-grid[\s\S]*animation:\s*none/,
+    );
+    expect(css).toMatch(
+      /prefers-reduced-motion:\s*reduce[\s\S]*\.category-tile[\s\S]*animation:\s*none/,
     );
     expect(css).not.toContain("animate-ping");
     expect(css).not.toContain("animate-pulse");
@@ -470,6 +488,49 @@ describe("qwen public discovery v1 static checks", () => {
     expect(page).toContain("selectedZone={discovery.selectedZone}");
   });
 
+  it("renders a real marketplace category rail without Qwen mocks or Lucide", () => {
+    const rail = read("src/components/storefront/public-category-rail.tsx");
+    const discovery = read(
+      "src/components/storefront/public-discovery-section.tsx",
+    );
+    const repo = read(
+      "src/infrastructure/db/repositories/storefront-repository.ts",
+    );
+    const wiring = read("src/application/storefront/wiring.ts");
+    const pkg = JSON.parse(read("package.json")) as {
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+    };
+    const deps = {
+      ...pkg.dependencies,
+      ...pkg.devDependencies,
+    };
+
+    expect(rail).toContain("¿Qué te apetece hoy?");
+    expect(rail).toContain("EXPLORÁ");
+    expect(rail).toContain("aria-pressed");
+    expect(rail).toContain("snap-x");
+    expect(rail).toContain("no-scrollbar");
+    expect(rail).toContain("Todos");
+    expect(rail).toContain("marketplaceCategoryIconKind");
+    expect(rail).toContain("marketplaceCategoryPalette");
+    expect(rail).toContain('type="button"');
+    expect(rail).not.toContain("lucide");
+    expect(rail).not.toContain("const categories = [");
+    expect(rail).not.toContain("rating");
+    expect(rail).not.toContain("4.8");
+    expect(rail).not.toContain("hamburguesas");
+    expect(discovery).toContain("showCategories");
+    expect(discovery).toContain("selectedZone && categories.length > 0");
+    expect(repo).toContain("listActiveMarketplaceCategoryLinksForMerchants");
+    expect(repo).toContain("merchantMarketplaceCategories");
+    expect(repo).toContain("eq(marketplaceCategories.active, true)");
+    expect(wiring).toContain("listActiveMarketplaceCategoryLinksForMerchants");
+    expect(wiring).toContain("categories: []");
+    expect(deps).not.toHaveProperty("lucide-react");
+    expect(deps).not.toHaveProperty("lucide");
+  });
+
   it("keeps public home within the viewport without relying on html overflow-x hidden", () => {
     const css = read("src/styles/globals.css");
     const marquee = read("src/components/storefront/public-marquee.tsx");
@@ -479,6 +540,7 @@ describe("qwen public discovery v1 static checks", () => {
     const discovery = read(
       "src/components/storefront/public-discovery-section.tsx",
     );
+    const rail = read("src/components/storefront/public-category-rail.tsx");
     const picker = read("src/components/storefront/zone-picker.tsx");
     const card = read("src/components/storefront/merchant-card.tsx");
     const cover = read("src/components/storefront/merchant-cover-fallback.tsx");
@@ -527,6 +589,19 @@ describe("qwen public discovery v1 static checks", () => {
     expect(discovery).toContain("max-w-full");
     expect(discovery).toContain("lg:w-[22rem]");
     expect(css).toContain(".discovery-search");
+    expect(rail).toContain("min-w-0");
+    expect(rail).toContain("overflow-x-auto");
+    expect(rail).toContain("snap-x");
+    expect(rail).toContain("no-scrollbar");
+    expect(css).toContain(".category-rail");
+    expect(css).toContain("padding-inline-start: 0.5rem");
+    expect(css).toContain("padding-inline-end: calc(100% - 5.5rem)");
+    expect(css).toContain("scroll-padding-inline: 0.5rem 0");
+    expect(css).toContain("padding-block: 0.625rem");
+    expect(css).toContain("@media (hover: hover) and (pointer: fine)");
+    expect(css).not.toContain(".category-rail-wrap::after");
+    expect(css).not.toContain("mask-image");
+    expect(css).not.toMatch(/html\s*\{[^}]*overflow-x:\s*hidden/);
 
     expect(picker).toContain("break-words");
     expect(picker).toContain("w-full min-w-0");

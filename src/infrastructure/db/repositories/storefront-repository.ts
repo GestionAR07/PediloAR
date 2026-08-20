@@ -4,8 +4,10 @@ import { and, asc, eq, inArray, or, sql } from "drizzle-orm";
 import { getDb } from "../client";
 import {
   cities,
+  marketplaceCategories,
   merchantCategories,
   merchantDeliveryZones,
+  merchantMarketplaceCategories,
   merchantOpeningIntervals,
   merchantPaymentMethods,
   merchants,
@@ -40,6 +42,15 @@ export type PublicMerchantDiscoveryRow = {
   acceptingOrders: boolean;
   pausedUntil: Date | null;
   coverImagePath: string | null;
+};
+
+export type PublicMarketplaceCategoryLinkRecord = {
+  merchantId: string;
+  categoryId: string;
+  name: string;
+  slug: string;
+  sortOrder: number;
+  active: boolean;
 };
 
 export type PublicDeliveryZoneRecord = {
@@ -193,6 +204,46 @@ export async function listActiveMerchantsServingZone(
     .orderBy(asc(merchants.name));
 
   return rows;
+}
+
+/**
+ * Active marketplace taxonomy links for the given public merchants (one query).
+ * Inactive categories are excluded; associations themselves are not mutated.
+ */
+export async function listActiveMarketplaceCategoryLinksForMerchants(
+  merchantIds: string[],
+): Promise<PublicMarketplaceCategoryLinkRecord[]> {
+  if (merchantIds.length === 0) {
+    return [];
+  }
+  const db = getDb();
+  return db
+    .select({
+      merchantId: merchantMarketplaceCategories.merchantId,
+      categoryId: merchantMarketplaceCategories.marketplaceCategoryId,
+      name: marketplaceCategories.name,
+      slug: marketplaceCategories.slug,
+      sortOrder: marketplaceCategories.sortOrder,
+      active: marketplaceCategories.active,
+    })
+    .from(merchantMarketplaceCategories)
+    .innerJoin(
+      marketplaceCategories,
+      eq(
+        marketplaceCategories.id,
+        merchantMarketplaceCategories.marketplaceCategoryId,
+      ),
+    )
+    .where(
+      and(
+        inArray(merchantMarketplaceCategories.merchantId, merchantIds),
+        eq(marketplaceCategories.active, true),
+      ),
+    )
+    .orderBy(
+      asc(marketplaceCategories.sortOrder),
+      asc(marketplaceCategories.name),
+    );
 }
 
 export async function findActivePublicMerchantById(

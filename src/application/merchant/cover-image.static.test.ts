@@ -75,7 +75,7 @@ describe("merchant cover image static checks", () => {
   it("public discovery resolves coverUrl on the server without raw paths", () => {
     const types = read("src/application/storefront/types.ts");
     expect(types).toMatch(
-      /export type PublicMerchantCard = \{[\s\S]*coverUrl: string \| null;/,
+      /export type PublicMerchantCard = \{[\s\S]*categoryIds: string\[\];[\s\S]*coverUrl: string \| null;/,
     );
     expect(types).not.toContain("coverImagePath");
     expect(types).not.toContain("cover_image_path");

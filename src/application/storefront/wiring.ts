@@ -8,6 +8,7 @@ import {
   findActivePublicMerchantById,
   findPublicZoneById,
   listActiveDeliveryZonesForMerchants,
+  listActiveMarketplaceCategoryLinksForMerchants,
   listActiveMerchantsServingZone,
   listActivePaymentMethodsForMerchant,
   listOpeningIntervalsForMerchant,
@@ -32,7 +33,7 @@ import { and, eq } from "drizzle-orm";
 
 export async function getPublicDiscoveryApp(selectedZoneId?: string | null) {
   if (!hasDatabaseConfig()) {
-    return { zones: [], selectedZone: null, merchants: [] };
+    return { zones: [], selectedZone: null, merchants: [], categories: [] };
   }
 
   return getPublicDiscovery(selectedZoneId, {
@@ -56,6 +57,8 @@ export async function getPublicDiscoveryApp(selectedZoneId?: string | null) {
       };
     },
     listMerchantsServingZone: listActiveMerchantsServingZone,
+    listMarketplaceCategoryLinksForMerchants:
+      listActiveMarketplaceCategoryLinksForMerchants,
     listDeliveryZonesForMerchants: listActiveDeliveryZonesForMerchants,
     listOpeningIntervalsForMerchants,
     createCoverSignedUrls: async (paths) => {

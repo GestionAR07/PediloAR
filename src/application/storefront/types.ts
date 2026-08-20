@@ -18,6 +18,12 @@ export type PublicLogisticsPresentation = {
   preparationMinutesLabel: string | null;
 };
 
+export type PublicMarketplaceCategory = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
 export type PublicMerchantCard = {
   id: string;
   name: string;
@@ -29,6 +35,8 @@ export type PublicMerchantCard = {
   hoursDetail: string | null;
   logistics: PublicLogisticsPresentation;
   href: string;
+  /** Active marketplace category ids for client-side discovery filters. */
+  categoryIds: string[];
   /** Temporary signed cover URL. Never a storage path. */
   coverUrl: string | null;
 };
@@ -37,6 +45,7 @@ export type PublicDiscoveryResult = {
   zones: PublicZoneOption[];
   selectedZone: PublicZoneOption | null;
   merchants: PublicMerchantCard[];
+  categories: PublicMarketplaceCategory[];
 };
 
 export type PublicPaymentMethodView = {

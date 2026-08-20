@@ -10,6 +10,7 @@ import { isValidUuid } from "@/lib/uuid";
 import { buildPublicLogisticsPresentation } from "./logistics";
 import type {
   PublicDiscoveryResult,
+  PublicMarketplaceCategory,
   PublicMerchantCard,
   PublicZoneOption,
 } from "./types";
@@ -53,6 +54,15 @@ export type DiscoveryOpeningRecord = {
   closeMinute: number;
 };
 
+export type DiscoveryCategoryLinkRecord = {
+  merchantId: string;
+  categoryId: string;
+  name: string;
+  slug: string;
+  sortOrder: number;
+  active: boolean;
+};
+
 export type GetPublicDiscoveryDeps = {
   listZones: () => Promise<DiscoveryZoneRecord[]>;
   findZoneById: (zoneId: string) => Promise<DiscoveryZoneRecord | null>;
@@ -66,11 +76,88 @@ export type GetPublicDiscoveryDeps = {
   listOpeningIntervalsForMerchants: (
     merchantIds: string[],
   ) => Promise<DiscoveryOpeningRecord[]>;
+  listMarketplaceCategoryLinksForMerchants: (
+    merchantIds: string[],
+  ) => Promise<DiscoveryCategoryLinkRecord[]>;
   createCoverSignedUrls: (
     imagePaths: readonly string[],
   ) => Promise<Map<string, string>>;
   now: () => Date;
 };
+
+const emptyDiscovery = (
+  zones: PublicZoneOption[],
+  selectedZone: PublicZoneOption | null = null,
+): PublicDiscoveryResult => ({
+  zones,
+  selectedZone,
+  merchants: [],
+  categories: [],
+});
+
+type AssembledCategory = PublicMarketplaceCategory & { sortOrder: number };
+
+/**
+ * Unique active categories linked to the already-loaded public merchants.
+ * Ordered by sort_order, then name, then id. Never includes empty taxonomy.
+ */
+export function assemblePublicMarketplaceCategories(
+  links: readonly DiscoveryCategoryLinkRecord[],
+): {
+  categories: PublicMarketplaceCategory[];
+  categoryIdsByMerchantId: Map<string, string[]>;
+} {
+  const categoryById = new Map<string, AssembledCategory>();
+  const categoryIdsByMerchantId = new Map<string, string[]>();
+
+  for (const link of links) {
+    if (!link.active) {
+      continue;
+    }
+    if (!categoryById.has(link.categoryId)) {
+      categoryById.set(link.categoryId, {
+        id: link.categoryId,
+        name: link.name,
+        slug: link.slug,
+        sortOrder: link.sortOrder,
+      });
+    }
+    const ids = categoryIdsByMerchantId.get(link.merchantId) ?? [];
+    if (!ids.includes(link.categoryId)) {
+      ids.push(link.categoryId);
+      categoryIdsByMerchantId.set(link.merchantId, ids);
+    }
+  }
+
+  const categories = [...categoryById.values()]
+    .sort((a, b) => {
+      if (a.sortOrder !== b.sortOrder) {
+        return a.sortOrder - b.sortOrder;
+      }
+      const byName = a.name.localeCompare(b.name, "es");
+      if (byName !== 0) {
+        return byName;
+      }
+      return a.id.localeCompare(b.id);
+    })
+    .map((category): PublicMarketplaceCategory => ({
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+    }));
+
+  const order = new Map(
+    categories.map((category, index) => [category.id, index]),
+  );
+  for (const [merchantId, ids] of categoryIdsByMerchantId) {
+    categoryIdsByMerchantId.set(
+      merchantId,
+      [...ids].sort((a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0)),
+    );
+  }
+
+  return { categories, categoryIdsByMerchantId };
+}
 
 function toZoneOption(zone: DiscoveryZoneRecord): PublicZoneOption {
   return {
@@ -89,12 +176,12 @@ export async function getPublicDiscovery(
     selectedZoneId && isValidUuid(selectedZoneId) ? selectedZoneId : null;
 
   if (!zoneId) {
-    return { zones, selectedZone: null, merchants: [] };
+    return emptyDiscovery(zones);
   }
 
   const selected = await deps.findZoneById(zoneId);
   if (!selected) {
-    return { zones, selectedZone: null, merchants: [] };
+    return emptyDiscovery(zones);
   }
 
   const merchants = await deps.listMerchantsServingZone(zoneId);
@@ -102,11 +189,15 @@ export async function getPublicDiscovery(
   const coverPaths = merchants
     .map((merchant) => merchant.coverImagePath)
     .filter((path): path is string => Boolean(path));
-  const [deliveryRows, openingRows, coverUrls] = await Promise.all([
-    deps.listDeliveryZonesForMerchants(merchantIds, zoneId),
-    deps.listOpeningIntervalsForMerchants(merchantIds),
-    deps.createCoverSignedUrls(coverPaths),
-  ]);
+  const [deliveryRows, openingRows, coverUrls, categoryLinks] =
+    await Promise.all([
+      deps.listDeliveryZonesForMerchants(merchantIds, zoneId),
+      deps.listOpeningIntervalsForMerchants(merchantIds),
+      deps.createCoverSignedUrls(coverPaths),
+      deps.listMarketplaceCategoryLinksForMerchants(merchantIds),
+    ]);
+  const { categories, categoryIdsByMerchantId } =
+    assemblePublicMarketplaceCategories(categoryLinks);
 
   const now = deps.now();
   const cards: PublicMerchantCard[] = merchants.map((merchant) => {
@@ -164,6 +255,7 @@ export async function getPublicDiscovery(
           : null,
       }),
       href: `/comercios/${merchant.id}`,
+      categoryIds: categoryIdsByMerchantId.get(merchant.id) ?? [],
       coverUrl: merchant.coverImagePath
         ? (coverUrls.get(merchant.coverImagePath) ?? null)
         : null,
@@ -174,5 +266,6 @@ export async function getPublicDiscovery(
     zones,
     selectedZone: toZoneOption(selected),
     merchants: cards,
+    categories,
   };
 }

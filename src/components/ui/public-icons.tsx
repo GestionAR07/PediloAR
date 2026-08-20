@@ -184,3 +184,254 @@ export function CloseIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+export function BurgerIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M4 11h16" />
+      <path d="M5 15h14" />
+      <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+      <path d="M5 11V9a7 7 0 0 1 14 0v2" />
+    </svg>
+  );
+}
+
+export function PizzaIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="m12 3 9 16.5H3L12 3Z" />
+      <path d="M12 11h.01" />
+      <path d="M9 15h.01" />
+      <path d="M15 15h.01" />
+    </svg>
+  );
+}
+
+export function FishIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M6.5 12c0-4 5-7 10.5-6 2 3 2 9 0 12-5.5 1-10.5-2-10.5-6Z" />
+      <path d="M6.5 12 3 8v8l3.5-4Z" />
+      <path d="M16 10h.01" />
+    </svg>
+  );
+}
+
+export function CoffeeIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M17 8h1a4 4 0 0 1 0 8h-1" />
+      <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8Z" />
+      <path d="M6 2v2" />
+      <path d="M10 2v2" />
+      <path d="M14 2v2" />
+    </svg>
+  );
+}
+
+export function SaladIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M7 21h10" />
+      <path d="M12 21a8 8 0 0 0 8-8H4a8 8 0 0 0 8 8Z" />
+      <path d="M12 7c0-2 1.5-4 4-4 0 2-1 4-4 4Z" />
+      <path d="M12 7c0-2-1.5-4-4-4 0 2 1 4 4 4Z" />
+    </svg>
+  );
+}
+
+export function ChefHatIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M6 13c-1.7 0-3-1.3-3-3 0-1.4.9-2.6 2.2-2.9A5 5 0 0 1 12 4a5 5 0 0 1 6.8 3.1C20.1 7.4 21 8.6 21 10c0 1.7-1.3 3-3 3" />
+      <path d="M6 13v5a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-5" />
+    </svg>
+  );
+}
+
+export function PillIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="m10.5 20.5-7-7a5 5 0 0 1 7-7l7 7a5 5 0 0 1-7 7Z" />
+      <path d="m8.5 8.5 7 7" />
+    </svg>
+  );
+}
+
+export function BasketIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="m5 10 1.5 9h11L19 10" />
+      <path d="M3 10h18" />
+      <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+    </svg>
+  );
+}
+
+export function IceCreamIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M7 11a5 5 0 0 1 10 0" />
+      <path d="M7 11v1a5 5 0 0 0 10 0v-1" />
+      <path d="m12 17 3 5H9l3-5Z" />
+    </svg>
+  );
+}
+
+export function SodaIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="m6 8 1.5 12h9L18 8" />
+      <path d="M5 8h14" />
+      <path d="m15 3-2 5" />
+    </svg>
+  );
+}
+
+export function PackageIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="m7.5 4.3 9 5.2v10.2l-9-5.2V4.3Z" />
+      <path d="m16.5 9.5-9-5.2" />
+      <path d="M12 12v10" />
+      <path d="M3.5 7.5 12 12l8.5-4.5" />
+    </svg>
+  );
+}
+
+export function UtensilsIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+      <path d="M7 2v20" />
+      <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Z" />
+      <path d="M18 15v7" />
+    </svg>
+  );
+}
+
+export function CroissantIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M4.6 13.1A7 7 0 0 0 13 21a7 7 0 0 0 7.4-8.2 4 4 0 0 0-2-5.4 4 4 0 0 0-5.4-2A7 7 0 0 0 4.6 13.1Z" />
+      <path d="M10 8.5c.5 1.4 1.7 2.5 3.2 3" />
+    </svg>
+  );
+}

@@ -52,6 +52,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <PublicDiscoverySection
           selectedZone={discovery.selectedZone}
           merchants={discovery.merchants}
+          categories={discovery.categories}
         />
       </div>
     </main>
