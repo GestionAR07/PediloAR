@@ -54,6 +54,8 @@ export const merchants = pgTable(
       withTimezone: true,
       mode: "date",
     }),
+    /** Storage object path in bucket merchant-images; never a signed URL. */
+    coverImagePath: text("cover_image_path"),
     createdAt: createdAtColumn(),
     updatedAt: updatedAtColumn(),
   },

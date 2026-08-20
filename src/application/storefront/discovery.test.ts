@@ -49,6 +49,7 @@ function baseDeps(): GetPublicDiscoveryDeps {
         preparationMinutes: 25,
         acceptingOrders: true,
         pausedUntil: null,
+        coverImagePath: null,
       },
     ]),
     listDeliveryZonesForMerchants: vi.fn(async () => [
@@ -62,6 +63,7 @@ function baseDeps(): GetPublicDiscoveryDeps {
       },
     ]),
     listOpeningIntervalsForMerchants: vi.fn(async () => []),
+    createCoverSignedUrls: vi.fn(async () => new Map()),
     now: () => new Date("2026-08-12T15:00:00.000Z"),
   };
 }
@@ -85,6 +87,7 @@ describe("getPublicDiscovery", () => {
     expect(card.availabilityLabel).toBe("Disponible");
     expect(card.logistics.deliveryFeeLabel).toContain("$");
     expect(card.href).toBe(`/comercios/${MERCHANT}`);
+    expect(card.coverUrl).toBeNull();
 
     const serialized = JSON.stringify(card);
     expect(serialized).not.toMatch(/email/i);
@@ -93,6 +96,8 @@ describe("getPublicDiscovery", () => {
     expect(serialized).not.toMatch(/SECRET/i);
     expect(serialized).not.toMatch(/acceptingOrders/);
     expect(serialized).not.toMatch(/pausedUntil/);
+    expect(serialized).not.toMatch(/coverImagePath/);
+    expect(serialized).not.toMatch(/cover_image_path/);
   });
 
   it("marks future pause as Pausado temporalmente", async () => {
@@ -110,11 +115,48 @@ describe("getPublicDiscovery", () => {
       preparationMinutes: 20,
       acceptingOrders: true,
       pausedUntil: new Date("2026-08-12T16:00:00.000Z"),
+      coverImagePath: null,
     };
     deps.listMerchantsServingZone = vi.fn(async () => [paused]);
     const result = await getPublicDiscovery(ZONE_A, deps);
     expect(result.merchants[0]?.availabilityLabel).toBe(
       "Pausado temporalmente",
     );
+  });
+
+  it("exposes a signed coverUrl without the storage path", async () => {
+    const coverPath = `${MERCHANT}/cover/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.webp`;
+    const deps = baseDeps();
+    deps.listMerchantsServingZone = vi.fn(async () => [
+      {
+        id: MERCHANT,
+        name: "Comercio Prueba",
+        description: "Demo",
+        status: "ACTIVE",
+        zoneId: ZONE_A,
+        zoneName: "Rawson",
+        cityTimezone: "America/Argentina/Catamarca",
+        pickupEnabled: true,
+        merchantDeliveryEnabled: true,
+        preparationMinutes: 25,
+        acceptingOrders: true,
+        pausedUntil: null,
+        coverImagePath: coverPath,
+      },
+    ]);
+    deps.createCoverSignedUrls = vi.fn(async () => {
+      const map = new Map<string, string>();
+      map.set(coverPath, "https://signed.example/cover.webp");
+      return map;
+    });
+
+    const result = await getPublicDiscovery(ZONE_A, deps);
+    expect(result.merchants[0]?.coverUrl).toBe(
+      "https://signed.example/cover.webp",
+    );
+    expect(deps.createCoverSignedUrls).toHaveBeenCalledWith([coverPath]);
+    const serialized = JSON.stringify(result.merchants[0]);
+    expect(serialized).not.toMatch(/coverImagePath/);
+    expect(serialized).not.toMatch(/cover_image_path/);
   });
 });

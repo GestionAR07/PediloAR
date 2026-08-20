@@ -9,7 +9,7 @@ const GRADIENTS = [
 ] as const;
 
 /**
- * Honest editorial cover while merchants have no public image column.
+ * Honest editorial cover when the merchant has no cover photo.
  * Variant is deterministic from the name — not a remote or invented photo.
  */
 export function MerchantCoverFallback({ name }: Props) {

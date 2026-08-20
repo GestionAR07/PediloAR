@@ -332,3 +332,37 @@ export async function listMembershipSummariesForUser(userId: string): Promise<
     )
     .orderBy(asc(merchants.name));
 }
+
+export async function findMerchantCoverPath(
+  merchantId: string,
+): Promise<{ id: string; coverImagePath: string | null } | null> {
+  const db = getDb();
+  const rows = await db
+    .select({
+      id: merchants.id,
+      coverImagePath: merchants.coverImagePath,
+    })
+    .from(merchants)
+    .where(eq(merchants.id, merchantId))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+export async function setMerchantCoverImagePath(
+  merchantId: string,
+  coverImagePath: string | null,
+): Promise<{ id: string; coverImagePath: string | null } | null> {
+  const db = getDb();
+  const updated = await db
+    .update(merchants)
+    .set({
+      coverImagePath,
+      updatedAt: new Date(),
+    })
+    .where(eq(merchants.id, merchantId))
+    .returning({
+      id: merchants.id,
+      coverImagePath: merchants.coverImagePath,
+    });
+  return updated[0] ?? null;
+}

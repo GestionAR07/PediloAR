@@ -29,6 +29,8 @@ export type PublicMerchantCard = {
   hoursDetail: string | null;
   logistics: PublicLogisticsPresentation;
   href: string;
+  /** Temporary signed cover URL. Never a storage path. */
+  coverUrl: string | null;
 };
 
 export type PublicDiscoveryResult = {

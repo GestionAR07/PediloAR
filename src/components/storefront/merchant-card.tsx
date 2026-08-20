@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import type { PublicMerchantCard } from "@/application/storefront/types";
 import { MerchantCoverFallback } from "@/components/storefront/merchant-cover-fallback";
@@ -7,8 +10,6 @@ import { merchantCardHref } from "@/lib/filter-public-merchants";
 type Props = {
   merchant: PublicMerchantCard;
   zoneId?: string | null;
-  /** Reserved for a future real merchant cover. Never invent a remote image. */
-  coverUrl?: string | null;
 };
 
 function toneDot(tone: PublicMerchantCard["availabilityTone"]): string {
@@ -22,11 +23,31 @@ function toneDot(tone: PublicMerchantCard["availabilityTone"]): string {
   }
 }
 
-export function MerchantCard({
-  merchant,
-  zoneId = null,
-  coverUrl = null,
-}: Props) {
+function MerchantCover({
+  name,
+  coverUrl,
+}: {
+  name: string;
+  coverUrl: string | null;
+}) {
+  const [failed, setFailed] = useState(false);
+  if (!coverUrl || failed) {
+    return <MerchantCoverFallback name={name} />;
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={coverUrl}
+      alt={`Portada de ${name}`}
+      loading="lazy"
+      className="zoom-img h-full w-full object-cover"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
+export function MerchantCard({ merchant, zoneId = null }: Props) {
   const { logistics } = merchant;
   const hasFulfillment =
     logistics.pickupAvailable || logistics.deliveryAvailable;
@@ -39,16 +60,7 @@ export function MerchantCard({
       className="card-lift group block h-full max-w-full min-w-0 cursor-pointer overflow-hidden rounded-[1.75rem] border border-violet-100/70 bg-white shadow-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
     >
       <div className="relative isolate h-48 overflow-hidden bg-gradient-to-br from-violet-200 to-fuchsia-200 sm:h-52">
-        {coverUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={coverUrl}
-            alt=""
-            className="zoom-img h-full w-full object-cover"
-          />
-        ) : (
-          <MerchantCoverFallback name={merchant.name} />
-        )}
+        <MerchantCover name={merchant.name} coverUrl={merchant.coverUrl} />
         <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-[var(--ps-night)]/60 px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-white uppercase backdrop-blur">
           <span
             className={`h-1.5 w-1.5 rounded-full ${toneDot(merchant.availabilityTone)}`}

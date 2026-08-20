@@ -39,6 +39,7 @@ export type PublicMerchantDiscoveryRow = {
   preparationMinutes: number;
   acceptingOrders: boolean;
   pausedUntil: Date | null;
+  coverImagePath: string | null;
 };
 
 export type PublicDeliveryZoneRecord = {
@@ -172,6 +173,7 @@ export async function listActiveMerchantsServingZone(
       preparationMinutes: merchants.preparationMinutes,
       acceptingOrders: merchants.acceptingOrders,
       pausedUntil: merchants.pausedUntil,
+      coverImagePath: merchants.coverImagePath,
     })
     .from(merchants)
     .innerJoin(cities, eq(cities.id, merchants.cityId))
@@ -213,6 +215,7 @@ export async function findActivePublicMerchantById(
       preparationMinutes: merchants.preparationMinutes,
       acceptingOrders: merchants.acceptingOrders,
       pausedUntil: merchants.pausedUntil,
+      coverImagePath: merchants.coverImagePath,
     })
     .from(merchants)
     .innerJoin(cities, eq(cities.id, merchants.cityId))

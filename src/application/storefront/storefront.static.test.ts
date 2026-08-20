@@ -39,6 +39,7 @@ describe("public storefront static checks", () => {
     const wiring = read("src/application/storefront/wiring.ts");
     expect(wiring).toContain('import "server-only"');
     expect(wiring).toContain("createProductImageSignedUrls");
+    expect(wiring).toContain("createMerchantCoverSignedUrls");
     expect(wiring).not.toContain("NEXT_PUBLIC_SUPABASE_SECRET");
   });
 

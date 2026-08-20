@@ -417,7 +417,7 @@ describe("qwen public discovery v1 static checks", () => {
     expect(filter).not.toContain("categoryName");
 
     expect(card).toContain("MerchantCoverFallback");
-    expect(card).toContain("coverUrl");
+    expect(card).toContain("merchant.coverUrl");
     expect(card).toContain("merchant.description");
     expect(card).toContain("logistics.estimatedMinutesLabel");
     expect(card).toContain("logistics.deliveryFeeLabel");
@@ -436,9 +436,10 @@ describe("qwen public discovery v1 static checks", () => {
     expect(cover).not.toContain("image.qwenlm.ai");
     expect(cover).not.toContain("http");
 
-    expect(types).not.toMatch(
-      /export type PublicMerchantCard = \{[^}]*coverUrl/,
+    expect(types).toMatch(
+      /export type PublicMerchantCard = \{[\s\S]*coverUrl: string \| null;/,
     );
+    expect(types).not.toContain("coverImagePath");
     expect(types).not.toMatch(
       /export type PublicMerchantCard = \{[^}]*imageUrl/,
     );
@@ -450,8 +451,8 @@ describe("qwen public discovery v1 static checks", () => {
     expect(read("src/lib/public-zone-storage.ts")).toContain(
       "mr.public.zoneId",
     );
-    expect(schema).not.toContain("imagePath");
-    expect(schema).not.toContain("cover");
+    expect(schema).toContain("coverImagePath");
+    expect(schema).toContain("cover_image_path");
     expect(schema).not.toContain("logo");
 
     expect(css).toContain(".discovery-grid");

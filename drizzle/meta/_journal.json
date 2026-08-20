@@ -43,6 +43,13 @@
       "when": 1787136000000,
       "tag": "0005_merchant_order_private_broadcast",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1787253728586,
+      "tag": "0006_uneven_patriot",
+      "breakpoints": true
     }
   ]
 }

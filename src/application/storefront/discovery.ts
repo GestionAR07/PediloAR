@@ -34,6 +34,7 @@ export type DiscoveryMerchantRecord = {
   preparationMinutes: number;
   acceptingOrders: boolean;
   pausedUntil: Date | null;
+  coverImagePath: string | null;
 };
 
 export type DiscoveryDeliveryRecord = {
@@ -65,6 +66,9 @@ export type GetPublicDiscoveryDeps = {
   listOpeningIntervalsForMerchants: (
     merchantIds: string[],
   ) => Promise<DiscoveryOpeningRecord[]>;
+  createCoverSignedUrls: (
+    imagePaths: readonly string[],
+  ) => Promise<Map<string, string>>;
   now: () => Date;
 };
 
@@ -95,9 +99,13 @@ export async function getPublicDiscovery(
 
   const merchants = await deps.listMerchantsServingZone(zoneId);
   const merchantIds = merchants.map((m) => m.id);
-  const [deliveryRows, openingRows] = await Promise.all([
+  const coverPaths = merchants
+    .map((merchant) => merchant.coverImagePath)
+    .filter((path): path is string => Boolean(path));
+  const [deliveryRows, openingRows, coverUrls] = await Promise.all([
     deps.listDeliveryZonesForMerchants(merchantIds, zoneId),
     deps.listOpeningIntervalsForMerchants(merchantIds),
+    deps.createCoverSignedUrls(coverPaths),
   ]);
 
   const now = deps.now();
@@ -156,6 +164,9 @@ export async function getPublicDiscovery(
           : null,
       }),
       href: `/comercios/${merchant.id}`,
+      coverUrl: merchant.coverImagePath
+        ? (coverUrls.get(merchant.coverImagePath) ?? null)
+        : null,
     };
   });
 

@@ -91,6 +91,12 @@ export default async function MerchantDetailPage({ params }: PageProps) {
   const settingsNav = (
     <nav className="flex flex-col gap-2 text-sm sm:flex-row">
       <Link
+        href={`/merchant/${merchantId}/profile`}
+        className="inline-flex rounded-md border border-border px-4 py-3 font-medium text-accent underline-offset-4 hover:underline"
+      >
+        Portada del comercio →
+      </Link>
+      <Link
         href={`/merchant/${merchantId}/catalog`}
         className="inline-flex rounded-md border border-border px-4 py-3 font-medium text-accent underline-offset-4 hover:underline"
       >

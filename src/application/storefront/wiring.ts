@@ -18,6 +18,7 @@ import {
   listPublicActiveProductsForMerchant,
   listPublicZoneOptions,
 } from "@/infrastructure/db/repositories/storefront-repository";
+import { createMerchantCoverSignedUrls } from "@/infrastructure/storage/merchant-images";
 import { createProductImageSignedUrls } from "@/infrastructure/storage/product-images";
 import { hasSupabasePublicConfig } from "@/infrastructure/supabase/env";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/server";
@@ -57,6 +58,13 @@ export async function getPublicDiscoveryApp(selectedZoneId?: string | null) {
     listMerchantsServingZone: listActiveMerchantsServingZone,
     listDeliveryZonesForMerchants: listActiveDeliveryZonesForMerchants,
     listOpeningIntervalsForMerchants,
+    createCoverSignedUrls: async (paths) => {
+      try {
+        return await createMerchantCoverSignedUrls(paths);
+      } catch {
+        return new Map();
+      }
+    },
     now: () => new Date(),
   });
 }

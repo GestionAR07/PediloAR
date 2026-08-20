@@ -25,6 +25,7 @@ function card(
       preparationMinutesLabel: "Prep. ~25 min",
     },
     href: `/comercios/${overrides.id}`,
+    coverUrl: null,
     ...overrides,
   };
 }
