@@ -4,9 +4,12 @@ import {
   getPublicNavContextApp,
 } from "@/application/storefront/wiring";
 import { PublicDiscoverySection } from "@/components/storefront/public-discovery-section";
+import { PublicFooter } from "@/components/storefront/public-footer";
 import { PublicHeader } from "@/components/storefront/public-header";
 import { PublicHero } from "@/components/storefront/public-hero";
+import { PublicHowItWorks } from "@/components/storefront/public-how-it-works";
 import { PublicMarquee } from "@/components/storefront/public-marquee";
+import { PublicMerchantCta } from "@/components/storefront/public-merchant-cta";
 import { ZonePicker } from "@/components/storefront/zone-picker";
 import { APP_NAME, APP_SERVICE_AREA } from "@/lib/app-info";
 
@@ -43,7 +46,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       />
       <PublicHero />
 
-      <div className="mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-10 px-4 pt-10 pb-16 sm:px-6 lg:px-8 lg:gap-12 lg:pt-14 lg:pb-24">
+      <div className="mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-10 px-4 pt-10 pb-6 sm:px-6 lg:px-8 lg:gap-12 lg:pt-14 lg:pb-8">
         <ZonePicker
           zones={discovery.zones}
           selectedZoneId={discovery.selectedZone?.id ?? null}
@@ -55,6 +58,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           categories={discovery.categories}
         />
       </div>
+      <PublicHowItWorks />
+      <PublicMerchantCta />
+      <PublicFooter />
     </main>
   );
 }

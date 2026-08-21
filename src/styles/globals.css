@@ -111,9 +111,7 @@ body {
 }
 
 .public-storefront .nav-blur {
-  background-color: rgba(250, 248, 255, 0.88);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  background-color: var(--ps-cream);
 }
 
 .public-storefront .shadow-soft {
@@ -527,6 +525,113 @@ body {
   scroll-margin-top: 92px;
 }
 
+.public-storefront .how-it-works-title {
+  font-size: clamp(1.7rem, 1rem + 2.6vw, 2.5rem);
+  line-height: 1.12;
+}
+
+@media (min-width: 1024px) {
+  .public-storefront .how-it-works-title {
+    font-size: 2.5rem;
+  }
+}
+
+.public-storefront .how-it-works-grid {
+  position: relative;
+  min-width: 0;
+  animation: ps-discovery-in 0.28s ease-out;
+}
+
+.public-storefront .how-it-works-card {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  max-width: 100%;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .public-storefront .how-it-works-grid::before {
+    content: "";
+    position: absolute;
+    top: 3.25rem;
+    right: 12%;
+    left: 12%;
+    z-index: 0;
+    height: 0;
+    pointer-events: none;
+    border-top: 2px dashed rgb(196 181 253 / 0.85);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .public-storefront .how-it-works-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 50px -18px rgba(109, 40, 217, 0.22);
+  }
+}
+
+.public-storefront .merchant-cta-title {
+  font-size: clamp(1.7rem, 1rem + 2.8vw, 2.6rem);
+  line-height: 1.12;
+}
+
+@media (min-width: 1024px) {
+  .public-storefront .merchant-cta-title {
+    font-size: 2.75rem;
+  }
+}
+
+.public-storefront .merchant-cta-panel {
+  isolation: isolate;
+}
+
+.public-storefront .merchant-cta-atmosphere {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(
+      ellipse 70% 80% at 0% 0%,
+      rgb(217 70 239 / 0.28) 0%,
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse 60% 70% at 100% 100%,
+      rgb(124 58 237 / 0.32) 0%,
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 42% 48% at 72% 18%,
+      rgb(249 115 22 / 0.16) 0%,
+      transparent 70%
+    );
+}
+
+.public-storefront .merchant-cta-orb {
+  pointer-events: none;
+  position: absolute;
+  top: -5rem;
+  right: -4rem;
+  z-index: 0;
+  width: 16rem;
+  height: 16rem;
+  border-radius: 999px;
+  background: rgb(217 70 239 / 0.12);
+}
+
+.public-storefront .merchant-cta-chip {
+  min-width: 0;
+}
+
+.public-storefront .public-footer {
+  background: var(--ps-night);
+  color: #cbd5e1;
+}
+
 .public-storefront .brand-wordmark {
   font-family: var(--font-sora), var(--font-inter), var(--font-sans);
   letter-spacing: -0.05em;
@@ -777,7 +882,10 @@ body {
   .public-storefront .discovery-grid,
   .public-storefront .category-tile,
   .public-storefront .category-tile:hover,
-  .public-storefront .category-tile-swatch {
+  .public-storefront .category-tile-swatch,
+  .public-storefront .how-it-works-grid,
+  .public-storefront .how-it-works-card,
+  .public-storefront .how-it-works-card:hover {
     transition: none;
     transform: none;
     filter: none;

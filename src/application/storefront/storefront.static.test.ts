@@ -14,6 +14,9 @@ describe("public storefront static checks", () => {
     expect(page).toContain("getPublicDiscoveryApp");
     expect(page).toContain("ZonePicker");
     expect(page).toContain("PublicDiscoverySection");
+    expect(page).toContain("PublicHowItWorks");
+    expect(page).toContain("PublicMerchantCta");
+    expect(page).toContain("PublicFooter");
     expect(page).not.toContain("Base técnica operativa");
   });
 

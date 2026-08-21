@@ -60,6 +60,9 @@ describe("qwen public discovery v1 static checks", () => {
       "src/components/storefront/public-category-rail.tsx",
       "src/components/storefront/merchant-card.tsx",
       "src/components/storefront/merchant-cover-fallback.tsx",
+      "src/components/storefront/public-how-it-works.tsx",
+      "src/components/storefront/public-merchant-cta.tsx",
+      "src/components/storefront/public-footer.tsx",
       "src/lib/filter-public-merchants.ts",
       "src/components/ui/public-icons.tsx",
     ];
@@ -174,6 +177,26 @@ describe("qwen public discovery v1 static checks", () => {
     expect(card).toContain("sm:h-52");
     expect(card).not.toContain("favorite");
     expect(card).not.toMatch(/rating/i);
+  });
+
+  it("keeps Pedilo header glass without letting scrolled copy stay readable", () => {
+    const css = read("src/styles/globals.css");
+    const header = read("src/components/storefront/public-header.tsx");
+    const navBlur = css.slice(
+      css.indexOf(".public-storefront .nav-blur {"),
+      css.indexOf(".public-storefront .shadow-soft"),
+    );
+
+    expect(header).toContain("nav-blur");
+    expect(header).toContain("sticky top-0 z-40");
+    expect(header).toContain("border-b border-violet-100/70");
+    expect(navBlur).toContain("background-color: var(--ps-cream)");
+    expect(navBlur).not.toContain("backdrop-filter");
+    expect(navBlur).not.toContain("0.88");
+    expect(navBlur).not.toContain("0.94");
+    expect(navBlur).not.toContain("rgba(");
+    expect(navBlur).not.toContain("#ffffff");
+    expect(navBlur).not.toContain("overflow");
   });
 
   it("uses native smooth anchor scrolling with sticky-header offset", () => {
