@@ -961,6 +961,18 @@ body {
   border-color: #7c3aed;
 }
 
+/* Chromium/Safari paint their own autofill surface over bg-white. */
+.public-storefront .checkout-input:-webkit-autofill,
+.public-storefront .checkout-input:-webkit-autofill:hover,
+.public-storefront .checkout-input:-webkit-autofill:focus,
+.public-storefront .checkout-input:-webkit-autofill:active,
+.public-storefront .checkout-input:autofill {
+  -webkit-text-fill-color: var(--ps-night-900);
+  caret-color: var(--ps-night-900);
+  box-shadow: 0 0 0 1000px #fff inset;
+  border-color: #ede9fe;
+}
+
 .public-storefront .checkout-choice {
   transition:
     border-color 0.16s ease,

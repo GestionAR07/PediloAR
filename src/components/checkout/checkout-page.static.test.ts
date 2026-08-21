@@ -47,8 +47,9 @@ describe("qwen checkout v4 static checks", () => {
     expect(client).toContain(
       "Los precios definitivos se confirman al revisar el pedido.",
     );
-    expect(client).toContain("El total final se");
-    expect(client).toContain("confirma al revisar el pedido.");
+    expect(client.replace(/\s+/g, " ")).toContain(
+      "El total final se confirma al revisar el pedido.",
+    );
     expect(client).toContain("Pedido mínimo de esta zona");
     expect(client).toContain("comercio lo validará al revisar.");
     expect(client).toContain("DELIVERY_MINIMUM_NOT_MET");
@@ -134,5 +135,34 @@ describe("qwen checkout v4 static checks", () => {
     expect(css).toContain("checkout-review-panel");
     expect(css).toContain("prefers-reduced-motion");
     expect(css).toContain(".checkout-choice");
+  });
+
+  it("keeps checkout section headings inside cards and clarifies review hierarchy", () => {
+    const client = read("src/components/checkout/checkout-page-client.tsx");
+    const css = read("src/styles/globals.css");
+
+    expect(client).toContain("Tus datos");
+    expect(client).toMatch(/<h2[\s\S]*?>\s*Cómo lo recibís\s*<\/h2>/);
+    expect(client).toMatch(/<h2[\s\S]*?>\s*Cómo pagás\s*<\/h2>/);
+    expect(client).toContain('className="sr-only">Cómo lo recibís</legend>');
+    expect(client).toContain('className="sr-only">Cómo pagás</legend>');
+    expect(client).not.toContain(
+      'legend className="font-display px-1 text-lg font-extrabold',
+    );
+    expect(client).not.toContain("El retiro es en");
+    expect(client).toContain("preparación estimada");
+    expect(client).toContain("Completá ·");
+    expect(client).toContain("Datos listos · Revisado");
+    expect(client).toContain("Pedido revisado");
+    expect(client).not.toContain("Validado por el comercio");
+    expect(client).toContain("Volver a revisar");
+    expect(client).toContain("El detalle validado está en la revisión");
+    expect(client).toContain("checkout-review-panel order-1");
+    expect(client).toContain("order-2 p-4");
+    expect(client).toContain("reviewCheckoutAction");
+    expect(client).toContain("placeOrderAction");
+    expect(css).toContain(".checkout-input:-webkit-autofill");
+    expect(css).toContain(".checkout-input:autofill");
+    expect(css).toContain("box-shadow: 0 0 0 1000px #fff inset");
   });
 });

@@ -498,6 +498,10 @@ export function CheckoutPageClient() {
 
   const selectedInstructions = selectedPayment?.instructions?.trim() ?? "";
   const merchantLabel = config?.merchant.name ?? cart.merchantNameSnapshot;
+  const cartItemCount = cart.lines.reduce(
+    (sum, line) => sum + line.quantity,
+    0,
+  );
   const serverMinimumError =
     errorCode === CHECKOUT_ERROR_CODES.DELIVERY_MINIMUM_NOT_MET;
   const showMinimumHint =
@@ -538,6 +542,20 @@ export function CheckoutPageClient() {
         <p className="text-sm text-muted">
           Completá tus datos, revisá el pedido y confirmá. Los precios los
           valida el comercio al revisar.
+        </p>
+        <p className="text-xs font-bold tracking-wide text-violet-700">
+          {showAuthoritativeReview ? (
+            <>
+              Datos listos · Revisado ·{" "}
+              <span className="text-[var(--ps-night-900)]">Confirmá</span>
+            </>
+          ) : (
+            <>
+              Completá ·{" "}
+              <span className="text-[var(--ps-night-900)]">Revisá</span> ·
+              Confirmá
+            </>
+          )}
         </p>
       </header>
 
@@ -612,79 +630,75 @@ export function CheckoutPageClient() {
             </label>
           </section>
 
-          <fieldset
-            className="checkout-section space-y-3 rounded-[1.75rem] border border-violet-100/70 bg-white p-5 shadow-soft"
-            disabled={formLocked}
-          >
-            <legend className="font-display px-1 text-lg font-extrabold tracking-tight text-[var(--ps-night-900)]">
+          <section className="checkout-section space-y-4 rounded-[1.75rem] border border-violet-100/70 bg-white p-5 shadow-soft">
+            <h2 className="font-display text-lg font-extrabold tracking-tight text-[var(--ps-night-900)]">
               Cómo lo recibís
-            </legend>
-            {pickupAvailable ? (
-              <label
-                className={
-                  fulfillmentValue === "PICKUP" ? choiceActive : choiceIdle
-                }
-              >
-                <input
-                  type="radio"
-                  name="fulfillmentMethod"
-                  value="PICKUP"
-                  checked={fulfillmentValue === "PICKUP"}
-                  onChange={() => setFulfillmentMethod("PICKUP")}
-                  className="mt-1 accent-violet-700"
-                />
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-2 font-bold">
-                    <StoreIcon className="h-4 w-4 shrink-0 text-violet-600" />
-                    Retiro en el comercio
-                  </span>
-                  {config ? (
-                    <span className="mt-1 block text-xs text-muted">
-                      En {config.merchant.homeZoneName},{" "}
-                      {config.merchant.homeCityName}
-                      {config.merchant.preparationMinutes != null
-                        ? ` · preparación estimada ${config.merchant.preparationMinutes} min`
-                        : ""}
+            </h2>
+            <fieldset
+              className="m-0 min-w-0 space-y-3 border-0 p-0"
+              disabled={formLocked}
+            >
+              <legend className="sr-only">Cómo lo recibís</legend>
+              {pickupAvailable ? (
+                <label
+                  className={
+                    fulfillmentValue === "PICKUP" ? choiceActive : choiceIdle
+                  }
+                >
+                  <input
+                    type="radio"
+                    name="fulfillmentMethod"
+                    value="PICKUP"
+                    checked={fulfillmentValue === "PICKUP"}
+                    onChange={() => setFulfillmentMethod("PICKUP")}
+                    className="mt-1 accent-violet-700"
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2 font-bold">
+                      <StoreIcon className="h-4 w-4 shrink-0 text-violet-600" />
+                      Retiro en el comercio
                     </span>
-                  ) : null}
-                </span>
-              </label>
-            ) : null}
-            {deliveryAvailable ? (
-              <label
-                className={
-                  fulfillmentValue === "MERCHANT_DELIVERY"
-                    ? choiceActive
-                    : choiceIdle
-                }
-              >
-                <input
-                  type="radio"
-                  name="fulfillmentMethod"
-                  value="MERCHANT_DELIVERY"
-                  checked={fulfillmentValue === "MERCHANT_DELIVERY"}
-                  onChange={() => setFulfillmentMethod("MERCHANT_DELIVERY")}
-                  className="mt-1 accent-violet-700"
-                />
-                <span className="flex items-center gap-2 font-bold">
-                  <BikeIcon className="h-4 w-4 shrink-0 text-violet-600" />
-                  Envío a domicilio
-                </span>
-              </label>
-            ) : null}
-            {!pickupAvailable && !deliveryAvailable && config ? (
-              <p className="text-sm text-muted">
-                Este comercio no tiene retiro ni envío disponible.
-              </p>
-            ) : null}
-          </fieldset>
-
-          {fulfillmentValue === "PICKUP" && config ? (
-            <p className="px-1 text-sm text-muted">
-              El retiro es en {config.merchant.homeZoneName} (
-              {config.merchant.homeCityName}).
-            </p>
-          ) : null}
+                    {config ? (
+                      <span className="mt-1 block text-xs text-muted">
+                        En {config.merchant.homeZoneName},{" "}
+                        {config.merchant.homeCityName}
+                        {config.merchant.preparationMinutes != null
+                          ? ` · preparación estimada ${config.merchant.preparationMinutes} min`
+                          : ""}
+                      </span>
+                    ) : null}
+                  </span>
+                </label>
+              ) : null}
+              {deliveryAvailable ? (
+                <label
+                  className={
+                    fulfillmentValue === "MERCHANT_DELIVERY"
+                      ? choiceActive
+                      : choiceIdle
+                  }
+                >
+                  <input
+                    type="radio"
+                    name="fulfillmentMethod"
+                    value="MERCHANT_DELIVERY"
+                    checked={fulfillmentValue === "MERCHANT_DELIVERY"}
+                    onChange={() => setFulfillmentMethod("MERCHANT_DELIVERY")}
+                    className="mt-1 accent-violet-700"
+                  />
+                  <span className="flex items-center gap-2 font-bold">
+                    <BikeIcon className="h-4 w-4 shrink-0 text-violet-600" />
+                    Envío a domicilio
+                  </span>
+                </label>
+              ) : null}
+              {!pickupAvailable && !deliveryAvailable && config ? (
+                <p className="text-sm text-muted">
+                  Este comercio no tiene retiro ni envío disponible.
+                </p>
+              ) : null}
+            </fieldset>
+          </section>
 
           {fulfillmentValue === "MERCHANT_DELIVERY" ? (
             <section className="checkout-section checkout-address space-y-4 rounded-[1.75rem] border border-violet-100/70 bg-white p-5 shadow-soft">
@@ -770,37 +784,40 @@ export function CheckoutPageClient() {
             </section>
           ) : null}
 
-          <fieldset
-            className="checkout-section space-y-3 rounded-[1.75rem] border border-violet-100/70 bg-white p-5 shadow-soft"
-            disabled={formLocked}
-          >
-            <legend className="font-display px-1 text-lg font-extrabold tracking-tight text-[var(--ps-night-900)]">
+          <section className="checkout-section space-y-4 rounded-[1.75rem] border border-violet-100/70 bg-white p-5 shadow-soft">
+            <h2 className="font-display text-lg font-extrabold tracking-tight text-[var(--ps-night-900)]">
               Cómo pagás
-            </legend>
-            {(config?.paymentMethods ?? []).map((method) => (
-              <label
-                key={method.code}
-                className={
-                  paymentValue === method.code ? choiceActive : choiceIdle
-                }
-              >
-                <input
-                  type="radio"
-                  name="paymentMethodCode"
-                  value={method.code}
-                  checked={paymentValue === method.code}
-                  onChange={() => setPaymentMethodCode(method.code)}
-                  className="mt-1 accent-violet-700"
-                />
-                <span className="font-bold">{method.label}</span>
-              </label>
-            ))}
-            {selectedInstructions ? (
-              <p className="rounded-2xl border border-violet-100 bg-violet-50/70 px-4 py-3 text-sm text-muted">
-                {selectedInstructions}
-              </p>
-            ) : null}
-          </fieldset>
+            </h2>
+            <fieldset
+              className="m-0 min-w-0 space-y-3 border-0 p-0"
+              disabled={formLocked}
+            >
+              <legend className="sr-only">Cómo pagás</legend>
+              {(config?.paymentMethods ?? []).map((method) => (
+                <label
+                  key={method.code}
+                  className={
+                    paymentValue === method.code ? choiceActive : choiceIdle
+                  }
+                >
+                  <input
+                    type="radio"
+                    name="paymentMethodCode"
+                    value={method.code}
+                    checked={paymentValue === method.code}
+                    onChange={() => setPaymentMethodCode(method.code)}
+                    className="mt-1 accent-violet-700"
+                  />
+                  <span className="font-bold">{method.label}</span>
+                </label>
+              ))}
+              {selectedInstructions ? (
+                <p className="rounded-2xl border border-violet-100 bg-violet-50/70 px-4 py-3 text-sm text-muted">
+                  {selectedInstructions}
+                </p>
+              ) : null}
+            </fieldset>
+          </section>
 
           {error ? (
             <p
@@ -851,13 +868,19 @@ export function CheckoutPageClient() {
                 type="button"
                 onClick={() => void handleReview()}
                 disabled={!canReview}
-                className={`inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-violet-200 bg-white px-4 text-sm font-extrabold text-violet-800 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-200 disabled:text-slate-500 disabled:opacity-100 ${focusRing}`}
+                className={`inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full px-4 text-sm font-extrabold disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-200 disabled:text-slate-500 disabled:opacity-100 ${focusRing} ${
+                  showAuthoritativeReview
+                    ? "border border-violet-100 bg-violet-50/80 text-violet-700"
+                    : "border border-violet-200 bg-white text-violet-800"
+                }`}
               >
                 {reviewing ? (
                   <>
                     <span className="checkout-spinner" aria-hidden />
                     Revisando…
                   </>
+                ) : showAuthoritativeReview ? (
+                  "Volver a revisar"
                 ) : (
                   "Revisar pedido"
                 )}
@@ -866,64 +889,94 @@ export function CheckoutPageClient() {
           )}
         </div>
 
-        <aside className="checkout-summary-panel space-y-4 lg:sticky lg:top-24 lg:self-start">
-          <section className="space-y-3 rounded-[1.75rem] border border-violet-100/70 bg-white p-5 shadow-soft">
-            <h2 className="font-display text-lg font-extrabold tracking-tight text-[var(--ps-night-900)]">
+        <aside className="checkout-summary-panel flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
+          <section
+            className={`space-y-3 rounded-[1.75rem] border border-violet-100/70 bg-white shadow-soft ${
+              showAuthoritativeReview && review ? "order-2 p-4" : "order-1 p-5"
+            }`}
+          >
+            <h2
+              className={`font-display font-extrabold tracking-tight text-[var(--ps-night-900)] ${
+                showAuthoritativeReview && review ? "text-base" : "text-lg"
+              }`}
+            >
               Resumen
             </h2>
-            <p className="text-sm font-medium text-muted">{merchantLabel}</p>
-            <ul className="space-y-2 text-sm">
-              {cart.lines.map((line) => {
-                const summary = formatConfigurationSummary(line.configuration);
-                return (
-                  <li key={line.id}>
-                    <span className="font-medium">
-                      {line.quantity} × {line.productNameSnapshot}
-                    </span>
-                    {summary.length > 0 ? (
-                      <ul className="mt-0.5 space-y-0.5 text-xs text-muted">
-                        {summary.map((row) => (
-                          <li key={row}>{row}</li>
-                        ))}
-                      </ul>
-                    ) : null}
-                  </li>
-                );
-              })}
-            </ul>
-            <div className="flex items-end justify-between gap-3 border-t border-violet-100 pt-3">
-              <span className="text-sm font-bold text-slate-500">
-                Subtotal de productos
-              </span>
-              <span
-                key={totalCents}
-                className="checkout-total-value font-display text-lg font-extrabold tabular-nums"
-              >
-                {formatCents(totalCents)}
-              </span>
-            </div>
-            {fulfillmentValue === "MERCHANT_DELIVERY" &&
-            selectedDeliveryZone ? (
-              <p className="text-xs text-muted">
-                Envío estimado de zona:{" "}
-                {formatCents(selectedDeliveryZone.feeCents)}. El total final se
-                confirma al revisar el pedido.
-              </p>
+            {showAuthoritativeReview && review ? (
+              <>
+                <p className="text-sm font-medium text-muted">
+                  {merchantLabel}
+                </p>
+                <p className="text-sm text-muted">
+                  {cartItemCount}{" "}
+                  {cartItemCount === 1 ? "producto" : "productos"} · subtotal
+                  estimado {formatCents(totalCents)}
+                </p>
+                <p className="text-xs text-muted">
+                  El detalle validado está en la revisión del pedido.
+                </p>
+              </>
             ) : (
-              <p className="text-xs text-muted">
-                Los precios definitivos se confirman al revisar el pedido.
-              </p>
+              <>
+                <p className="text-sm font-medium text-muted">
+                  {merchantLabel}
+                </p>
+                <ul className="space-y-2 text-sm">
+                  {cart.lines.map((line) => {
+                    const summary = formatConfigurationSummary(
+                      line.configuration,
+                    );
+                    return (
+                      <li key={line.id}>
+                        <span className="font-medium">
+                          {line.quantity} × {line.productNameSnapshot}
+                        </span>
+                        {summary.length > 0 ? (
+                          <ul className="mt-0.5 space-y-0.5 text-xs text-muted">
+                            {summary.map((row) => (
+                              <li key={row}>{row}</li>
+                            ))}
+                          </ul>
+                        ) : null}
+                      </li>
+                    );
+                  })}
+                </ul>
+                <div className="flex items-end justify-between gap-3 border-t border-violet-100 pt-3">
+                  <span className="text-sm font-bold text-slate-500">
+                    Subtotal de productos
+                  </span>
+                  <span
+                    key={totalCents}
+                    className="checkout-total-value font-display text-lg font-extrabold tabular-nums"
+                  >
+                    {formatCents(totalCents)}
+                  </span>
+                </div>
+                {fulfillmentValue === "MERCHANT_DELIVERY" &&
+                selectedDeliveryZone ? (
+                  <p className="text-xs text-muted">
+                    Envío estimado de zona:{" "}
+                    {formatCents(selectedDeliveryZone.feeCents)}. El total final
+                    se confirma al revisar el pedido.
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted">
+                    Los precios definitivos se confirman al revisar el pedido.
+                  </p>
+                )}
+              </>
             )}
           </section>
 
           {showAuthoritativeReview && review ? (
-            <section className="checkout-review-panel space-y-3 rounded-[1.75rem] border border-violet-200 bg-violet-50/60 p-5 shadow-soft">
+            <section className="checkout-review-panel order-1 space-y-3 rounded-[1.75rem] border border-violet-200 bg-violet-50/60 p-5 shadow-soft">
               <h2 className="font-display text-lg font-extrabold tracking-tight text-[var(--ps-night-900)]">
                 Revisión del pedido
               </h2>
               <p className="text-sm font-medium">{review.merchantName}</p>
               <p className="text-xs font-bold tracking-wider text-violet-700 uppercase">
-                Validado por el comercio
+                Pedido revisado
               </p>
               <ul className="space-y-2 text-sm">
                 {review.lines.map((line) => (
