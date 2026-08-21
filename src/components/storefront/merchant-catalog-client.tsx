@@ -97,13 +97,17 @@ export function MerchantCatalogClient({
   }
 
   const showStickyCart = hydrated && badgeCount > 0;
+  const stickyCartLabel =
+    badgeCount === 1
+      ? `Ver carrito · 1 producto`
+      : `Ver carrito · ${badgeCount} productos`;
 
   return (
     <div className="min-w-0 space-y-5">
       <div
         className={
           showStickyCart
-            ? "min-w-0 space-y-5 max-sm:pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))]"
+            ? "min-w-0 space-y-5 max-sm:pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))]"
             : "min-w-0 space-y-5"
         }
       >
@@ -233,7 +237,7 @@ export function MerchantCatalogClient({
                         >
                           {product.canAddToCart
                             ? "Elegir opciones"
-                            : "Ver opciones"}
+                            : "Ver detalle"}
                         </button>
                       ) : product.canAddToCart ? (
                         <button
@@ -331,9 +335,7 @@ export function MerchantCatalogClient({
             href="/carrito"
             className="grad-btn flex min-h-12 items-center justify-between gap-3 rounded-full px-5 text-sm font-extrabold whitespace-nowrap text-white shadow-glow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
           >
-            <span className="min-w-0 truncate">
-              Ver carrito · {badgeCount} productos
-            </span>
+            <span className="min-w-0 truncate">{stickyCartLabel}</span>
             <span className="shrink-0">
               {formatMoneyCentsArs(moneyCents(totalCents))}
             </span>

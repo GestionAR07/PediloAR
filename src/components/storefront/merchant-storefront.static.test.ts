@@ -29,6 +29,7 @@ describe("qwen merchant storefront v2 static checks", () => {
       "src/components/storefront/merchant-catalog-client.tsx",
     );
     const sheet = read("src/components/storefront/product-options-sheet.tsx");
+    const css = read("src/styles/globals.css");
 
     expect(page).toContain("getPublicMerchantCatalogApp");
     expect(page).toContain("getPublicNavContextApp");
@@ -77,9 +78,9 @@ describe("qwen merchant storefront v2 static checks", () => {
     expect(catalog).toContain('categoryId !== "all"');
     expect(catalog).toContain("product.name.toLowerCase().includes(q)");
     expect(catalog).toContain("Elegir opciones");
-    expect(catalog).toContain("Ver opciones");
     expect(catalog).toContain("Agregar");
     expect(catalog).toContain("Ver detalle");
+    expect(catalog).not.toContain("Ver opciones");
     expect(catalog).toContain('href="/carrito"');
     expect(catalog).toContain("ProductOptionsSheet");
     expect(catalog).not.toContain("drawer");
@@ -92,8 +93,13 @@ describe("qwen merchant storefront v2 static checks", () => {
     expect(catalog).toContain("no-scrollbar");
     expect(catalog).toContain("showStickyCart");
     expect(catalog).toContain(
+      "max-sm:pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))]",
+    );
+    expect(catalog).not.toContain(
       "max-sm:pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))]",
     );
+    expect(catalog).toContain("Ver carrito · 1 producto");
+    expect(catalog).toContain("Ver carrito · ${badgeCount} productos");
     expect(catalog).toContain("hydrated && badgeCount > 0");
     expect(catalog).toContain(
       "Este comercio todavía no tiene productos disponibles.",
@@ -105,6 +111,22 @@ describe("qwen merchant storefront v2 static checks", () => {
     expect(sheet).toContain("buildCartConfigurationFromDraft");
     expect(sheet).toContain("calculateConfiguredUnitPriceCents");
     expect(sheet).toContain('event.key === "Escape"');
+    expect(sheet).toContain("requestClose");
+    expect(sheet).toContain("isClosing");
+    expect(sheet).toContain("lockBodyScroll");
+    expect(sheet).toContain("unlockBodyScroll");
+    expect(sheet).not.toContain('document.body.style.overflow = "hidden"');
+    expect(sheet).toContain("product-options-root");
+    expect(sheet).toContain("product-options-backdrop");
+    expect(sheet).toContain("is-open");
+    expect(sheet).toContain("is-closing");
+    expect(css).toContain("product-options-root.is-open");
+    expect(css).toContain("product-options-root.is-closing");
+    expect(css).toContain("translateY(100%)");
+    expect(css).toContain("scale(0.98)");
+    expect(css).toMatch(
+      /prefers-reduced-motion:\s*reduce[\s\S]*\.product-options-sheet/,
+    );
     expect(sheet).toContain("focusable");
     expect(sheet).toContain("setSingleSelection");
     expect(sheet).toContain("toggleMultipleSelection");
@@ -116,12 +138,22 @@ describe("qwen merchant storefront v2 static checks", () => {
     expect(sheet).toContain("max-h-[92vh]");
     expect(sheet).toContain("rounded-t-[2rem]");
     expect(sheet).toContain("grad-text");
-    expect(sheet).toContain("pb-safe");
+    expect(sheet).toContain("product-options-sheet-footer");
+    expect(sheet).toContain("product-options-sheet-cta");
+    expect(sheet).not.toContain("pb-safe");
     expect(sheet).toContain("disabled={!canSubmit}");
     expect(sheet).toContain(
       "product.canAddToCart && (groups.length === 0 || valid)",
     );
     expect(sheet).toContain("product-options-sheet");
+    expect(sheet).toContain("rounded-full");
+    expect(css).toContain(".product-options-sheet-footer");
+    expect(css).toContain(".product-options-sheet-cta");
+    expect(css).toContain(
+      "padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px))",
+    );
+    expect(css).toContain("min-height: 3.25rem");
+    expect(css).toContain("padding-inline: 1rem");
   });
 
   it("uses the real signed cover with Pedilo fallback and never raw paths", () => {
@@ -151,6 +183,18 @@ describe("qwen merchant storefront v2 static checks", () => {
     expect(css).toContain(".merchant-storefront-cover");
     expect(css).toContain(".merchant-storefront-title");
     expect(css).toContain(".merchant-product-media");
+    expect(css).toMatch(
+      /\.merchant-storefront-cover\s*\{[\s\S]*max-height:\s*12\.5rem;/,
+    );
+    expect(css).toMatch(
+      /\.merchant-product-media\s*\{[\s\S]*max-height:\s*13\.125rem;/,
+    );
+    expect(css).toMatch(
+      /@media \(min-width: 640px\)\s*\{[\s\S]*\.merchant-storefront-cover\s*\{[\s\S]*max-height:\s*26rem;/,
+    );
+    expect(css).toMatch(
+      /@media \(min-width: 640px\)\s*\{[\s\S]*\.merchant-product-media\s*\{[\s\S]*max-height:\s*none;/,
+    );
   });
 
   it("widens the public storefront without touching merchant or admin shells", () => {

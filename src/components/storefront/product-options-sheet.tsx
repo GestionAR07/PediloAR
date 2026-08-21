@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { PublicProductCard } from "@/application/storefront/types";
 import { CloseIcon } from "@/components/ui/public-icons";
 import {
@@ -9,6 +16,7 @@ import {
   type ConfiguratorDraftSelection,
 } from "@/domain/cart/validate-configuration";
 import { calculateConfiguredUnitPriceCents } from "@/domain/cart/pricing";
+import { lockBodyScroll, unlockBodyScroll } from "@/lib/body-scroll-lock";
 import { formatMoneyCentsArs } from "@/lib/format-money";
 
 type Props = {
@@ -122,19 +130,58 @@ export function ProductOptionsSheet({
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const isClosingRef = useRef(false);
   const [draft, setDraft] = useState<ConfiguratorDraftSelection[]>(() =>
     emptyDraft(product),
   );
+  const [isEntered, setIsEntered] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const requestClose = useCallback((): void => {
+    if (isClosingRef.current) {
+      return;
+    }
+    isClosingRef.current = true;
+    setIsClosing(true);
+    setIsEntered(false);
+  }, []);
+
+  useEffect(() => {
+    if (!open || !product) {
+      return;
+    }
+    isClosingRef.current = false;
+    const frame = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        setIsEntered(true);
+      });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [open, product]);
+
+  useEffect(() => {
+    if (!isClosing) {
+      return;
+    }
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const desktop = window.matchMedia("(min-width: 640px)").matches;
+    const delayMs = reduced ? 0 : desktop ? 200 : 300;
+    const timer = window.setTimeout(() => {
+      onClose();
+    }, delayMs);
+    return () => window.clearTimeout(timer);
+  }, [isClosing, onClose]);
 
   useEffect(() => {
     if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const snapshot = lockBodyScroll();
     closeRef.current?.focus();
 
     function onKeyDown(event: KeyboardEvent): void {
       if (event.key === "Escape") {
-        onClose();
+        requestClose();
         return;
       }
       if (event.key !== "Tab" || !dialogRef.current) {
@@ -157,10 +204,10 @@ export function ProductOptionsSheet({
 
     window.addEventListener("keydown", onKeyDown);
     return () => {
-      document.body.style.overflow = previous;
+      unlockBodyScroll(snapshot);
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [open, onClose]);
+  }, [open, requestClose]);
 
   const groups = useMemo(
     () =>
@@ -195,14 +242,23 @@ export function ProductOptionsSheet({
   }
 
   const canSubmit = product.canAddToCart && (groups.length === 0 || valid);
+  const rootMotionClass = [
+    "product-options-root",
+    isEntered && !isClosing ? "is-open" : "",
+    isClosing ? "is-closing" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+    <div
+      className={`${rootMotionClass} fixed inset-0 z-50 flex items-end justify-center sm:items-center`}
+    >
       <button
         type="button"
         aria-label="Cerrar"
-        className="absolute inset-0 bg-[var(--ps-night)]/60 backdrop-blur-sm"
-        onClick={onClose}
+        className="product-options-backdrop absolute inset-0 bg-[var(--ps-night)]/60 backdrop-blur-sm"
+        onClick={requestClose}
       />
       <div
         ref={dialogRef}
@@ -230,7 +286,7 @@ export function ProductOptionsSheet({
             <button
               ref={closeRef}
               type="button"
-              onClick={onClose}
+              onClick={requestClose}
               className="flex h-10 w-10 items-center justify-center rounded-xl transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
             >
               <CloseIcon className="h-5 w-5" />
@@ -470,7 +526,7 @@ export function ProductOptionsSheet({
           </div>
         </div>
 
-        <div className="pb-safe sticky bottom-0 shrink-0 border-t border-violet-100/70 bg-white px-5 pt-4 pb-5">
+        <div className="product-options-sheet-footer sticky bottom-0 shrink-0 border-t border-violet-100/70 bg-white">
           <button
             type="button"
             disabled={!canSubmit}
@@ -481,7 +537,7 @@ export function ProductOptionsSheet({
               );
               onAddConfigured(configuration);
             }}
-            className="grad-btn min-h-12 w-full rounded-full px-4 py-4 text-sm font-extrabold text-white shadow-glow disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+            className="product-options-sheet-cta grad-btn rounded-full px-4 py-3 text-sm font-extrabold text-white shadow-glow disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
           >
             Agregar al carrito
             {estimatedUnit != null
