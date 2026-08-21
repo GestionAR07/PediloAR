@@ -62,7 +62,7 @@ export function CartPageClient() {
   const estimatedTotal = formatMoneyCentsArs(moneyCents(totalCents));
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 pt-6 pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] sm:px-6 lg:px-8 lg:pt-8 lg:pb-12">
+    <div className="mx-auto w-full max-w-6xl px-4 pt-6 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] sm:px-6 lg:px-8 lg:pt-8 lg:pb-12">
       <header className="cart-intro max-w-2xl space-y-2">
         <p className="text-[11px] font-bold tracking-wider text-violet-700 uppercase">
           Pedido local
@@ -179,7 +179,7 @@ export function CartPageClient() {
           </p>
           <div className="flex items-end justify-between gap-3 border-t border-violet-100 pt-4">
             <span className="text-sm font-bold text-slate-500">
-              Total estimado
+              Subtotal de productos
             </span>
             <span
               key={totalCents}
@@ -189,7 +189,7 @@ export function CartPageClient() {
             </span>
           </div>
           <p className="text-xs leading-relaxed text-muted">
-            El total y la disponibilidad se validan al continuar.
+            La disponibilidad se valida al continuar.
           </p>
           <Link
             href="/checkout"
@@ -213,14 +213,16 @@ export function CartPageClient() {
         </aside>
       </div>
 
-      <div className="cart-sticky-bar pb-safe sticky bottom-3 z-20 lg:hidden">
-        <Link
-          href="/checkout"
-          className={`grad-btn flex min-h-12 items-center justify-between gap-3 rounded-full px-5 text-sm font-extrabold whitespace-nowrap text-white shadow-glow ${focusRing}`}
-        >
-          <span>Continuar</span>
-          <span className="shrink-0 tabular-nums">{estimatedTotal}</span>
-        </Link>
+      <div className="cart-sticky-bar pointer-events-none fixed inset-x-0 bottom-0 z-20 lg:hidden">
+        <div className="pointer-events-auto mx-auto max-w-6xl px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:px-6">
+          <Link
+            href="/checkout"
+            className={`grad-btn flex min-h-12 items-center justify-between gap-3 rounded-full px-5 text-sm font-extrabold whitespace-nowrap text-white shadow-glow ${focusRing}`}
+          >
+            <span>Continuar</span>
+            <span className="shrink-0 tabular-nums">{estimatedTotal}</span>
+          </Link>
+        </div>
       </div>
     </div>
   );

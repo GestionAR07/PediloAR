@@ -48,10 +48,17 @@ describe("qwen cart v3 static checks", () => {
     expect(client).toContain("./cart-provider");
     expect(client).toContain("formatConfigurationSummary");
     expect(client).toContain("calculateCartLineTotalCents");
-    expect(client).toContain("Total estimado");
-    expect(client).toContain(
+    expect(client).toContain("Subtotal de productos");
+    expect(client).toContain("La disponibilidad se valida al continuar.");
+    expect(client).not.toContain("Total estimado");
+    expect(client).not.toContain(
       "El total y la disponibilidad se validan al continuar.",
     );
+    expect(client).toContain("cart-sticky-bar");
+    expect(client).toContain(
+      "cart-sticky-bar pointer-events-none fixed inset-x-0 bottom-0 z-20 lg:hidden",
+    );
+    expect(client).toContain("pb-[calc(5rem+env(safe-area-inset-bottom,0px))]");
     expect(client).not.toContain("ProductOptionsSheet");
     expect(client).not.toContain("localStorage");
     expect(client).not.toContain("marketplace-rawson-cart-v1");

@@ -433,7 +433,7 @@ export function CheckoutPageClient() {
             Pedido recibido
           </h1>
           <p className="text-sm text-muted">
-            El comercio recibió tu pedido y está pendiente de confirmación.
+            El comercio recibió tu pedido. Ahora está pendiente de aceptación.
           </p>
           <dl className="space-y-2 rounded-2xl bg-violet-50/70 p-4 text-left text-sm">
             <div className="flex justify-between gap-3">
@@ -458,7 +458,7 @@ export function CheckoutPageClient() {
             </div>
             <div className="flex justify-between gap-3">
               <dt className="text-muted">Estado</dt>
-              <dd className="font-medium">Pendiente</dd>
+              <dd className="font-medium">Pendiente de aceptación</dd>
             </div>
           </dl>
           <Link
@@ -512,7 +512,7 @@ export function CheckoutPageClient() {
       ? `Para esta zona el pedido mínimo es de ${formatCents(selectedDeliveryZone.minimumOrderCents)}.`
       : error;
   const shellPadding = showConfirm
-    ? "pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] lg:pb-12"
+    ? "pb-[calc(5rem+env(safe-area-inset-bottom,0px))] lg:pb-12"
     : "pb-10 lg:pb-12";
 
   return (
@@ -540,8 +540,8 @@ export function CheckoutPageClient() {
           <span className="min-w-0 truncate">{merchantLabel}</span>
         </p>
         <p className="text-sm text-muted">
-          Completá tus datos, revisá el pedido y confirmá. Los precios los
-          valida el comercio al revisar.
+          Completá tus datos, revisá el pedido y confirmá. La disponibilidad y
+          las condiciones de entrega se validan al revisar el pedido.
         </p>
         <p className="text-xs font-bold tracking-wide text-violet-700">
           {showAuthoritativeReview ? (
@@ -860,8 +860,7 @@ export function CheckoutPageClient() {
                   role="status"
                 >
                   Pedido mínimo de esta zona:{" "}
-                  {formatCents(selectedDeliveryZone.minimumOrderCents)}. El
-                  comercio lo validará al revisar.
+                  {formatCents(selectedDeliveryZone.minimumOrderCents)}.
                 </p>
               ) : null}
               <button
@@ -909,11 +908,11 @@ export function CheckoutPageClient() {
                 </p>
                 <p className="text-sm text-muted">
                   {cartItemCount}{" "}
-                  {cartItemCount === 1 ? "producto" : "productos"} · subtotal
-                  estimado {formatCents(totalCents)}
+                  {cartItemCount === 1 ? "producto" : "productos"} · Subtotal de
+                  productos {formatCents(totalCents)}
                 </p>
                 <p className="text-xs text-muted">
-                  El detalle validado está en la revisión del pedido.
+                  El detalle completo está en la revisión del pedido.
                 </p>
               </>
             ) : (
@@ -956,15 +955,9 @@ export function CheckoutPageClient() {
                 {fulfillmentValue === "MERCHANT_DELIVERY" &&
                 selectedDeliveryZone ? (
                   <p className="text-xs text-muted">
-                    Envío estimado de zona:{" "}
-                    {formatCents(selectedDeliveryZone.feeCents)}. El total final
-                    se confirma al revisar el pedido.
+                    Envío de zona: {formatCents(selectedDeliveryZone.feeCents)}.
                   </p>
-                ) : (
-                  <p className="text-xs text-muted">
-                    Los precios definitivos se confirman al revisar el pedido.
-                  </p>
-                )}
+                ) : null}
               </>
             )}
           </section>
@@ -1005,7 +998,7 @@ export function CheckoutPageClient() {
               </ul>
               <dl className="space-y-1 text-sm">
                 <div className="flex justify-between gap-2">
-                  <dt>Subtotal</dt>
+                  <dt>Subtotal de productos</dt>
                   <dd className="tabular-nums">
                     {formatCents(review.orderSubtotalCents)}
                   </dd>
@@ -1061,20 +1054,22 @@ export function CheckoutPageClient() {
       </div>
 
       {showConfirm ? (
-        <div className="checkout-sticky-bar pb-safe sticky bottom-3 z-20 lg:hidden">
-          <button
-            type="button"
-            onClick={() => void handleConfirm()}
-            disabled={!canConfirm}
-            className={`grad-btn flex min-h-12 w-full items-center justify-between gap-3 rounded-full px-5 text-sm font-extrabold whitespace-nowrap text-white shadow-glow disabled:opacity-60 ${focusRing}`}
-          >
-            <span>
-              {confirming ? "Confirmando pedido…" : "Confirmar pedido"}
-            </span>
-            <span className="shrink-0 tabular-nums">
-              {review ? formatCents(review.totalCents) : ""}
-            </span>
-          </button>
+        <div className="checkout-sticky-bar pointer-events-none fixed inset-x-0 bottom-0 z-20 lg:hidden">
+          <div className="pointer-events-auto mx-auto max-w-6xl px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:px-6">
+            <button
+              type="button"
+              onClick={() => void handleConfirm()}
+              disabled={!canConfirm}
+              className={`grad-btn flex min-h-12 w-full items-center justify-between gap-3 rounded-full px-5 text-sm font-extrabold whitespace-nowrap text-white shadow-glow disabled:opacity-60 ${focusRing}`}
+            >
+              <span>
+                {confirming ? "Confirmando pedido…" : "Confirmar pedido"}
+              </span>
+              <span className="shrink-0 tabular-nums">
+                {review ? formatCents(review.totalCents) : ""}
+              </span>
+            </button>
+          </div>
         </div>
       ) : null}
     </div>

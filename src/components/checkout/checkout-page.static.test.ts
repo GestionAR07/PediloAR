@@ -43,15 +43,35 @@ describe("qwen checkout v4 static checks", () => {
     expect(client).toContain('href="/carrito"');
     expect(client).toContain('href="/"');
     expect(client).toContain("Pedido recibido");
-    expect(client).toContain("Subtotal de productos");
     expect(client).toContain(
+      "El comercio recibió tu pedido. Ahora está pendiente de aceptación.",
+    );
+    expect(client).toContain("Pendiente de aceptación");
+    expect(client).not.toContain("pendiente de confirmación");
+    expect(client).toContain("Subtotal de productos");
+    expect(client).not.toContain(
       "Los precios definitivos se confirman al revisar el pedido.",
     );
-    expect(client.replace(/\s+/g, " ")).toContain(
+    expect(client).not.toContain(
       "El total final se confirma al revisar el pedido.",
     );
+    expect(client.replace(/\s+/g, " ")).toContain(
+      "La disponibilidad y las condiciones de entrega se validan al revisar el pedido.",
+    );
+    expect(client).not.toContain(
+      "El precio y la disponibilidad se validan al revisar el pedido.",
+    );
+    expect(client).not.toContain(
+      "Los precios los valida el comercio al revisar",
+    );
+    expect(client).not.toContain("subtotal estimado");
+    expect(client).not.toContain("comercio lo validará al revisar");
+    expect(client).not.toContain("detalle validado");
+    expect(client).not.toContain("precios definitivos");
+    expect(client).not.toContain("precio definitivo");
+    expect(client).not.toContain("Total estimado");
     expect(client).toContain("Pedido mínimo de esta zona");
-    expect(client).toContain("comercio lo validará al revisar.");
+    expect(client).toContain("El detalle completo está en la revisión");
     expect(client).toContain("DELIVERY_MINIMUM_NOT_MET");
     expect(client).toContain("showMinimumHint");
     expect(client).not.toContain("router.push");
@@ -132,6 +152,12 @@ describe("qwen checkout v4 static checks", () => {
     expect(client).toContain('role="alert"');
     expect(client).toContain('fulfillmentValue === "MERCHANT_DELIVERY"');
     expect(client).toContain("checkout-sticky-bar");
+    expect(client).toContain(
+      "checkout-sticky-bar pointer-events-none fixed inset-x-0 bottom-0 z-20 lg:hidden",
+    );
+    expect(client).toContain(
+      "pb-[calc(5rem+env(safe-area-inset-bottom,0px))] lg:pb-12",
+    );
     expect(css).toContain("checkout-review-panel");
     expect(css).toContain("prefers-reduced-motion");
     expect(css).toContain(".checkout-choice");
@@ -156,7 +182,8 @@ describe("qwen checkout v4 static checks", () => {
     expect(client).toContain("Pedido revisado");
     expect(client).not.toContain("Validado por el comercio");
     expect(client).toContain("Volver a revisar");
-    expect(client).toContain("El detalle validado está en la revisión");
+    expect(client).toContain("El detalle completo está en la revisión");
+    expect(client).not.toContain("El detalle validado está en la revisión");
     expect(client).toContain("checkout-review-panel order-1");
     expect(client).toContain("order-2 p-4");
     expect(client).toContain("reviewCheckoutAction");
