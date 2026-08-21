@@ -97,6 +97,13 @@ export async function getPublicMerchantCatalogApp(
         return new Map();
       }
     },
+    createCoverSignedUrls: async (paths) => {
+      try {
+        return await createMerchantCoverSignedUrls(paths);
+      } catch {
+        return new Map();
+      }
+    },
     now: () => new Date(),
   });
 }

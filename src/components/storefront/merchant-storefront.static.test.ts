@@ -10,8 +10,11 @@ function read(rel: string): string {
 
 const merchantFiles = [
   "src/app/comercios/[merchantId]/page.tsx",
+  "src/components/storefront/public-merchant-hero.tsx",
+  "src/components/storefront/merchant-storefront-cover.tsx",
   "src/components/storefront/merchant-catalog-client.tsx",
   "src/components/storefront/product-options-sheet.tsx",
+  "src/components/storefront/merchant-cover-fallback.tsx",
   "src/components/storefront/public-brand-wordmark.tsx",
   "src/components/layout/site-shell.tsx",
   "src/styles/globals.css",
@@ -21,6 +24,7 @@ const merchantFiles = [
 describe("qwen merchant storefront v2 static checks", () => {
   it("keeps the real merchant catalog, cart, and options sheet", () => {
     const page = read("src/app/comercios/[merchantId]/page.tsx");
+    const hero = read("src/components/storefront/public-merchant-hero.tsx");
     const catalog = read(
       "src/components/storefront/merchant-catalog-client.tsx",
     );
@@ -28,32 +32,38 @@ describe("qwen merchant storefront v2 static checks", () => {
 
     expect(page).toContain("getPublicMerchantCatalogApp");
     expect(page).toContain("getPublicNavContextApp");
-    expect(page).toContain("merchant.name");
-    expect(page).toContain("merchant.description");
-    expect(page).toContain("merchant.zoneName");
-    expect(page).toContain("merchant.cityName");
-    expect(page).toContain("merchant.availabilityLabel");
-    expect(page).toContain("merchant.availabilityTone");
-    expect(page).toContain("merchant.hoursLabel");
-    expect(page).toContain("merchant.hoursDetail");
-    expect(page).toContain("merchant.logistics.pickupAvailable");
-    expect(page).toContain("merchant.logistics.deliveryAvailable");
-    expect(page).toContain("merchant.logistics.deliveryFeeLabel");
-    expect(page).toContain("merchant.logistics.minimumOrderLabel");
-    expect(page).toContain("merchant.logistics.estimatedMinutesLabel");
-    expect(page).toContain("merchant.logistics.preparationMinutesLabel");
-    expect(page).toContain("merchant.paymentMethods");
-    expect(page).toContain("method.code");
-    expect(page).toContain("method.label");
-    expect(page).toContain("method.instructions");
+    expect(page).toContain("PublicMerchantHero");
     expect(page).toContain("MerchantCatalogClient");
-    expect(page).not.toContain("PublicBrandWordmark");
     expect(page).toContain("categories={merchant.categories}");
     expect(page).toContain("products={merchant.products}");
-    expect(page).toContain("`/?zone=${encodeURIComponent(zone)}`");
-    expect(page).toContain("← Volver al marketplace");
+    expect(page).toContain("PRODUCTOS");
+    expect(page).toContain("Elegí lo que necesitás");
+    expect(page).not.toContain("PublicBrandWordmark");
     expect(page).not.toContain("requireMerchantRole");
     expect(page).not.toContain("MERCHANT_DISCOVERY_COVER_IMAGE");
+    expect(page).not.toContain("MENÚ");
+    expect(page).not.toContain("Catálogo");
+
+    expect(hero).toContain("merchant.name");
+    expect(hero).toContain("merchant.description");
+    expect(hero).toContain("merchant.zoneName");
+    expect(hero).toContain("merchant.cityName");
+    expect(hero).toContain("merchant.availabilityLabel");
+    expect(hero).toContain("merchant.availabilityTone");
+    expect(hero).toContain("merchant.hoursLabel");
+    expect(hero).toContain("merchant.hoursDetail");
+    expect(hero).toContain("merchant.coverUrl");
+    expect(hero).toContain("merchant.logistics.pickupAvailable");
+    expect(hero).toContain("merchant.logistics.deliveryAvailable");
+    expect(hero).toContain("merchant.logistics.deliveryFeeLabel");
+    expect(hero).toContain("merchant.logistics.minimumOrderLabel");
+    expect(hero).toContain("merchant.logistics.estimatedMinutesLabel");
+    expect(hero).toContain("merchant.logistics.preparationMinutesLabel");
+    expect(hero).toContain("MerchantStorefrontCover");
+    expect(hero).toContain("← Volver a comercios");
+    expect(hero).toContain("`/?zone=${encodeURIComponent(zoneId)}#comercios`");
+    expect(hero).toContain("/#comercios");
+    expect(hero).toContain("<h1");
 
     expect(catalog).toContain("useCart");
     expect(catalog).toContain("tryAdd");
@@ -85,6 +95,11 @@ describe("qwen merchant storefront v2 static checks", () => {
       "max-sm:pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))]",
     );
     expect(catalog).toContain("hydrated && badgeCount > 0");
+    expect(catalog).toContain(
+      "Este comercio todavía no tiene productos disponibles.",
+    );
+    expect(catalog).toContain("merchant-product-grid");
+    expect(catalog).toContain("merchant-product-card");
 
     expect(sheet).toContain("isConfiguratorSelectionValid");
     expect(sheet).toContain("buildCartConfigurationFromDraft");
@@ -106,6 +121,36 @@ describe("qwen merchant storefront v2 static checks", () => {
     expect(sheet).toContain(
       "product.canAddToCart && (groups.length === 0 || valid)",
     );
+    expect(sheet).toContain("product-options-sheet");
+  });
+
+  it("uses the real signed cover with Pedilo fallback and never raw paths", () => {
+    const types = read("src/application/storefront/types.ts");
+    const catalog = read("src/application/storefront/merchant-catalog.ts");
+    const wiring = read("src/application/storefront/wiring.ts");
+    const cover = read(
+      "src/components/storefront/merchant-storefront-cover.tsx",
+    );
+    const hero = read("src/components/storefront/public-merchant-hero.tsx");
+    const css = read("src/styles/globals.css");
+
+    expect(types).toMatch(
+      /export type PublicMerchantPage = \{[\s\S]*coverUrl: string \| null;/,
+    );
+    expect(types).not.toContain("coverImagePath");
+    expect(catalog).toContain("createCoverSignedUrls");
+    expect(catalog).toContain("coverUrl: merchant.coverImagePath");
+    expect(wiring).toContain("createMerchantCoverSignedUrls");
+    expect(wiring).toContain("createCoverSignedUrls:");
+    expect(cover).toContain("MerchantCoverFallback");
+    expect(cover).toContain("coverUrl");
+    expect(cover).toContain("object-cover");
+    expect(cover).toContain("onError");
+    expect(cover).toContain("alt={`Portada de ${name}`}");
+    expect(hero).toContain("merchant.coverUrl");
+    expect(css).toContain(".merchant-storefront-cover");
+    expect(css).toContain(".merchant-storefront-title");
+    expect(css).toContain(".merchant-product-media");
   });
 
   it("widens the public storefront without touching merchant or admin shells", () => {
@@ -129,7 +174,7 @@ describe("qwen merchant storefront v2 static checks", () => {
     expect(merchantPage).not.toContain("max-w-7xl");
   });
 
-  it("does not import webqwen mocks, fake ratings, or remote Qwen assets", () => {
+  it("does not invent ratings, promos, fake categories, or remote Qwen assets", () => {
     const joined = merchantFiles.map((file) => read(file)).join("\n");
 
     expect(joined).not.toContain("image.qwenlm.ai");
@@ -143,6 +188,11 @@ describe("qwen merchant storefront v2 static checks", () => {
     expect(joined).not.toContain("Mi Pueblo");
     expect(joined).not.toMatch(/rating/i);
     expect(joined).not.toContain("restaurants =");
+    expect(joined).not.toContain("Populares");
+    expect(joined).not.toContain("más vendido");
+    expect(joined).not.toContain("Más vendido");
+    expect(joined).not.toContain("framer-motion");
+    expect(joined).not.toContain("lucide-react");
   });
 
   it("keeps the options CTA disabled look unambiguous without changing canSubmit", () => {
@@ -153,5 +203,20 @@ describe("qwen merchant storefront v2 static checks", () => {
     expect(css).toContain(".grad-btn:disabled");
     expect(css).toContain("background-image: none");
     expect(css).toContain("cursor: not-allowed");
+  });
+
+  it("preserves internal merchant_categories filters without marketplace mocks", () => {
+    const catalog = read(
+      "src/components/storefront/merchant-catalog-client.tsx",
+    );
+    const page = read("src/app/comercios/[merchantId]/page.tsx");
+
+    expect(catalog).toContain("Todas");
+    expect(catalog).toContain("categories.map");
+    expect(catalog).toContain("product.categoryId");
+    expect(catalog).toContain("product.categoryName");
+    expect(page).not.toContain("marketplace_categories");
+    expect(catalog).not.toContain("Populares");
+    expect(catalog).not.toContain("Combos");
   });
 });

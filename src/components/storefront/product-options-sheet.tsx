@@ -209,9 +209,9 @@ export function ProductOptionsSheet({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative z-10 flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-[2rem] bg-white shadow-2xl sm:max-w-xl sm:rounded-[2rem]"
+        className="product-options-sheet relative z-10 flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-[2rem] bg-white shadow-2xl sm:max-w-xl sm:rounded-[2rem]"
       >
-        <div className="shrink-0 px-5 pt-3 pb-4 sm:px-6 sm:pt-5">
+        <div className="shrink-0 border-b border-violet-100/70 px-5 pt-3 pb-4 sm:px-6 sm:pt-5">
           <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-slate-200 sm:hidden" />
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
@@ -470,7 +470,7 @@ export function ProductOptionsSheet({
           </div>
         </div>
 
-        <div className="pb-safe sticky bottom-0 shrink-0 border-t border-slate-100 bg-white px-5 pt-4 pb-5">
+        <div className="pb-safe sticky bottom-0 shrink-0 border-t border-violet-100/70 bg-white px-5 pt-4 pb-5">
           <button
             type="button"
             disabled={!canSubmit}
@@ -481,7 +481,7 @@ export function ProductOptionsSheet({
               );
               onAddConfigured(configuration);
             }}
-            className="grad-btn min-h-12 w-full rounded-2xl px-4 py-4 text-sm font-extrabold text-white shadow-glow disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+            className="grad-btn min-h-12 w-full rounded-full px-4 py-4 text-sm font-extrabold text-white shadow-glow disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
           >
             Agregar al carrito
             {estimatedUnit != null

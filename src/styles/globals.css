@@ -632,6 +632,88 @@ body {
   color: #cbd5e1;
 }
 
+.public-storefront .merchant-storefront-hero-atmosphere {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 70% 55% at 8% 0%,
+      rgb(217 70 239 / 0.28) 0%,
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 65% 50% at 100% 30%,
+      rgb(124 58 237 / 0.3) 0%,
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 50% 45% at 45% 100%,
+      rgb(249 115 22 / 0.14) 0%,
+      transparent 70%
+    );
+}
+
+.public-storefront .merchant-storefront-cover {
+  aspect-ratio: 16 / 10;
+  max-height: 22rem;
+  min-height: 11rem;
+  background: linear-gradient(135deg, #4c1d95, #a21caf);
+}
+
+@media (min-width: 640px) {
+  .public-storefront .merchant-storefront-cover {
+    aspect-ratio: 21 / 9;
+    max-height: 26rem;
+    min-height: 14rem;
+  }
+}
+
+.public-storefront .merchant-storefront-cover-img {
+  display: block;
+}
+
+.public-storefront .merchant-storefront-cover-scrim {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgb(14 8 32 / 0.42) 0%,
+    rgb(14 8 32 / 0.08) 45%,
+    transparent 72%
+  );
+}
+
+.public-storefront .merchant-storefront-title {
+  font-size: clamp(1.85rem, 1rem + 3.2vw, 3rem);
+  line-height: 1.08;
+}
+
+.public-storefront .merchant-product-media {
+  aspect-ratio: 16 / 11;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .public-storefront .merchant-product-media {
+    aspect-ratio: 4 / 3;
+  }
+}
+
+.public-storefront .merchant-product-grid {
+  min-width: 0;
+}
+
+.public-storefront .merchant-product-card {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.public-storefront .product-options-sheet {
+  border: 1px solid rgb(237 233 254 / 0.85);
+}
+
 .public-storefront .brand-wordmark {
   font-family: var(--font-sora), var(--font-inter), var(--font-sans);
   letter-spacing: -0.05em;

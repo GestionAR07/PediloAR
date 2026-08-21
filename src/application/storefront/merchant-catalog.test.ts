@@ -26,6 +26,7 @@ function baseDeps(): GetPublicMerchantCatalogDeps {
       preparationMinutes: 20,
       acceptingOrders: true,
       pausedUntil: null,
+      coverImagePath: null,
     })),
     listActiveCategories: vi.fn(async () => [
       { id: CAT, name: "Bebidas", sortOrder: 0 },
@@ -109,6 +110,13 @@ function baseDeps(): GetPublicMerchantCatalogDeps {
       }
       return map;
     }),
+    createCoverSignedUrls: vi.fn(async (paths: readonly string[]) => {
+      const map = new Map<string, string>();
+      for (const path of paths) {
+        map.set(path, `https://cover.example/${path}?token=temp`);
+      }
+      return map;
+    }),
     now: () => new Date("2026-08-12T15:00:00.000Z"),
   };
 }
@@ -159,10 +167,46 @@ describe("getPublicMerchantCatalog", () => {
     expect(deps.createSignedUrls).toHaveBeenCalled();
     const serialized = JSON.stringify(page);
     expect(serialized).not.toMatch(/imagePath/);
+    expect(serialized).not.toMatch(/coverImagePath/);
     expect(serialized).not.toMatch(/email/i);
     expect(serialized).not.toMatch(/userId/i);
     expect(serialized).not.toMatch(/SUPABASE/);
     expect(serialized).not.toMatch(/membership/i);
+  });
+
+  it("exposes a signed coverUrl without the storage path", async () => {
+    const deps = baseDeps();
+    const coverPath = `${MERCHANT}/covers/storefront.jpg`;
+    deps.findActiveMerchantById = vi.fn(async () => ({
+      id: MERCHANT,
+      name: "Comercio Prueba",
+      description: "Buenas empanadas",
+      status: "ACTIVE",
+      zoneId: ZONE,
+      zoneName: "Rawson",
+      cityName: "Rawson",
+      cityTimezone: "America/Argentina/Catamarca",
+      pickupEnabled: true,
+      merchantDeliveryEnabled: false,
+      preparationMinutes: 20,
+      acceptingOrders: true,
+      pausedUntil: null,
+      coverImagePath: coverPath,
+    }));
+    const page = await getPublicMerchantCatalog(MERCHANT, ZONE, deps);
+    expect(page!.coverUrl).toBe(
+      `https://cover.example/${coverPath}?token=temp`,
+    );
+    expect(deps.createCoverSignedUrls).toHaveBeenCalledWith([coverPath]);
+    const serialized = JSON.stringify(page);
+    expect(serialized).not.toMatch(/coverImagePath/);
+  });
+
+  it("keeps coverUrl null when the merchant has no cover", async () => {
+    const deps = baseDeps();
+    const page = await getPublicMerchantCatalog(MERCHANT, ZONE, deps);
+    expect(page!.coverUrl).toBeNull();
+    expect(deps.createCoverSignedUrls).toHaveBeenCalledWith([]);
   });
 
   it("shows placeholder path as null imageUrl when no image", async () => {
@@ -214,6 +258,7 @@ describe("getPublicMerchantCatalog", () => {
       preparationMinutes: 20,
       acceptingOrders: true,
       pausedUntil: null,
+      coverImagePath: null,
     }));
     deps.listDeliveryZones = vi.fn(async () => [
       {

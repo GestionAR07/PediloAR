@@ -22,7 +22,7 @@ type Props = {
 };
 
 const chipBase =
-  "min-h-10 snap-start shrink-0 rounded-full border-2 px-5 py-2.5 text-sm font-extrabold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]";
+  "min-h-11 snap-start shrink-0 rounded-full border-2 px-5 py-2.5 text-sm font-extrabold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]";
 const chipActive = `${chipBase} chip-active border-transparent`;
 const chipIdle = `${chipBase} border-slate-200 bg-white text-slate-600 hover:border-fuchsia-300`;
 
@@ -99,12 +99,12 @@ export function MerchantCatalogClient({
   const showStickyCart = hydrated && badgeCount > 0;
 
   return (
-    <div className="space-y-5">
+    <div className="min-w-0 space-y-5">
       <div
         className={
           showStickyCart
-            ? "space-y-5 max-sm:pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))]"
-            : "space-y-5"
+            ? "min-w-0 space-y-5 max-sm:pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))]"
+            : "min-w-0 space-y-5"
         }
       >
         {feedback ? (
@@ -116,11 +116,11 @@ export function MerchantCatalogClient({
           </p>
         ) : null}
 
-        <div className="space-y-2">
+        <div className="min-w-0 space-y-2">
           <label className="block text-sm font-bold" htmlFor="product-search">
             Buscar en este comercio
           </label>
-          <div className="relative">
+          <div className="relative min-w-0">
             <span className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-violet-500">
               <SearchIcon className="h-4 w-4" />
             </span>
@@ -129,14 +129,14 @@ export function MerchantCatalogClient({
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Ej: empanadas, gaseosa…"
-              className="min-h-12 w-full rounded-full border-2 border-violet-100 bg-white py-2.5 pr-4 pl-11 text-sm font-medium shadow-soft transition focus:border-fuchsia-400 focus:ring-4 focus:ring-fuchsia-100 focus-visible:outline-none"
+              placeholder="Buscar productos…"
+              className="min-h-12 w-full min-w-0 max-w-full rounded-full border-2 border-violet-100 bg-white py-2.5 pr-4 pl-11 text-sm font-medium shadow-soft transition focus:border-fuchsia-400 focus:ring-4 focus:ring-fuchsia-100 focus-visible:outline-none"
             />
           </div>
         </div>
 
         {categories.length > 0 ? (
-          <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory">
+          <div className="no-scrollbar flex min-w-0 gap-2 overflow-x-auto pb-1 snap-x snap-mandatory">
             <button
               type="button"
               onClick={() => setCategoryId("all")}
@@ -160,51 +160,63 @@ export function MerchantCatalogClient({
         ) : null}
 
         {filtered.length === 0 ? (
-          <p className="rounded-[2rem] border-2 border-dashed border-violet-200 bg-white px-6 py-12 text-center text-sm text-muted">
-            {query.trim()
-              ? "No hay productos que coincidan con tu búsqueda."
-              : "Este comercio todavía no tiene productos visibles."}
-          </p>
+          <div className="rounded-[2rem] border-2 border-dashed border-violet-200 bg-white px-6 py-14 text-center">
+            <p className="font-display text-lg font-extrabold text-[var(--ps-night-900)]">
+              {query.trim()
+                ? "No hay productos que coincidan con tu búsqueda."
+                : "Este comercio todavía no tiene productos disponibles."}
+            </p>
+            {!query.trim() ? (
+              <p className="mx-auto mt-2 max-w-sm text-sm text-muted">
+                Cuando el comercio publique su catálogo, va a aparecer acá.
+              </p>
+            ) : null}
+          </div>
         ) : (
-          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <ul className="merchant-product-grid grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3">
             {filtered.map((product) => (
-              <li key={product.id}>
+              <li key={product.id} className="min-w-0">
                 <article
-                  className={`group flex h-full gap-4 overflow-hidden rounded-[1.75rem] border border-violet-100/70 bg-white p-4 sm:flex-col sm:p-0 ${
+                  className={`merchant-product-card group flex h-full min-w-0 flex-col overflow-hidden rounded-[1.75rem] border border-violet-100/70 bg-white shadow-soft ${
                     product.sellable ? "card-lift" : "opacity-90"
                   }`}
                 >
-                  {product.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={product.imageUrl}
-                      alt=""
-                      className="zoom-img h-24 w-24 shrink-0 rounded-2xl object-cover sm:h-44 sm:w-full sm:rounded-none"
-                    />
-                  ) : (
-                    <div
-                      aria-hidden
-                      className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-gradient-to-br from-violet-200 to-fuchsia-200 sm:h-44 sm:w-full sm:rounded-none"
-                    >
-                      <div className="zoom-img absolute inset-0 bg-gradient-to-br from-violet-800 via-violet-600 to-fuchsia-500" />
-                      <span className="font-display absolute inset-0 flex items-center justify-center text-2xl font-extrabold text-white/90 sm:text-4xl">
-                        {product.name.slice(0, 1).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex min-w-0 flex-1 flex-col gap-1 sm:p-5">
-                    <p className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
-                      {product.categoryName}
-                    </p>
-                    <h3 className="font-display text-sm font-extrabold leading-snug tracking-tight text-[var(--ps-night-900)] sm:text-base">
+                  <div className="merchant-product-media relative isolate shrink-0 overflow-hidden bg-gradient-to-br from-violet-200 to-fuchsia-200">
+                    {product.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={product.imageUrl}
+                        alt=""
+                        loading="lazy"
+                        className="zoom-img h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div
+                        aria-hidden
+                        className="relative h-full w-full overflow-hidden"
+                      >
+                        <div className="zoom-img absolute inset-0 bg-gradient-to-br from-violet-800 via-violet-600 to-fuchsia-500" />
+                        <span className="font-display absolute inset-0 flex items-center justify-center text-3xl font-extrabold text-white/90 sm:text-4xl">
+                          {product.name.slice(0, 1).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex min-w-0 flex-1 flex-col gap-1.5 p-4 sm:p-5">
+                    {product.categoryName ? (
+                      <p className="text-[11px] font-bold tracking-wider break-words text-slate-400 uppercase">
+                        {product.categoryName}
+                      </p>
+                    ) : null}
+                    <h3 className="font-display text-base font-extrabold leading-snug tracking-tight break-words text-[var(--ps-night-900)] sm:text-lg">
                       {product.name}
                     </h3>
                     {product.description ? (
-                      <p className="line-clamp-2 text-xs text-slate-500">
+                      <p className="line-clamp-2 text-sm break-words text-slate-500">
                         {product.description}
                       </p>
                     ) : null}
-                    <p className="grad-text mt-auto pt-2 text-sm font-extrabold">
+                    <p className="grad-text mt-auto pt-3 text-base font-extrabold">
                       {product.priceLabel}
                     </p>
                     {product.statusLabel ? (
@@ -212,12 +224,12 @@ export function MerchantCatalogClient({
                         {product.statusLabel}
                       </p>
                     ) : null}
-                    <div className="mt-2 flex flex-wrap gap-2">
+                    <div className="mt-3 flex flex-wrap gap-2">
                       {product.hasOptions ? (
                         <button
                           type="button"
                           onClick={() => setSelected(product)}
-                          className="min-h-11 rounded-2xl border border-violet-200 bg-violet-50 px-4 text-xs font-extrabold text-violet-800 transition hover:border-fuchsia-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+                          className="inline-flex min-h-11 items-center rounded-full border border-violet-200 bg-violet-50 px-5 text-sm font-extrabold text-violet-800 transition hover:border-fuchsia-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
                         >
                           {product.canAddToCart
                             ? "Elegir opciones"
@@ -227,7 +239,7 @@ export function MerchantCatalogClient({
                         <button
                           type="button"
                           onClick={() => handleAdd(product, [])}
-                          className="grad-btn min-h-11 rounded-2xl px-4 text-xs font-extrabold text-white shadow-glow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+                          className="grad-btn inline-flex min-h-11 items-center rounded-full px-5 text-sm font-extrabold text-white shadow-glow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
                         >
                           Agregar
                         </button>
@@ -235,7 +247,7 @@ export function MerchantCatalogClient({
                         <button
                           type="button"
                           onClick={() => setSelected(product)}
-                          className="min-h-11 rounded-2xl border border-violet-200 bg-white px-4 text-xs font-extrabold text-violet-800 transition hover:border-fuchsia-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+                          className="inline-flex min-h-11 items-center rounded-full border border-violet-200 bg-white px-5 text-sm font-extrabold text-violet-800 transition hover:border-fuchsia-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
                         >
                           Ver detalle
                         </button>

@@ -35,6 +35,7 @@ export type CatalogMerchantRecord = {
   preparationMinutes: number;
   acceptingOrders: boolean;
   pausedUntil: Date | null;
+  coverImagePath: string | null;
 };
 
 export type CatalogProductRecord = {
@@ -121,6 +122,9 @@ export type GetPublicMerchantCatalogDeps = {
   createSignedUrls: (
     imagePaths: readonly string[],
   ) => Promise<Map<string, string>>;
+  createCoverSignedUrls: (
+    coverPaths: readonly string[],
+  ) => Promise<Map<string, string>>;
   now: () => Date;
 };
 
@@ -166,7 +170,11 @@ export async function getPublicMerchantCatalog(
   const imagePaths = visibleProducts
     .map((p) => p.imagePath)
     .filter((path): path is string => Boolean(path));
-  const signedUrls = await deps.createSignedUrls(imagePaths);
+  const coverPaths = merchant.coverImagePath ? [merchant.coverImagePath] : [];
+  const [signedUrls, coverUrls] = await Promise.all([
+    deps.createSignedUrls(imagePaths),
+    deps.createCoverSignedUrls(coverPaths),
+  ]);
 
   const now = deps.now();
   const operationalStatus = getMerchantOperationalStatus(
@@ -293,5 +301,8 @@ export async function getPublicMerchantCatalog(
       .filter((category) => categoryIdsWithProducts.has(category.id))
       .map((category) => ({ id: category.id, name: category.name })),
     products: productCards,
+    coverUrl: merchant.coverImagePath
+      ? (coverUrls.get(merchant.coverImagePath) ?? null)
+      : null,
   };
 }

@@ -77,12 +77,21 @@ describe("merchant cover image static checks", () => {
     expect(types).toMatch(
       /export type PublicMerchantCard = \{[\s\S]*categoryIds: string\[\];[\s\S]*coverUrl: string \| null;/,
     );
+    expect(types).toMatch(
+      /export type PublicMerchantPage = \{[\s\S]*coverUrl: string \| null;/,
+    );
     expect(types).not.toContain("coverImagePath");
     expect(types).not.toContain("cover_image_path");
 
     const discovery = read("src/application/storefront/discovery.ts");
     expect(discovery).toContain("createCoverSignedUrls");
     expect(discovery).toContain("coverUrl:");
+
+    const merchantCatalog = read(
+      "src/application/storefront/merchant-catalog.ts",
+    );
+    expect(merchantCatalog).toContain("createCoverSignedUrls");
+    expect(merchantCatalog).toContain("coverUrl:");
 
     const wiring = read("src/application/storefront/wiring.ts");
     expect(wiring).toContain("createMerchantCoverSignedUrls");
@@ -94,5 +103,9 @@ describe("merchant cover image static checks", () => {
     expect(card).toContain('loading="lazy"');
     expect(card).toContain("object-cover");
     expect(card).toContain("onError");
+
+    const hero = read("src/components/storefront/public-merchant-hero.tsx");
+    expect(hero).toContain("merchant.coverUrl");
+    expect(hero).toContain("MerchantStorefrontCover");
   });
 });

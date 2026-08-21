@@ -113,6 +113,8 @@ export type PublicMerchantPage = {
   paymentMethods: PublicPaymentMethodView[];
   categories: PublicCategoryView[];
   products: PublicProductCard[];
+  /** Temporary signed cover URL. Never a storage path. */
+  coverUrl: string | null;
 };
 
 /** Soft nav context — never throws for guests. */
