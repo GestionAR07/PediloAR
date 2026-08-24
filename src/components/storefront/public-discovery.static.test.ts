@@ -37,6 +37,15 @@ describe("qwen public discovery v1 static checks", () => {
     expect(header).toContain('href="/login"');
     expect(header).toContain("badgeCount");
     expect(header).toContain("PublicBrandWordmark");
+    const merchantAccess = header.slice(
+      header.indexOf("{nav.merchantHomeHref ? ("),
+      header.indexOf("{nav.isAdmin ? ("),
+    );
+    expect(merchantAccess).toContain("href={nav.merchantHomeHref}");
+    expect(merchantAccess).toContain('aria-label="Mi comercio"');
+    expect(merchantAccess).toContain("inline-flex");
+    expect(merchantAccess).not.toContain("hidden");
+    expect(header.match(/\{!nav\.merchantHomeHref \? \(/g)).toHaveLength(2);
     expect(header).not.toContain('"Cuenta"');
     expect(header).toContain("Ingresar");
     expect(header).toContain("Acceso comercios");
