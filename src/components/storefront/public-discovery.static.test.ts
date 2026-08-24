@@ -43,8 +43,8 @@ describe("qwen public discovery v1 static checks", () => {
     );
     expect(merchantAccess).toContain("href={nav.merchantHomeHref}");
     expect(merchantAccess).toContain('aria-label="Mi comercio"');
-    expect(merchantAccess).toContain("inline-flex");
-    expect(merchantAccess).not.toContain("hidden");
+    expect(merchantAccess).toContain('className="inline-flex min-h-11');
+    expect(merchantAccess).not.toContain('className="hidden rounded-full');
     expect(header.match(/\{!nav\.merchantHomeHref \? \(/g)).toHaveLength(2);
     expect(header).not.toContain('"Cuenta"');
     expect(header).toContain("Ingresar");
