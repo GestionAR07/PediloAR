@@ -5,6 +5,7 @@ import { listMerchantInboxApp } from "@/application/merchant/order-inbox-wiring"
 import { MerchantInboxRealtime } from "@/components/merchant/merchant-inbox-realtime";
 import { MerchantOrderInbox } from "@/components/merchant/merchant-order-inbox";
 import { MerchantOrderSoundToggle } from "@/components/merchant/merchant-order-sound-toggle";
+import { MerchantWorkspaceNav } from "@/components/merchant/merchant-workspace-nav";
 import { isAuthzError } from "@/server/auth/errors";
 import { requireMerchantMembership } from "@/server/auth/authorization";
 import { findMerchantDetailForMember } from "@/infrastructure/db/repositories/merchant-repository";
@@ -46,38 +47,6 @@ async function loadMerchant(merchantId: string) {
     }
     throw error;
   }
-}
-
-function MerchantOpsNav({ merchantId }: { merchantId: string }) {
-  const items = [
-    { href: `/merchant/${merchantId}`, label: "Pedidos", current: true },
-    { href: `/merchant/${merchantId}/catalog`, label: "Catálogo" },
-    { href: `/merchant/${merchantId}/profile`, label: "Portada" },
-    { href: `/merchant/${merchantId}/delivery`, label: "Envíos y zonas" },
-    {
-      href: `/merchant/${merchantId}/payment-methods`,
-      label: "Medios de pago",
-    },
-  ];
-
-  return (
-    <nav className="merchant-ops-nav" aria-label="Secciones del comercio">
-      {items.map((item) => (
-        <Link
-          key={item.href}
-          href={item.href}
-          aria-current={item.current ? "page" : undefined}
-          className={
-            item.current
-              ? "merchant-ops-nav-link merchant-ops-nav-link--active"
-              : "merchant-ops-nav-link"
-          }
-        >
-          {item.label}
-        </Link>
-      ))}
-    </nav>
-  );
 }
 
 export default async function MerchantDetailPage({ params }: PageProps) {
@@ -172,7 +141,7 @@ export default async function MerchantDetailPage({ params }: PageProps) {
       </header>
 
       <div className="merchant-ops-layout">
-        <MerchantOpsNav merchantId={merchantId} />
+        <MerchantWorkspaceNav merchantId={merchantId} activeSection="orders" />
 
         <div className="merchant-ops-main min-w-0">
           {inbox ? (

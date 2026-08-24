@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { MerchantWorkspacePage } from "@/components/merchant/merchant-workspace-page";
 import { isAuthzError } from "@/server/auth/errors";
 import { requireMerchantMembership } from "@/server/auth/authorization";
 import {
@@ -31,7 +32,11 @@ export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{ merchantId: string; productId: string }>;
-  searchParams: Promise<{ created?: string; saved?: string }>;
+  searchParams: Promise<{
+    created?: string;
+    saved?: string;
+    view?: string;
+  }>;
 };
 
 async function loadPage(merchantId: string, productId: string) {
@@ -69,6 +74,7 @@ export default async function EditProductPage({
   const { merchantId, productId } = await params;
   const query = await searchParams;
   const feedback = parseProductSaveFeedback(query);
+  const showOptions = query.view === "options";
   const { merchant, product } = await loadPage(merchantId, productId);
   const categories = await listMerchantCategories(merchantId);
   const selectableCategories = categories.filter(
@@ -87,142 +93,230 @@ export default async function EditProductPage({
   const imageUrl = product.imagePath
     ? await createProductImageSignedUrl(product.imagePath)
     : null;
+  const productHref = `/merchant/${merchantId}/catalog/products/${productId}`;
+  const optionsHref = `${productHref}?view=options`;
 
   return (
-    <main className="flex flex-1 flex-col gap-8 border-t border-border pt-10">
-      <header className="space-y-2">
-        <p className="text-sm">
+    <MerchantWorkspacePage
+      merchantId={merchantId}
+      merchantName={merchant.name}
+      activeSection="catalog"
+      title="Editar producto"
+      description={
+        <div className="merchant-workspace-product-meta">
+          <p className="merchant-workspace-product-meta-name">{product.name}</p>
+          <div className="merchant-workspace-product-chips">
+            {product.active ? (
+              <span className="merchant-workspace-status-chip merchant-workspace-status-chip--live">
+                Visible
+              </span>
+            ) : null}
+            {product.available ? (
+              <span className="merchant-workspace-status-chip merchant-workspace-status-chip--live">
+                Disponible
+              </span>
+            ) : null}
+            {product.stockMode === "TRACKED" &&
+            product.stockQuantity !== null ? (
+              <span className="merchant-workspace-status-chip">
+                Stock: {product.stockQuantity}
+              </span>
+            ) : null}
+          </div>
+        </div>
+      }
+      action={
+        <Link
+          href={`/merchant/${merchantId}/catalog`}
+          className="merchant-workspace-secondary-btn"
+        >
+          ← Catálogo
+        </Link>
+      }
+    >
+      <div className="merchant-workspace-edit-stack">
+        <nav
+          className="merchant-workspace-segmented"
+          aria-label="Secciones del producto"
+        >
           <Link
-            href={`/merchant/${merchantId}/catalog`}
-            className="text-accent underline-offset-4 hover:underline"
+            href={productHref}
+            className={
+              showOptions
+                ? "merchant-workspace-segment"
+                : "merchant-workspace-segment merchant-workspace-segment--active"
+            }
+            aria-current={showOptions ? undefined : "page"}
           >
-            ← Catálogo
+            Producto
           </Link>
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Editar producto
-        </h1>
-        <p className="text-base font-medium">{product.name}</p>
-        <p className="text-sm text-muted">{merchant.name}</p>
-      </header>
+          <Link
+            href={optionsHref}
+            className={
+              showOptions
+                ? "merchant-workspace-segment merchant-workspace-segment--active"
+                : "merchant-workspace-segment"
+            }
+            aria-current={showOptions ? "page" : undefined}
+          >
+            Variantes y extras
+          </Link>
+        </nav>
 
-      {feedback ? (
-        <ProductSaveFeedback
-          kind={feedback}
-          cleanPath={productEditPath(merchantId, productId)}
-        />
-      ) : null}
+        {feedback && !showOptions ? (
+          <ProductSaveFeedback
+            kind={feedback}
+            cleanPath={productEditPath(merchantId, productId)}
+          />
+        ) : null}
 
-      <ProductImageEditor
-        merchantId={merchantId}
-        productId={productId}
-        imageUrl={imageUrl}
-        upsertAction={upsertProductImageAction}
-        deleteAction={deleteProductImageAction}
-      />
+        {showOptions ? (
+          <OptionGroupsSection
+            merchantId={merchantId}
+            productId={productId}
+            groups={groups}
+            choicesByGroup={choicesByGroup}
+          />
+        ) : (
+          <div className="merchant-workspace-edit-layout">
+            <section className="merchant-workspace-card merchant-workspace-edit-main">
+              <h2 className="merchant-workspace-card-title">
+                Información del producto
+              </h2>
+              <form
+                action={boundUpdate}
+                className="merchant-workspace-product-form"
+              >
+                <div className="merchant-workspace-product-grid">
+                  <label className="merchant-workspace-field">
+                    <span>Nombre</span>
+                    <input
+                      name="name"
+                      defaultValue={product.name}
+                      required
+                      className="merchant-workspace-input"
+                    />
+                  </label>
 
-      <section className="grid max-w-xl gap-4">
-        <h2 className="text-sm font-medium">Datos del producto</h2>
-        <form action={boundUpdate} className="grid gap-4">
-          <label className="flex flex-col gap-1 text-sm">
-            <span>Nombre</span>
-            <input
-              name="name"
-              defaultValue={product.name}
-              required
-              className="rounded-md border border-border bg-white px-3 py-2"
-            />
-          </label>
+                  <label className="merchant-workspace-field">
+                    <span>Categoría</span>
+                    <select
+                      name="merchantCategoryId"
+                      defaultValue={product.merchantCategoryId}
+                      className="merchant-workspace-input"
+                    >
+                      {selectableCategories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {formatMerchantCategoryLabel(
+                            category.name,
+                            category.active,
+                          )}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
 
-          <label className="flex flex-col gap-1 text-sm">
-            <span>Categoría</span>
-            <select
-              name="merchantCategoryId"
-              defaultValue={product.merchantCategoryId}
-              className="rounded-md border border-border bg-white px-3 py-2"
-            >
-              {selectableCategories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {formatMerchantCategoryLabel(category.name, category.active)}
-                </option>
-              ))}
-            </select>
-          </label>
+                  <label className="merchant-workspace-field">
+                    <span>Precio (ARS)</span>
+                    <input
+                      name="priceInput"
+                      defaultValue={formatMoneyCentsArs(
+                        moneyCents(product.priceCents),
+                      ).replace("$", "")}
+                      required
+                      className="merchant-workspace-input"
+                    />
+                  </label>
 
-          <label className="flex flex-col gap-1 text-sm">
-            <span>Precio (ARS)</span>
-            <input
-              name="priceInput"
-              defaultValue={formatMoneyCentsArs(
-                moneyCents(product.priceCents),
-              ).replace("$", "")}
-              required
-              className="rounded-md border border-border bg-white px-3 py-2"
-            />
-          </label>
+                  <div className="merchant-workspace-stock-block">
+                    <label className="merchant-workspace-field">
+                      <span>Stock</span>
+                      <select
+                        name="stockMode"
+                        defaultValue={product.stockMode}
+                        className="merchant-workspace-input"
+                      >
+                        <option value="NOT_TRACKED">No controlar stock</option>
+                        <option value="TRACKED">
+                          Controlar unidades disponibles
+                        </option>
+                      </select>
+                    </label>
+                    <label className="merchant-workspace-field">
+                      <span>Cantidad</span>
+                      <input
+                        name="stockQuantity"
+                        type="number"
+                        min={0}
+                        step={1}
+                        defaultValue={product.stockQuantity ?? ""}
+                        className="merchant-workspace-input"
+                      />
+                    </label>
+                  </div>
+                </div>
 
-          <label className="flex flex-col gap-1 text-sm">
-            <span>Descripción</span>
-            <textarea
-              name="description"
-              rows={3}
-              defaultValue={product.description}
-              className="rounded-md border border-border bg-white px-3 py-2"
-            />
-          </label>
+                <label className="merchant-workspace-field merchant-workspace-field--full">
+                  <span>Descripción</span>
+                  <textarea
+                    name="description"
+                    rows={3}
+                    defaultValue={product.description}
+                    className="merchant-workspace-input merchant-workspace-textarea"
+                  />
+                </label>
 
-          <label className="flex flex-col gap-1 text-sm">
-            <span>Stock</span>
-            <select
-              name="stockMode"
-              defaultValue={product.stockMode}
-              className="rounded-md border border-border bg-white px-3 py-2"
-            >
-              <option value="NOT_TRACKED">Sin seguimiento</option>
-              <option value="TRACKED">Con cantidad</option>
-            </select>
-          </label>
+                <div className="merchant-workspace-commerce-states">
+                  <label className="merchant-workspace-check-row">
+                    <input
+                      type="checkbox"
+                      name="active"
+                      defaultChecked={product.active}
+                      className="merchant-workspace-checkbox"
+                    />
+                    <span>
+                      <span className="block font-semibold">
+                        Mostrar en la tienda
+                      </span>
+                      <span className="block text-sm font-normal text-[#5b5470]">
+                        Visible para tus clientes.
+                      </span>
+                    </span>
+                  </label>
+                  <label className="merchant-workspace-check-row">
+                    <input
+                      type="checkbox"
+                      name="available"
+                      defaultChecked={product.available}
+                      className="merchant-workspace-checkbox"
+                    />
+                    <span>
+                      <span className="block font-semibold">
+                        Disponible para pedir
+                      </span>
+                      <span className="block text-sm font-normal text-[#5b5470]">
+                        Pausalo sin eliminarlo.
+                      </span>
+                    </span>
+                  </label>
+                </div>
 
-          <label className="flex flex-col gap-1 text-sm">
-            <span>Cantidad</span>
-            <input
-              name="stockQuantity"
-              type="number"
-              min={0}
-              step={1}
-              defaultValue={product.stockQuantity ?? ""}
-              className="rounded-md border border-border bg-white px-3 py-2"
-            />
-          </label>
+                <ProductFormSubmitButton mode="edit" />
+              </form>
+            </section>
 
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              name="active"
-              defaultChecked={product.active}
-            />
-            Activo en catálogo
-          </label>
-
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              name="available"
-              defaultChecked={product.available}
-            />
-            Disponible para venta
-          </label>
-
-          <ProductFormSubmitButton mode="edit" />
-        </form>
-      </section>
-
-      <OptionGroupsSection
-        merchantId={merchantId}
-        productId={productId}
-        groups={groups}
-        choicesByGroup={choicesByGroup}
-      />
-    </main>
+            <aside className="merchant-workspace-edit-side">
+              <ProductImageEditor
+                merchantId={merchantId}
+                productId={productId}
+                imageUrl={imageUrl}
+                upsertAction={upsertProductImageAction}
+                deleteAction={deleteProductImageAction}
+              />
+            </aside>
+          </div>
+        )}
+      </div>
+    </MerchantWorkspacePage>
   );
 }

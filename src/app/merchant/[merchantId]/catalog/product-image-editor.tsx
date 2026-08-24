@@ -90,10 +90,12 @@ export function ProductImageEditor({
   }
 
   return (
-    <section className="space-y-4 rounded-lg border border-border bg-white/50 p-4">
+    <section className="merchant-workspace-card merchant-workspace-image-card space-y-4">
       <header className="space-y-1">
-        <h2 className="text-lg font-semibold">Imagen del producto</h2>
-        <p className="text-sm text-muted">{PRODUCT_IMAGE_HELP_TEXT}</p>
+        <h2 className="merchant-workspace-card-title">Imagen</h2>
+        <p className="merchant-workspace-card-copy">
+          {PRODUCT_IMAGE_HELP_TEXT}
+        </p>
       </header>
 
       {imageUrl ? (
@@ -101,27 +103,33 @@ export function ProductImageEditor({
         <img
           src={imageUrl}
           alt="Imagen del producto"
-          className="h-40 w-40 rounded-md border border-border object-cover"
+          className="h-40 w-40 rounded-xl border border-[#e4dcf7] object-cover"
         />
       ) : (
-        <div className="flex h-40 w-40 items-center justify-center rounded-md border border-dashed border-border bg-white/70 text-center text-xs text-muted">
+        <div className="flex h-40 w-40 items-center justify-center rounded-xl border border-dashed border-[#e4dcf7] bg-[#faf8ff] text-center text-xs text-[#5b5470]">
           No cargaste una imagen todavía.
         </div>
       )}
 
       {success && (
-        <p className="rounded-md border border-accent/30 bg-accent/10 px-3 py-2 text-sm text-accent">
+        <p
+          className="merchant-workspace-alert merchant-workspace-alert--success"
+          role="status"
+        >
           {success}
         </p>
       )}
       {error && (
-        <p className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-900">
+        <p
+          className="merchant-workspace-alert merchant-workspace-alert--error"
+          role="alert"
+        >
           {error}
         </p>
       )}
 
       <div className="flex flex-wrap gap-2">
-        <label className="inline-flex min-h-11 cursor-pointer items-center rounded-md border border-border px-4 py-2 text-sm font-medium">
+        <label className="merchant-workspace-secondary-btn merchant-workspace-file-btn">
           {imageUrl ? "Reemplazar imagen" : "Subir imagen"}
           <input
             ref={fileInputRef}
@@ -145,7 +153,7 @@ export function ProductImageEditor({
             type="button"
             disabled={pending}
             onClick={() => run(() => deleteAction(merchantId, productId))}
-            className="min-h-11 rounded-md border border-amber-700/30 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-900 disabled:opacity-60"
+            className="merchant-workspace-danger-btn"
           >
             {pending ? "..." : "Eliminar imagen"}
           </button>

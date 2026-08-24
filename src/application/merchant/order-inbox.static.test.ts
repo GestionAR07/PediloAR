@@ -62,7 +62,7 @@ describe("merchant order inbox static checks", () => {
     );
     expect(page).toContain("MerchantOrderInbox");
     expect(inbox).toContain("Pedidos nuevos");
-    expect(page).toContain("Catálogo");
+    expect(page).toContain("MerchantWorkspaceNav");
     expect(page).toContain("logoutAction");
     expect(inbox).toContain("<h2");
     expect(inbox).toContain("Nuevos");

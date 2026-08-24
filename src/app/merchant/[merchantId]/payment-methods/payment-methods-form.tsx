@@ -42,59 +42,68 @@ export function PaymentMethodsForm({ merchantId, methods }: Props) {
   const noneActive = methods.every((method) => !method.active);
 
   return (
-    <form action={formAction} className="flex flex-col gap-6">
+    <form action={formAction} className="merchant-workspace-form">
       {noneActive ? (
         <p
-          className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
+          className="merchant-workspace-alert merchant-workspace-alert--warning"
           role="status"
         >
           Necesitás activar al menos un medio de pago para recibir pedidos.
         </p>
       ) : null}
 
-      {methods.map((method) => (
-        <section
-          key={method.code}
-          className="space-y-3 border-b border-border pb-6 last:border-b-0 last:pb-0"
-        >
-          <header className="space-y-1">
-            <h2 className="text-lg font-semibold">{method.label}</h2>
-            <p className="text-sm text-muted">
-              {PAYMENT_METHOD_CUSTOMER_COPY[method.code]}
-            </p>
-          </header>
+      <div className="merchant-workspace-payment-grid">
+        {methods.map((method) => (
+          <section
+            key={method.code}
+            className="merchant-workspace-card merchant-workspace-payment-card"
+          >
+            <header className="merchant-workspace-zone-header">
+              <div>
+                <h2 className="merchant-workspace-card-title">
+                  {method.label}
+                </h2>
+                <p className="merchant-workspace-card-copy">
+                  {PAYMENT_METHOD_CUSTOMER_COPY[method.code]}
+                </p>
+              </div>
+              <label className="merchant-workspace-active-pill">
+                <input
+                  type="checkbox"
+                  name={`active_${method.code}`}
+                  defaultChecked={method.active}
+                  className="merchant-workspace-checkbox"
+                />
+                <span>Activo</span>
+              </label>
+            </header>
 
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              name={`active_${method.code}`}
-              defaultChecked={method.active}
-            />
-            <span>Activo</span>
-          </label>
-
-          <label className="flex flex-col gap-1.5 text-sm">
-            <span className="font-medium">Instrucciones para el cliente</span>
-            <textarea
-              name={`instructions_${method.code}`}
-              rows={3}
-              maxLength={PAYMENT_INSTRUCTIONS_MAX_LENGTH}
-              defaultValue={method.instructions}
-              placeholder={INSTRUCTION_HINT[method.code] ?? undefined}
-              className="rounded-md border border-border bg-background px-3 py-2"
-            />
-          </label>
-        </section>
-      ))}
+            <label className="merchant-workspace-field">
+              <span>Instrucciones para el cliente</span>
+              <textarea
+                name={`instructions_${method.code}`}
+                rows={4}
+                maxLength={PAYMENT_INSTRUCTIONS_MAX_LENGTH}
+                defaultValue={method.instructions}
+                placeholder={INSTRUCTION_HINT[method.code] ?? undefined}
+                className="merchant-workspace-input merchant-workspace-textarea"
+              />
+            </label>
+          </section>
+        ))}
+      </div>
 
       {state.error ? (
-        <p className="text-sm text-red-800" role="alert">
+        <p
+          className="merchant-workspace-alert merchant-workspace-alert--error"
+          role="alert"
+        >
           {state.error}
         </p>
       ) : null}
       {state.success ? (
         <p
-          className="rounded-md border border-accent/30 bg-accent/10 px-4 py-3 text-sm font-medium text-accent"
+          className="merchant-workspace-alert merchant-workspace-alert--success"
           role="status"
         >
           {state.success}
@@ -104,7 +113,7 @@ export function PaymentMethodsForm({ merchantId, methods }: Props) {
       <button
         type="submit"
         disabled={pending}
-        className="w-fit rounded-md bg-accent px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+        className="merchant-workspace-primary-btn"
       >
         {pending ? "Guardando…" : "Guardar cambios"}
       </button>

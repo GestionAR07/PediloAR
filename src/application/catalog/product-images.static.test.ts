@@ -35,7 +35,7 @@ describe("product images storage static checks", () => {
     const editor = read(
       "src/app/merchant/[merchantId]/catalog/product-image-editor.tsx",
     );
-    expect(editor).toContain("Imagen del producto");
+    expect(editor).toContain("Imagen");
     expect(editor).toContain("PRODUCT_IMAGE_HELP_TEXT");
     expect(editor).toContain("Subir imagen");
     expect(editor).toContain("Eliminar imagen");

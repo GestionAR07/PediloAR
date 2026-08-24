@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { MerchantWorkspacePage } from "@/components/merchant/merchant-workspace-page";
 import { isAuthzError } from "@/server/auth/errors";
 import { requireMerchantMembership } from "@/server/auth/authorization";
 import { listMerchantCategories } from "@/infrastructure/db/repositories/catalog-repository";
@@ -47,42 +48,54 @@ export default async function CategoriesPage({ params }: PageProps) {
   const boundCreate = createCategoryAction.bind(null, merchantId);
 
   return (
-    <main className="flex flex-1 flex-col gap-6 border-t border-border pt-10">
-      <header className="space-y-2">
-        <p className="text-sm">
-          <Link
-            href={`/merchant/${merchantId}/catalog`}
-            className="text-accent underline-offset-4 hover:underline"
-          >
-            ← Catálogo
-          </Link>
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight">Categorías</h1>
-        <p className="text-sm text-muted">{merchant.name}</p>
-      </header>
+    <MerchantWorkspacePage
+      merchantId={merchantId}
+      merchantName={merchant.name}
+      activeSection="catalog"
+      title="Categorías"
+      description="Organizá los productos que aparecen en tu tienda."
+    >
+      <nav className="merchant-workspace-toolbar" aria-label="Catálogo">
+        <Link
+          href={`/merchant/${merchantId}/catalog`}
+          className="merchant-workspace-toolbar-link"
+        >
+          Productos
+        </Link>
+        <Link
+          href={`/merchant/${merchantId}/catalog/categories`}
+          className="merchant-workspace-toolbar-link merchant-workspace-toolbar-link--active"
+          aria-current="page"
+        >
+          Categorías
+        </Link>
+      </nav>
 
-      <section className="rounded-lg border border-border bg-white/50 p-4">
-        <h2 className="mb-3 text-sm font-medium">Nueva categoría</h2>
-        <form action={boundCreate} className="flex flex-col gap-3 sm:flex-row">
-          <input
-            name="name"
-            required
-            placeholder="Empanadas"
-            className="flex-1 rounded-md border border-border bg-white px-3 py-2 text-sm"
-          />
-          <button
-            type="submit"
-            className="rounded-md border border-border px-3 py-2 text-sm"
-          >
+      <section className="merchant-workspace-card merchant-workspace-form-panel">
+        <h2 className="merchant-workspace-card-title mb-3">Nueva categoría</h2>
+        <form
+          action={boundCreate}
+          className="flex flex-col gap-3 sm:flex-row sm:items-end"
+        >
+          <label className="merchant-workspace-field min-w-0 flex-1">
+            <span className="sr-only">Nombre</span>
+            <input
+              name="name"
+              required
+              placeholder="Empanadas"
+              className="merchant-workspace-input"
+            />
+          </label>
+          <button type="submit" className="merchant-workspace-primary-btn">
             Crear
           </button>
         </form>
       </section>
 
       {categories.length === 0 ? (
-        <p className="text-sm text-muted">Todavía no hay categorías.</p>
+        <p className="merchant-workspace-empty">Todavía no hay categorías.</p>
       ) : (
-        <ul className="space-y-3">
+        <ul className="merchant-workspace-category-list">
           {categories.map((category, index) => {
             const boundUpdate = updateCategoryAction.bind(
               null,
@@ -110,7 +123,7 @@ export default async function CategoriesPage({ params }: PageProps) {
             return (
               <li
                 key={category.id}
-                className="rounded-lg border border-border bg-white/50 p-4"
+                className="merchant-workspace-card merchant-workspace-category-card"
               >
                 <form action={boundUpdate} className="space-y-3">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -118,13 +131,14 @@ export default async function CategoriesPage({ params }: PageProps) {
                       name="name"
                       defaultValue={category.name}
                       required
-                      className="flex-1 rounded-md border border-border bg-white px-3 py-2 text-sm"
+                      className="merchant-workspace-input min-w-0 flex-1"
                     />
-                    <label className="flex items-center gap-2 text-sm">
+                    <label className="merchant-workspace-active-pill">
                       <input
                         type="checkbox"
                         name="active"
                         defaultChecked={category.active}
+                        className="merchant-workspace-checkbox"
                       />
                       Activa
                     </label>
@@ -132,7 +146,7 @@ export default async function CategoriesPage({ params }: PageProps) {
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="submit"
-                      className="rounded-md border border-border px-3 py-2 text-sm"
+                      className="merchant-workspace-secondary-btn"
                     >
                       Guardar
                     </button>
@@ -140,7 +154,7 @@ export default async function CategoriesPage({ params }: PageProps) {
                       formAction={boundUp}
                       type="submit"
                       disabled={index === 0}
-                      className="rounded-md border border-border px-3 py-2 text-sm disabled:opacity-40"
+                      className="merchant-workspace-secondary-btn disabled:opacity-40"
                     >
                       ↑
                     </button>
@@ -148,14 +162,14 @@ export default async function CategoriesPage({ params }: PageProps) {
                       formAction={boundDown}
                       type="submit"
                       disabled={index === categories.length - 1}
-                      className="rounded-md border border-border px-3 py-2 text-sm disabled:opacity-40"
+                      className="merchant-workspace-secondary-btn disabled:opacity-40"
                     >
                       ↓
                     </button>
                     <button
                       formAction={boundDelete}
                       type="submit"
-                      className="rounded-md border border-border px-3 py-2 text-sm text-red-800"
+                      className="merchant-workspace-danger-btn"
                     >
                       Eliminar
                     </button>
@@ -166,6 +180,6 @@ export default async function CategoriesPage({ params }: PageProps) {
           })}
         </ul>
       )}
-    </main>
+    </MerchantWorkspacePage>
   );
 }

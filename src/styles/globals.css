@@ -1508,6 +1508,11 @@ body {
     padding: 1rem 1.1rem;
   }
 
+  .merchant-workspace-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "brand tools";
+  }
+
   .merchant-ops-layout {
     grid-template-columns: 13.5rem minmax(0, 1fr);
     align-items: start;
@@ -1569,5 +1574,733 @@ body {
     transition: none !important;
     animation: none !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Shared private workspace pages (catalog / profile / delivery / payments). */
+.merchant-workspace-header {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "brand tools";
+}
+
+.merchant-workspace-header .merchant-ops-header-tools {
+  justify-self: end;
+}
+
+.merchant-workspace-module {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  min-width: 0;
+}
+
+.merchant-workspace-module-title {
+  font-family: var(--font-sora), var(--font-sans);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.merchant-workspace-module-description {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #5b5470;
+}
+
+.merchant-workspace-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.merchant-workspace-toolbar-link {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid #e4dcf7;
+  background: #ffffff;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #3f3a55;
+}
+
+.merchant-workspace-toolbar-link--active {
+  border-color: #7c3aed;
+  background: #f3e8ff;
+  color: #6d28d9;
+}
+
+.merchant-workspace-toolbar-link:focus-visible,
+.merchant-workspace-primary-btn:focus-visible,
+.merchant-workspace-secondary-btn:focus-visible,
+.merchant-workspace-danger-btn:focus-visible,
+.merchant-workspace-inline-link:focus-visible,
+.merchant-workspace-input:focus-visible {
+  outline: 2px solid #7c3aed;
+  outline-offset: 2px;
+}
+
+.merchant-workspace-card {
+  min-width: 0;
+  border: 1px solid #e4dcf7;
+  border-radius: 1.25rem;
+  background: #ffffff;
+  padding: 1rem;
+  box-shadow: 0 10px 28px -24px rgba(15, 23, 42, 0.35);
+}
+
+.merchant-workspace-card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.merchant-workspace-card-copy {
+  font-size: 0.875rem;
+  color: #5b5470;
+}
+
+.merchant-workspace-filters {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.merchant-workspace-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #3f3a55;
+}
+
+.merchant-workspace-input {
+  min-height: 2.75rem;
+  width: 100%;
+  border-radius: 0.9rem;
+  border: 1px solid #e4dcf7;
+  background: #faf8ff;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #0e0820;
+}
+
+.merchant-workspace-input--narrow {
+  max-width: 6.5rem;
+}
+
+.merchant-workspace-textarea {
+  min-height: 6.5rem;
+  resize: vertical;
+}
+
+.merchant-workspace-filters-action {
+  display: flex;
+  align-items: end;
+}
+
+.merchant-workspace-primary-btn,
+.merchant-workspace-secondary-btn,
+.merchant-workspace-danger-btn {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.merchant-workspace-primary-btn {
+  border: 1px solid #7c3aed;
+  background: #7c3aed;
+  color: #ffffff;
+}
+
+.merchant-workspace-primary-btn:disabled,
+.merchant-workspace-danger-btn:disabled {
+  opacity: 0.6;
+}
+
+.merchant-workspace-secondary-btn {
+  border: 1px solid #e4dcf7;
+  background: #ffffff;
+  color: #6d28d9;
+}
+
+.merchant-workspace-danger-btn {
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #9f1239;
+}
+
+.merchant-workspace-file-btn {
+  cursor: pointer;
+}
+
+.merchant-workspace-empty {
+  font-size: 0.875rem;
+  color: #5b5470;
+}
+
+.merchant-workspace-inline-link {
+  font-weight: 600;
+  color: #6d28d9;
+  text-decoration-line: underline;
+  text-underline-offset: 4px;
+}
+
+.merchant-workspace-product-grid {
+  display: grid;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.merchant-workspace-product-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-width: 0;
+  border: 1px solid #e4dcf7;
+  border-radius: 1.25rem;
+  background: #ffffff;
+  padding: 1rem;
+  box-shadow: 0 8px 22px -20px rgba(15, 23, 42, 0.4);
+}
+
+.merchant-workspace-product-body {
+  display: flex;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.merchant-workspace-product-name {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.merchant-workspace-product-meta,
+.merchant-workspace-product-status {
+  font-size: 0.875rem;
+  color: #5b5470;
+}
+
+.merchant-workspace-product-price {
+  margin-top: 0.15rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #6d28d9;
+}
+
+.merchant-workspace-status-live {
+  color: #166534;
+  font-weight: 600;
+}
+
+.merchant-workspace-status-muted {
+  color: #5b5470;
+}
+
+.merchant-workspace-product-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.merchant-workspace-cover {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.merchant-workspace-cover-preview {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  max-width: 42rem;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid #e4dcf7;
+  background: #faf8ff;
+}
+
+.merchant-workspace-cover-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.merchant-workspace-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.merchant-workspace-form-panel {
+  width: 100%;
+  max-width: 42rem;
+}
+
+.merchant-workspace-edit-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.merchant-workspace-product-meta {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.merchant-workspace-product-meta-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0e0820;
+}
+
+.merchant-workspace-product-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.merchant-workspace-status-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.6rem;
+  border-radius: 999px;
+  border: 1px solid #e4dcf7;
+  background: #faf8ff;
+  padding: 0 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #5b5470;
+}
+
+.merchant-workspace-status-chip--live {
+  border-color: #bbf7d0;
+  background: #ecfdf3;
+  color: #166534;
+}
+
+.merchant-workspace-segmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.merchant-workspace-segment {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid #e4dcf7;
+  background: #ffffff;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #3f3a55;
+}
+
+.merchant-workspace-segment--active {
+  border-color: #7c3aed;
+  background: #f3e8ff;
+  color: #6d28d9;
+}
+
+.merchant-workspace-segment:focus-visible {
+  outline: 2px solid #7c3aed;
+  outline-offset: 2px;
+}
+
+.merchant-workspace-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.6rem;
+  border-radius: 999px;
+  border: 1px solid #ddd6fe;
+  background: #f5f3ff;
+  padding: 0 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #6d28d9;
+}
+
+.merchant-workspace-mode-grid {
+  display: grid;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.merchant-workspace-mode-choice {
+  min-width: 0;
+  cursor: pointer;
+}
+
+.merchant-workspace-mode-choice-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-height: 100%;
+  border-radius: 1rem;
+  border: 1px solid #e4dcf7;
+  background: #ffffff;
+  padding: 0.75rem 0.85rem;
+}
+
+.merchant-workspace-mode-choice-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0e0820;
+}
+
+.merchant-workspace-mode-choice-copy {
+  font-size: 0.8125rem;
+  color: #5b5470;
+}
+
+.merchant-workspace-mode-choice-selected {
+  display: none;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #6d28d9;
+}
+
+.merchant-workspace-mode-choice:has(:checked)
+  .merchant-workspace-mode-choice-body {
+  border-color: #7c3aed;
+  background: #f5f3ff;
+}
+
+.merchant-workspace-mode-choice:has(:checked)
+  .merchant-workspace-mode-choice-selected {
+  display: inline-flex;
+}
+
+.merchant-workspace-mode-choice:focus-within
+  .merchant-workspace-mode-choice-body {
+  outline: 2px solid #7c3aed;
+  outline-offset: 2px;
+}
+
+.merchant-workspace-variant-grid {
+  display: grid;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.merchant-workspace-variant-single {
+  width: 100%;
+  max-width: 40rem;
+}
+
+.merchant-workspace-group-edit {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.merchant-workspace-option-list {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.merchant-workspace-option-row {
+  border-radius: 0.85rem;
+  border: 1px solid #eee9f8;
+  background: #ffffff;
+  padding: 0.55rem 0.75rem;
+}
+
+.merchant-workspace-option-fields {
+  display: grid;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.merchant-workspace-edit-layout {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.merchant-workspace-edit-main,
+.merchant-workspace-edit-side {
+  min-width: 0;
+}
+
+.merchant-workspace-product-form {
+  display: grid;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.merchant-workspace-product-form > .merchant-workspace-field--full {
+  grid-column: 1 / -1;
+}
+
+.merchant-workspace-product-grid {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.merchant-workspace-stock-block {
+  display: grid;
+  gap: 0.65rem;
+  min-width: 0;
+  border-radius: 1rem;
+  border: 1px solid #e4dcf7;
+  background: #faf8ff;
+  padding: 0.85rem;
+}
+
+.merchant-workspace-field-help {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #5b5470;
+}
+
+.merchant-workspace-commerce-states {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+  border-radius: 1rem;
+  border: 1px solid #e4dcf7;
+  background: #faf8ff;
+  padding: 0.9rem 1rem;
+}
+
+.merchant-workspace-check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.merchant-workspace-disclosure-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.merchant-workspace-disclosure-summary::-webkit-details-marker {
+  display: none;
+}
+
+.merchant-workspace-disclosure-body {
+  margin-top: 1rem;
+  border-top: 1px solid #e4dcf7;
+  padding-top: 1rem;
+}
+
+.merchant-workspace-option-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.merchant-workspace-option-summary::-webkit-details-marker {
+  display: none;
+}
+
+.merchant-workspace-inline-action {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #6d28d9;
+}
+
+.merchant-workspace-add-block,
+.merchant-workspace-add-variant {
+  min-width: 0;
+}
+
+.merchant-workspace-add-summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #6d28d9;
+}
+
+.merchant-workspace-add-summary::-webkit-details-marker {
+  display: none;
+}
+
+.merchant-workspace-add-summary--large {
+  font-size: 0.95rem;
+}
+
+.merchant-workspace-image-card {
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .merchant-workspace-edit-layout {
+    grid-template-columns: minmax(0, 2.4fr) minmax(16rem, 1fr);
+    align-items: start;
+  }
+
+  .merchant-workspace-edit-side {
+    position: sticky;
+    top: 1rem;
+  }
+
+  .merchant-workspace-product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .merchant-workspace-variant-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .merchant-workspace-group-edit {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.merchant-workspace-category-list {
+  display: grid;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.merchant-workspace-toggle-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.merchant-workspace-checkbox {
+  margin-top: 0.2rem;
+  height: 1.05rem;
+  width: 1.05rem;
+  accent-color: #7c3aed;
+}
+
+.merchant-workspace-zone-grid,
+.merchant-workspace-payment-grid {
+  display: grid;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.merchant-workspace-zone-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.merchant-workspace-active-pill {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 999px;
+  border: 1px solid #e4dcf7;
+  background: #faf8ff;
+  padding: 0.25rem 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #166534;
+}
+
+.merchant-workspace-zone-fields {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.merchant-workspace-inline-input {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.merchant-workspace-alert {
+  border-radius: 0.95rem;
+  padding: 0.75rem 0.95rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.merchant-workspace-alert--success {
+  border: 1px solid #ddd6fe;
+  background: #f5f3ff;
+  color: #5b21b6;
+}
+
+.merchant-workspace-alert--error {
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #9f1239;
+}
+
+.merchant-workspace-alert--warning {
+  border: 1px solid #fde68a;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+@media (min-width: 768px) {
+  .merchant-workspace-filters {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+    align-items: end;
+  }
+
+  .merchant-workspace-product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .merchant-workspace-mode-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .merchant-workspace-option-fields {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  }
+
+  .merchant-workspace-zone-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .merchant-workspace-zone-grid,
+  .merchant-workspace-payment-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .merchant-workspace-payment-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .merchant-workspace-page * {
+    transition: none !important;
+    animation: none !important;
   }
 }

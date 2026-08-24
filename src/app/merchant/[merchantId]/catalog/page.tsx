@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { MerchantWorkspacePage } from "@/components/merchant/merchant-workspace-page";
 import { isAuthzError } from "@/server/auth/errors";
 import { requireMerchantMembership } from "@/server/auth/authorization";
 import {
@@ -52,7 +53,7 @@ async function loadCatalogPage(merchantId: string) {
 export default async function CatalogPage({ params, searchParams }: PageProps) {
   const { merchantId } = await params;
   const filters = await searchParams;
-  await loadCatalogPage(merchantId);
+  const { merchant } = await loadCatalogPage(merchantId);
 
   const categories = await listMerchantCategories(merchantId);
   const products = await listProductsForMerchant(merchantId, {
@@ -72,59 +73,56 @@ export default async function CatalogPage({ params, searchParams }: PageProps) {
   );
 
   return (
-    <main className="flex flex-1 flex-col gap-6 border-t border-border pt-10">
-      <header className="space-y-2">
-        <p className="text-sm">
-          <Link
-            href={`/merchant/${merchantId}`}
-            className="text-accent underline-offset-4 hover:underline"
-          >
-            ← Mi comercio
-          </Link>
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight">Catálogo</h1>
-        <p className="text-sm text-muted">
-          Gestioná productos y disponibilidad operativa.
-        </p>
-      </header>
-
-      <nav className="flex flex-wrap gap-3 text-sm">
+    <MerchantWorkspacePage
+      merchantId={merchantId}
+      merchantName={merchant.name}
+      activeSection="catalog"
+      title="Catálogo"
+      description="Gestioná productos y disponibilidad operativa."
+      action={
+        <Link
+          href={`/merchant/${merchantId}/catalog/products/new`}
+          className="merchant-workspace-primary-btn"
+        >
+          + Nuevo producto
+        </Link>
+      }
+    >
+      <nav className="merchant-workspace-toolbar" aria-label="Catálogo">
         <Link
           href={`/merchant/${merchantId}/catalog`}
-          className="font-medium text-accent underline-offset-4 hover:underline"
+          className="merchant-workspace-toolbar-link merchant-workspace-toolbar-link--active"
+          aria-current="page"
         >
           Productos
         </Link>
         <Link
           href={`/merchant/${merchantId}/catalog/categories`}
-          className="text-muted underline-offset-4 hover:underline"
+          className="merchant-workspace-toolbar-link"
         >
           Categorías
         </Link>
-        <Link
-          href={`/merchant/${merchantId}/catalog/products/new`}
-          className="rounded-md border border-border px-3 py-2 hover:bg-white/40"
-        >
-          + Nuevo producto
-        </Link>
       </nav>
 
-      <form method="get" className="grid gap-3 sm:grid-cols-3">
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-muted">Buscar</span>
+      <form
+        method="get"
+        className="merchant-workspace-card merchant-workspace-filters"
+      >
+        <label className="merchant-workspace-field">
+          <span>Buscar</span>
           <input
             name="q"
             defaultValue={filters.q ?? ""}
             placeholder="Empanada carne"
-            className="rounded-md border border-border bg-white px-3 py-2"
+            className="merchant-workspace-input"
           />
         </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-muted">Categoría</span>
+        <label className="merchant-workspace-field">
+          <span>Categoría</span>
           <select
             name="category"
             defaultValue={filters.category ?? ""}
-            className="rounded-md border border-border bg-white px-3 py-2"
+            className="merchant-workspace-input"
           >
             <option value="">Todas</option>
             {categories.map((category) => (
@@ -134,113 +132,112 @@ export default async function CatalogPage({ params, searchParams }: PageProps) {
             ))}
           </select>
         </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-muted">Disponibilidad</span>
+        <label className="merchant-workspace-field">
+          <span>Disponibilidad</span>
           <select
             name="available"
             defaultValue={filters.available ?? ""}
-            className="rounded-md border border-border bg-white px-3 py-2"
+            className="merchant-workspace-input"
           >
             <option value="">Todas</option>
             <option value="yes">Disponible</option>
             <option value="no">Pausados (no disponibles)</option>
           </select>
         </label>
-        <div className="sm:col-span-3">
-          <button
-            type="submit"
-            className="rounded-md border border-border px-3 py-2 text-sm"
-          >
+        <div className="merchant-workspace-filters-action">
+          <button type="submit" className="merchant-workspace-secondary-btn">
             Filtrar
           </button>
         </div>
       </form>
 
       {products.length === 0 ? (
-        <p className="text-sm text-muted">
+        <p className="merchant-workspace-empty">
           No hay productos con estos filtros.{" "}
           <Link
             href={`/merchant/${merchantId}/catalog/products/new`}
-            className="text-accent underline-offset-4 hover:underline"
+            className="merchant-workspace-inline-link"
           >
             Crear el primero
           </Link>
         </p>
       ) : (
-        <ul className="space-y-3">
+        <ul className="merchant-workspace-product-grid">
           {products.map((product) => {
             const status = getMerchantProductAvailabilityStatus(product);
 
             return (
-              <li
-                key={product.id}
-                className="rounded-lg border border-border bg-white/50 p-4"
-              >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="flex gap-3">
-                    <ProductImageThumbnail
-                      name={product.name}
-                      imageUrl={
-                        product.imagePath
-                          ? (signedUrls.get(product.imagePath) ?? null)
-                          : null
-                      }
-                    />
-                    <div className="space-y-1">
-                      <p className="font-medium">{product.name}</p>
-                      <p className="text-sm text-muted">
-                        {formatMerchantCategoryLabel(
-                          product.categoryName,
-                          product.categoryActive,
-                        )}{" "}
-                        · {formatMoneyCentsArs(moneyCents(product.priceCents))}
-                      </p>
-                      <p className="text-sm">
-                        <span
-                          className={
-                            status.operationallyAvailable
-                              ? "text-accent"
-                              : "text-muted"
-                          }
-                        >
-                          {status.label}
+              <li key={product.id} className="merchant-workspace-product-card">
+                <div className="merchant-workspace-product-body">
+                  <ProductImageThumbnail
+                    name={product.name}
+                    imageUrl={
+                      product.imagePath
+                        ? (signedUrls.get(product.imagePath) ?? null)
+                        : null
+                    }
+                  />
+                  <div className="merchant-workspace-product-copy min-w-0">
+                    <p className="merchant-workspace-product-name">
+                      {product.name}
+                    </p>
+                    <p className="merchant-workspace-product-meta">
+                      {formatMerchantCategoryLabel(
+                        product.categoryName,
+                        product.categoryActive,
+                      )}
+                    </p>
+                    <p className="merchant-workspace-product-price">
+                      {formatMoneyCentsArs(moneyCents(product.priceCents))}
+                    </p>
+                    <p className="merchant-workspace-product-status">
+                      <span
+                        className={
+                          status.operationallyAvailable
+                            ? "merchant-workspace-status-live"
+                            : "merchant-workspace-status-muted"
+                        }
+                      >
+                        {status.label}
+                      </span>
+                      {status.detail && (
+                        <span className="merchant-workspace-status-muted">
+                          {" "}
+                          · {status.detail}
                         </span>
-                        {status.detail && (
-                          <span className="text-muted"> · {status.detail}</span>
-                        )}
-                        {product.optionGroupCount > 0 && (
-                          <span className="text-muted">
-                            {" "}
-                            · {product.optionGroupCount} grupo
-                            {product.optionGroupCount === 1 ? "" : "s"} de
-                            opciones
-                          </span>
-                        )}
-                      </p>
-                    </div>
+                      )}
+                      {product.optionGroupCount > 0 && (
+                        <span className="merchant-workspace-status-muted">
+                          {" "}
+                          · {product.optionGroupCount} grupo
+                          {product.optionGroupCount === 1 ? "" : "s"} de
+                          opciones
+                        </span>
+                      )}
+                    </p>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {product.active && (
-                      <ProductAvailabilityToggle
-                        merchantId={merchantId}
-                        productId={product.id}
-                        available={product.available}
-                        action={toggleProductAvailabilityAction}
-                      />
-                    )}
-                    <Link
-                      href={`/merchant/${merchantId}/catalog/products/${product.id}`}
-                      className="rounded-md border border-border px-3 py-2 text-sm"
-                    >
-                      Editar
-                    </Link>
-                  </div>
+                </div>
+                <div className="merchant-workspace-product-actions">
+                  {product.active && (
+                    <ProductAvailabilityToggle
+                      merchantId={merchantId}
+                      productId={product.id}
+                      available={product.available}
+                      action={toggleProductAvailabilityAction}
+                    />
+                  )}
+                  <Link
+                    href={`/merchant/${merchantId}/catalog/products/${product.id}`}
+                    className="merchant-workspace-secondary-btn"
+                  >
+                    Editar
+                  </Link>
                 </div>
               </li>
             );
           })}
         </ul>
       )}
-    </main>
+    </MerchantWorkspacePage>
   );
 }

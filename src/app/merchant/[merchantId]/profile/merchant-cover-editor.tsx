@@ -85,13 +85,18 @@ export function MerchantCoverEditor({
   }
 
   return (
-    <section className="space-y-4 rounded-lg border border-border bg-white/50 p-4">
+    <section className="merchant-workspace-card merchant-workspace-cover">
       <header className="space-y-1">
-        <h2 className="text-lg font-semibold">Portada del comercio</h2>
-        <p className="text-sm text-muted">{MERCHANT_COVER_HELP_TEXT}</p>
+        <h2 className="merchant-workspace-card-title">Portada del comercio</h2>
+        <p className="merchant-workspace-card-copy">
+          Esta imagen aparece en el listado público de comercios.
+        </p>
+        <p className="merchant-workspace-card-copy">
+          {MERCHANT_COVER_HELP_TEXT}
+        </p>
       </header>
 
-      <div className="relative h-40 w-full max-w-sm overflow-hidden rounded-md border border-border bg-white">
+      <div className="merchant-workspace-cover-preview">
         {coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -105,18 +110,24 @@ export function MerchantCoverEditor({
       </div>
 
       {success ? (
-        <p className="rounded-md border border-accent/30 bg-accent/10 px-3 py-2 text-sm text-accent">
+        <p
+          className="merchant-workspace-alert merchant-workspace-alert--success"
+          role="status"
+        >
           {success}
         </p>
       ) : null}
       {error ? (
-        <p className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-900">
+        <p
+          className="merchant-workspace-alert merchant-workspace-alert--error"
+          role="alert"
+        >
           {error}
         </p>
       ) : null}
 
-      <div className="flex flex-wrap gap-2">
-        <label className="inline-flex min-h-11 cursor-pointer items-center rounded-md border border-border px-4 py-2 text-sm font-medium">
+      <div className="merchant-workspace-cover-actions">
+        <label className="merchant-workspace-primary-btn merchant-workspace-file-btn">
           {coverUrl ? "Cambiar imagen" : "Subir imagen"}
           <input
             ref={fileInputRef}
@@ -140,7 +151,7 @@ export function MerchantCoverEditor({
             type="button"
             disabled={pending}
             onClick={() => run(() => deleteAction(merchantId))}
-            className="min-h-11 rounded-md border border-amber-700/30 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-900 disabled:opacity-60"
+            className="merchant-workspace-danger-btn"
           >
             {pending ? "..." : "Eliminar imagen"}
           </button>

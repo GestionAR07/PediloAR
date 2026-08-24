@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { MerchantWorkspacePage } from "@/components/merchant/merchant-workspace-page";
 import { isAuthzError } from "@/server/auth/errors";
 import { requireMerchantMembership } from "@/server/auth/authorization";
 import { listActiveMerchantCategories } from "@/infrastructure/db/repositories/catalog-repository";
@@ -42,120 +43,153 @@ export default async function NewProductPage({ params }: PageProps) {
 
   if (categories.length === 0) {
     return (
-      <main className="flex flex-1 flex-col gap-6 border-t border-border pt-10">
-        <p className="text-sm text-muted">
+      <MerchantWorkspacePage
+        merchantId={merchantId}
+        merchantName={merchant.name}
+        activeSection="catalog"
+        title="Nuevo producto"
+        description="Agregá un producto al catálogo de tu comercio."
+      >
+        <p className="merchant-workspace-empty">
           No hay categorías activas. Reactivá una categoría o creá una nueva
           antes de agregar productos.{" "}
           <Link
             href={`/merchant/${merchantId}/catalog/categories`}
-            className="text-accent underline-offset-4 hover:underline"
+            className="merchant-workspace-inline-link"
           >
             Ir a categorías
           </Link>
         </p>
-      </main>
+      </MerchantWorkspacePage>
     );
   }
 
   const boundCreate = createProductAction.bind(null, merchantId);
 
   return (
-    <main className="flex flex-1 flex-col gap-6 border-t border-border pt-10">
-      <header className="space-y-2">
-        <p className="text-sm">
-          <Link
-            href={`/merchant/${merchantId}/catalog`}
-            className="text-accent underline-offset-4 hover:underline"
-          >
-            ← Catálogo
-          </Link>
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Nuevo producto
-        </h1>
-        <p className="text-sm text-muted">{merchant.name}</p>
-      </header>
+    <MerchantWorkspacePage
+      merchantId={merchantId}
+      merchantName={merchant.name}
+      activeSection="catalog"
+      title="Nuevo producto"
+      description="Agregá un producto al catálogo de tu comercio."
+      action={
+        <Link
+          href={`/merchant/${merchantId}/catalog`}
+          className="merchant-workspace-secondary-btn"
+        >
+          ← Catálogo
+        </Link>
+      }
+    >
+      <form
+        action={boundCreate}
+        className="merchant-workspace-card merchant-workspace-product-form"
+      >
+        <h2 className="merchant-workspace-card-title">
+          Información del producto
+        </h2>
 
-      <form action={boundCreate} className="grid max-w-xl gap-4">
-        <label className="flex flex-col gap-1 text-sm">
-          <span>Nombre</span>
-          <input
-            name="name"
-            required
-            className="rounded-md border border-border bg-white px-3 py-2"
-          />
-        </label>
+        <div className="merchant-workspace-product-grid">
+          <label className="merchant-workspace-field">
+            <span>Nombre</span>
+            <input name="name" required className="merchant-workspace-input" />
+          </label>
 
-        <label className="flex flex-col gap-1 text-sm">
-          <span>Categoría</span>
-          <select
-            name="merchantCategoryId"
-            required
-            className="rounded-md border border-border bg-white px-3 py-2"
-          >
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label className="merchant-workspace-field">
+            <span>Categoría</span>
+            <select
+              name="merchantCategoryId"
+              required
+              className="merchant-workspace-input"
+            >
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label className="flex flex-col gap-1 text-sm">
-          <span>Precio (ARS)</span>
-          <input
-            name="priceInput"
-            required
-            placeholder="2500 o 2500,50"
-            className="rounded-md border border-border bg-white px-3 py-2"
-          />
-        </label>
+          <label className="merchant-workspace-field">
+            <span>Precio (ARS)</span>
+            <input
+              name="priceInput"
+              required
+              placeholder="2500 o 2500,50"
+              className="merchant-workspace-input"
+            />
+          </label>
 
-        <label className="flex flex-col gap-1 text-sm">
+          <div className="merchant-workspace-stock-block">
+            <label className="merchant-workspace-field">
+              <span>Stock</span>
+              <select
+                name="stockMode"
+                defaultValue="NOT_TRACKED"
+                className="merchant-workspace-input"
+              >
+                <option value="NOT_TRACKED">No controlar stock</option>
+                <option value="TRACKED">Controlar unidades disponibles</option>
+              </select>
+            </label>
+            <p className="merchant-workspace-field-help">
+              Pedilo dejará de ofrecerlo cuando no queden unidades.
+            </p>
+            <label className="merchant-workspace-field">
+              <span>Cantidad (si controlás stock)</span>
+              <input
+                name="stockQuantity"
+                type="number"
+                min={0}
+                step={1}
+                placeholder="10"
+                className="merchant-workspace-input"
+              />
+            </label>
+          </div>
+        </div>
+
+        <label className="merchant-workspace-field merchant-workspace-field--full">
           <span>Descripción</span>
           <textarea
             name="description"
             rows={3}
-            className="rounded-md border border-border bg-white px-3 py-2"
+            className="merchant-workspace-input merchant-workspace-textarea"
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm">
-          <span>Stock</span>
-          <select
-            name="stockMode"
-            defaultValue="NOT_TRACKED"
-            className="rounded-md border border-border bg-white px-3 py-2"
-          >
-            <option value="NOT_TRACKED">Sin seguimiento</option>
-            <option value="TRACKED">Con cantidad</option>
-          </select>
-        </label>
-
-        <label className="flex flex-col gap-1 text-sm">
-          <span>Cantidad (si aplica)</span>
-          <input
-            name="stockQuantity"
-            type="number"
-            min={0}
-            step={1}
-            placeholder="10"
-            className="rounded-md border border-border bg-white px-3 py-2"
-          />
-        </label>
-
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" name="active" defaultChecked />
-          Activo en catálogo
-        </label>
-
-        <label className="flex items-center gap-2 text-sm">
-          <input type="hidden" name="available" value="on" />
-          Disponible para venta (por defecto sí)
-        </label>
+        <div className="merchant-workspace-commerce-states">
+          <p className="text-sm font-semibold text-[#3f3a55]">
+            Estados comerciales
+          </p>
+          <label className="merchant-workspace-check-row">
+            <input
+              type="checkbox"
+              name="active"
+              defaultChecked
+              className="merchant-workspace-checkbox"
+            />
+            <span>
+              <span className="block font-semibold">Mostrar en la tienda</span>
+              <span className="block text-sm font-normal text-[#5b5470]">
+                El producto será visible para tus clientes.
+              </span>
+            </span>
+          </label>
+          <label className="merchant-workspace-check-row">
+            <input type="hidden" name="available" value="on" />
+            <span>
+              <span className="block font-semibold">Disponible para pedir</span>
+              <span className="block text-sm font-normal text-[#5b5470]">
+                Podés pausarlo temporalmente sin eliminarlo.
+              </span>
+            </span>
+          </label>
+        </div>
 
         <ProductFormSubmitButton mode="create" />
       </form>
-    </main>
+    </MerchantWorkspacePage>
   );
 }

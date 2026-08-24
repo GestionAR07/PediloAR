@@ -23,18 +23,23 @@ describe("option group editor UX", () => {
   );
 
   it("separates existing group, options, and create-new blocks", () => {
-    expect(section).toContain("Grupo de opciones");
-    expect(section).toContain("Opciones de este grupo");
-    expect(section).toContain("Crear nuevo grupo de opciones");
-    expect(section).toContain("border-dashed");
+    expect(section).toContain("Configurar");
+    expect(section).toContain("Opciones");
+    expect(section).toContain("+ Agregar variantes o extras");
+    expect(section).toContain("merchant-workspace-disclosure");
+    expect(section).not.toContain("GRUPO DE OPCIONES");
+    expect(section).not.toContain("Grupo de opciones");
   });
 
   it("uses merchant-friendly mode labels instead of enum names", () => {
-    const presentation = read("src/lib/option-mode-presentation.ts");
-    expect(presentation).toContain("Elegir una opción");
-    expect(presentation).toContain("Elegir varias");
-    expect(presentation).toContain("Variedades por unidad");
-    expect(selector).toContain("{mode.label}");
+    expect(selector).toContain("Elegir una");
+    expect(selector).toContain("Permitir varias");
+    expect(selector).toContain("Combinar unidades");
+    expect(selector).toContain("value={mode.internalMode}");
+    expect(selector).toContain("SINGLE");
+    expect(selector).toContain("MULTIPLE");
+    expect(selector).toContain("QUANTITY");
+    expect(selector).toContain("getMerchantOptionModeCopy");
     expect(selector).not.toContain("Una opción (SINGLE)");
     expect(section).not.toContain("Modo de selección");
   });
@@ -42,20 +47,17 @@ describe("option group editor UX", () => {
   it("hides min/max behind advanced settings", () => {
     expect(advanced).toContain("Configuración avanzada");
     expect(section).toContain("OptionGroupAdvancedSettings");
-    expect(section).not.toMatch(
-      /<span>Mínimo<\/span>[\s\S]*Configuración del grupo/,
-    );
   });
 
   it("shows quantity explanation for merchants", () => {
     expect(selector).toContain("QuantityModePreview");
     expect(selector).toContain("docena de empanadas");
+    expect(selector).toContain("Ver ejemplo");
   });
 
   it("uses explicit labels for option fields", () => {
-    expect(section).toContain("Nombre del grupo");
-    expect(section).toContain("Nombre de la opción");
-    expect(section).toContain("Precio adicional (ARS)");
+    expect(section).toContain('name="name"');
+    expect(section).toContain('name="priceDeltaInput"');
     expect(section).toContain("Agregar opción");
     expect(section).toContain("Guardar grupo");
   });
@@ -64,14 +66,27 @@ describe("option group editor UX", () => {
     expect(section).toContain("formatOptionChoiceLine");
   });
 
-  it("documents the step-by-step workflow", () => {
-    expect(section).toContain("Paso 1:");
-    expect(section).toContain("Paso 2:");
-    expect(section).toContain("Paso 3:");
+  it("uses progressive disclosure instead of step-by-step workflow copy", () => {
+    expect(section).toContain("Variantes y extras");
+    expect(section).toContain(
+      "Configurá tamaños, sabores, agregados o combinaciones.",
+    );
+    expect(section).not.toContain("Paso 1:");
+    expect(section).not.toContain("Paso 2:");
+    expect(section).not.toContain("Paso 3:");
   });
 
-  it("edit product page delegates to OptionGroupsSection", () => {
+  it("edit product page uses Product / Variantes views", () => {
+    expect(page).toContain('query.view === "options"');
+    expect(page).toContain("?view=options");
+    expect(page).toContain("Producto");
+    expect(page).toContain("Variantes y extras");
+    expect(page).toContain('aria-current={showOptions ? "page" : undefined}');
+    expect(page).toContain('aria-current={showOptions ? undefined : "page"}');
     expect(page).toContain("OptionGroupsSection");
+    expect(page).toContain("showOptions ? (");
+    expect(page).toContain("merchant-workspace-edit-layout");
+    expect(page).toContain("Información del producto");
     expect(page).not.toContain("Nuevo grupo");
   });
 });

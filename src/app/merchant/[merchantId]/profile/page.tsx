@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getMerchantCoverPreviewApp } from "@/application/merchant/cover-image-wiring";
+import { MerchantWorkspacePage } from "@/components/merchant/merchant-workspace-page";
 import { findMerchantDetailForMember } from "@/infrastructure/db/repositories/merchant-repository";
 import { isAuthzError } from "@/server/auth/errors";
 import { requireMerchantMembership } from "@/server/auth/authorization";
@@ -44,24 +44,13 @@ export default async function MerchantProfilePage({ params }: PageProps) {
   const preview = await getMerchantCoverPreviewApp(merchantId);
 
   return (
-    <main className="flex flex-1 flex-col gap-6 border-t border-border pt-10">
-      <header className="space-y-2">
-        <p className="text-sm">
-          <Link
-            href={`/merchant/${merchantId}`}
-            className="text-accent underline-offset-4 hover:underline"
-          >
-            ← Mi comercio
-          </Link>
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Portada del comercio
-        </h1>
-        <p className="text-sm text-muted">
-          Esta imagen aparece en el listado público de comercios.
-        </p>
-      </header>
-
+    <MerchantWorkspacePage
+      merchantId={merchantId}
+      merchantName={merchant.name}
+      activeSection="profile"
+      title="Portada del comercio"
+      description="Esta imagen aparece en el listado público de comercios."
+    >
       <MerchantCoverEditor
         merchantId={merchantId}
         merchantName={merchant.name}
@@ -69,6 +58,6 @@ export default async function MerchantProfilePage({ params }: PageProps) {
         upsertAction={upsertMerchantCoverAction}
         deleteAction={deleteMerchantCoverAction}
       />
-    </main>
+    </MerchantWorkspacePage>
   );
 }

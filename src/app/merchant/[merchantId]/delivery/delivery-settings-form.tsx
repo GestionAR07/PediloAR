@@ -39,19 +39,19 @@ export function DeliverySettingsForm({ merchantId, settings }: Props) {
   }, [state.success, router]);
 
   return (
-    <form action={formAction} className="flex flex-col gap-8">
-      <label className="flex items-start gap-3 text-sm">
+    <form action={formAction} className="merchant-workspace-form">
+      <label className="merchant-workspace-card merchant-workspace-toggle-card">
         <input
           type="checkbox"
           name="merchant_delivery_enabled"
           defaultChecked={settings.merchantDeliveryEnabled}
-          className="mt-1"
+          className="merchant-workspace-checkbox"
         />
         <span>
-          <span className="block font-medium">
+          <span className="block font-semibold">
             Realizo envíos con el comercio
           </span>
-          <span className="block text-muted">
+          <span className="mt-1 block text-sm text-[#5b5470]">
             Si lo desactivás, el checkout no ofrece envío a domicilio. Las zonas
             configuradas se conservan.
           </span>
@@ -59,87 +59,98 @@ export function DeliverySettingsForm({ merchantId, settings }: Props) {
       </label>
 
       {settings.zones.length === 0 ? (
-        <p className="text-sm text-muted" role="status">
+        <p className="merchant-workspace-empty" role="status">
           No hay zonas geográficas en {settings.cityName} para configurar
           envíos.
         </p>
       ) : (
-        <div className="flex flex-col gap-8">
+        <div className="merchant-workspace-zone-grid">
           {settings.zones.map((zone) => (
             <section
               key={zone.zoneId}
-              className="space-y-3 border-b border-border pb-6 last:border-b-0 last:pb-0"
+              className="merchant-workspace-card merchant-workspace-zone-card"
             >
               <input type="hidden" name="zone_id" value={zone.zoneId} />
-              <header className="space-y-1">
-                <h2 className="text-lg font-semibold">{zone.zoneName}</h2>
-                <p className="text-sm text-muted">{zone.cityName}</p>
+              <header className="merchant-workspace-zone-header">
+                <div>
+                  <h2 className="merchant-workspace-card-title">
+                    {zone.zoneName}
+                  </h2>
+                  <p className="merchant-workspace-card-copy">
+                    {zone.cityName}
+                  </p>
+                </div>
+                <label className="merchant-workspace-active-pill">
+                  <input
+                    type="checkbox"
+                    name={`active_${zone.zoneId}`}
+                    defaultChecked={zone.active}
+                    className="merchant-workspace-checkbox"
+                  />
+                  <span>Activa</span>
+                </label>
               </header>
 
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  name={`active_${zone.zoneId}`}
-                  defaultChecked={zone.active}
-                />
-                <span>Activa</span>
-              </label>
-
-              <label className="flex flex-col gap-1.5 text-sm">
-                <span className="font-medium">Costo de envío</span>
-                <input
-                  type="text"
-                  name={`fee_${zone.zoneId}`}
-                  inputMode="decimal"
-                  defaultValue={moneyDefault(zone.deliveryFeeCents)}
-                  placeholder="$ 0,00"
-                  className="rounded-md border border-border bg-background px-3 py-2"
-                />
-              </label>
-
-              <label className="flex flex-col gap-1.5 text-sm">
-                <span className="font-medium">Pedido mínimo</span>
-                <input
-                  type="text"
-                  name={`minimum_${zone.zoneId}`}
-                  inputMode="decimal"
-                  defaultValue={moneyDefault(zone.minimumOrderCents)}
-                  placeholder="$ 0,00"
-                  className="rounded-md border border-border bg-background px-3 py-2"
-                />
-              </label>
-
-              <label className="flex flex-col gap-1.5 text-sm">
-                <span className="font-medium">Tiempo estimado</span>
-                <span className="flex items-center gap-2">
+              <div className="merchant-workspace-zone-fields">
+                <label className="merchant-workspace-field">
+                  <span>Costo de envío</span>
                   <input
                     type="text"
-                    name={`estimated_minutes_${zone.zoneId}`}
-                    inputMode="numeric"
-                    defaultValue={
-                      zone.estimatedMinutes === null
-                        ? ""
-                        : String(zone.estimatedMinutes)
-                    }
-                    placeholder="30"
-                    className="w-24 rounded-md border border-border bg-background px-3 py-2"
+                    name={`fee_${zone.zoneId}`}
+                    inputMode="decimal"
+                    defaultValue={moneyDefault(zone.deliveryFeeCents)}
+                    placeholder="$ 0,00"
+                    className="merchant-workspace-input"
                   />
-                  <span className="text-muted">minutos</span>
-                </span>
-              </label>
+                </label>
+
+                <label className="merchant-workspace-field">
+                  <span>Pedido mínimo</span>
+                  <input
+                    type="text"
+                    name={`minimum_${zone.zoneId}`}
+                    inputMode="decimal"
+                    defaultValue={moneyDefault(zone.minimumOrderCents)}
+                    placeholder="$ 0,00"
+                    className="merchant-workspace-input"
+                  />
+                </label>
+
+                <label className="merchant-workspace-field">
+                  <span>Tiempo estimado</span>
+                  <span className="merchant-workspace-inline-input">
+                    <input
+                      type="text"
+                      name={`estimated_minutes_${zone.zoneId}`}
+                      inputMode="numeric"
+                      defaultValue={
+                        zone.estimatedMinutes === null
+                          ? ""
+                          : String(zone.estimatedMinutes)
+                      }
+                      placeholder="30"
+                      className="merchant-workspace-input merchant-workspace-input--narrow"
+                    />
+                    <span className="text-sm text-[#5b5470]">minutos</span>
+                  </span>
+                </label>
+              </div>
             </section>
           ))}
         </div>
       )}
 
       {state.error ? (
-        <p className="text-sm text-red-800" role="alert">
+        <p
+          className="merchant-workspace-alert merchant-workspace-alert--error"
+          role="alert"
+        >
           {state.error}
         </p>
       ) : null}
       {state.success ? (
         <p
-          className="rounded-md border border-accent/30 bg-accent/10 px-4 py-3 text-sm font-medium text-accent"
+          className="merchant-workspace-alert merchant-workspace-alert--success"
           role="status"
         >
           {state.success}
@@ -149,7 +160,7 @@ export function DeliverySettingsForm({ merchantId, settings }: Props) {
       <button
         type="submit"
         disabled={pending}
-        className="w-fit rounded-md bg-accent px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+        className="merchant-workspace-primary-btn"
       >
         {pending ? "Guardando…" : "Guardar cambios"}
       </button>

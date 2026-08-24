@@ -22,7 +22,7 @@ export function ProductFormSubmitButton({ mode }: Props) {
     <button
       type="submit"
       disabled={pending}
-      className="w-fit rounded-md border border-border px-4 py-2 text-sm disabled:opacity-60"
+      className="merchant-workspace-primary-btn w-fit disabled:opacity-60"
     >
       {label}
     </button>

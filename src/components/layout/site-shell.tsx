@@ -16,13 +16,34 @@ const MERCHANT_OPS_SHELL =
 const PUBLIC_STOREFRONT_SHELL =
   "public-storefront flex min-h-dvh w-full min-w-0 max-w-full flex-col";
 
+const MERCHANT_WORKSPACE_LEAVES = new Set([
+  "catalog",
+  "profile",
+  "delivery",
+  "payment-methods",
+]);
+
 function isOperationalPath(pathname: string): boolean {
   return pathname.startsWith("/merchant") || pathname.startsWith("/admin");
 }
 
-function isMerchantDashboardPath(pathname: string): boolean {
+function isMerchantWorkspacePath(pathname: string): boolean {
   const segments = pathname.split("/").filter(Boolean);
-  return segments.length === 2 && segments[0] === "merchant";
+  if (segments[0] !== "merchant" || segments.length < 2) {
+    return false;
+  }
+  if (segments.length === 2) {
+    return true;
+  }
+  const leaf = segments[2];
+  if (!MERCHANT_WORKSPACE_LEAVES.has(leaf)) {
+    return false;
+  }
+  // Nested catalog routes (categories / products) share the ops shell.
+  if (leaf === "catalog") {
+    return true;
+  }
+  return segments.length === 3;
 }
 
 function isPublicStorefrontPath(pathname: string): boolean {
@@ -39,7 +60,7 @@ export function SiteShell({ children }: SiteShellProps) {
   const className =
     isPublicStorefrontPath(pathname) && !isOperationalPath(pathname)
       ? PUBLIC_STOREFRONT_SHELL
-      : isMerchantDashboardPath(pathname)
+      : isMerchantWorkspacePath(pathname)
         ? MERCHANT_OPS_SHELL
         : OPERATIONAL_SHELL;
 

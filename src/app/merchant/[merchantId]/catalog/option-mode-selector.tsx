@@ -3,6 +3,31 @@ import {
   OPTION_MODE_PRESENTATIONS,
 } from "@/lib/option-mode-presentation";
 
+const MERCHANT_MODE_COPY: Record<
+  string,
+  { label: string; description: string }
+> = {
+  SINGLE: {
+    label: "Elegir una",
+    description: "El cliente selecciona una alternativa.",
+  },
+  MULTIPLE: {
+    label: "Permitir varias",
+    description: "El cliente puede sumar varias opciones.",
+  },
+  QUANTITY: {
+    label: "Combinar unidades",
+    description: "El cliente arma una cantidad con distintas variedades.",
+  },
+};
+
+export function getMerchantOptionModeCopy(mode: string): {
+  label: string;
+  description: string;
+} {
+  return MERCHANT_MODE_COPY[mode] ?? MERCHANT_MODE_COPY.SINGLE!;
+}
+
 type OptionModeSelectorProps = {
   name?: string;
   defaultMode: string;
@@ -11,18 +36,19 @@ type OptionModeSelectorProps = {
 
 export function QuantityModePreview() {
   return (
-    <div className="mt-2 rounded-md border border-border/70 bg-white/80 p-3 text-xs text-muted">
-      <p className="font-medium text-foreground">
-        Ejemplo: docena de empanadas
-      </p>
-      <pre className="mt-2 whitespace-pre-wrap font-sans leading-relaxed">
-        {`Carne             4\nJamón y queso     3\nVerdura           5\nTotal            12`}
-      </pre>
-      <p className="mt-2">
-        Usalo cuando el cliente deba indicar cuántas unidades quiere de cada
-        variedad.
-      </p>
-    </div>
+    <details className="merchant-workspace-example mt-1.5">
+      <summary className="cursor-pointer text-xs font-semibold text-[#6d28d9]">
+        Ver ejemplo
+      </summary>
+      <div className="mt-2 rounded-xl border border-[#e4dcf7] bg-[#faf8ff] p-3 text-xs text-[#5b5470]">
+        <p className="font-medium text-[#0e0820]">
+          Ejemplo: docena de empanadas
+        </p>
+        <pre className="mt-2 whitespace-pre-wrap font-sans leading-relaxed">
+          {`Carne             4\nJamón y queso     3\nVerdura           5\nTotal            12`}
+        </pre>
+      </div>
+    </details>
   );
 }
 
@@ -32,16 +58,19 @@ export function OptionModeSelector({
   fieldIdPrefix,
 }: OptionModeSelectorProps) {
   return (
-    <fieldset className="space-y-3">
-      <legend className="text-sm font-medium">¿Cómo elige el cliente?</legend>
-      <div className="grid gap-3">
+    <fieldset className="space-y-2">
+      <legend className="text-sm font-semibold text-[#3f3a55]">
+        ¿Cómo puede elegir el cliente?
+      </legend>
+      <div className="merchant-workspace-mode-grid">
         {OPTION_MODE_PRESENTATIONS.map((mode) => {
           const inputId = `${fieldIdPrefix}-${mode.internalMode}`;
+          const copy = getMerchantOptionModeCopy(mode.internalMode);
           return (
             <label
               key={mode.internalMode}
               htmlFor={inputId}
-              className="flex cursor-pointer gap-3 rounded-lg border border-border bg-white p-4 has-[:checked]:border-accent has-[:checked]:bg-accent/5"
+              className="merchant-workspace-mode-choice"
             >
               <input
                 id={inputId}
@@ -49,16 +78,22 @@ export function OptionModeSelector({
                 name={name}
                 value={mode.internalMode}
                 defaultChecked={defaultMode === mode.internalMode}
-                className="mt-1 h-4 w-4 shrink-0 accent-[var(--color-accent)]"
+                className="sr-only"
               />
-              <div className="min-w-0 space-y-1">
-                <span className="block text-sm font-medium">{mode.label}</span>
-                <p className="text-sm text-muted">{mode.description}</p>
-                <p className="text-xs text-muted">Ej.: {mode.examples}</p>
+              <span className="merchant-workspace-mode-choice-body">
+                <span className="merchant-workspace-mode-choice-title">
+                  {copy.label}
+                </span>
+                <span className="merchant-workspace-mode-choice-copy">
+                  {copy.description}
+                </span>
+                <span className="merchant-workspace-mode-choice-selected">
+                  Seleccionado
+                </span>
                 {mode.internalMode === "QUANTITY" ? (
                   <QuantityModePreview />
                 ) : null}
-              </div>
+              </span>
             </label>
           );
         })}
@@ -68,11 +103,7 @@ export function OptionModeSelector({
 }
 
 export function OptionModeSummary({ mode }: { mode: string }) {
-  const presentation = getOptionModePresentation(mode);
-  return (
-    <div className="rounded-md bg-white/50 px-3 py-2 text-sm">
-      <p className="font-medium">{presentation.label}</p>
-      <p className="text-muted">{presentation.description}</p>
-    </div>
-  );
+  const copy = getMerchantOptionModeCopy(mode);
+  getOptionModePresentation(mode);
+  return <span className="merchant-workspace-mode-badge">{copy.label}</span>;
 }
