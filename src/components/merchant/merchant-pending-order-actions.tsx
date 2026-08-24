@@ -77,12 +77,12 @@ export function MerchantPendingOrderActions({ merchantId, orderId }: Props) {
 
   return (
     <div className="space-y-2" aria-busy={busy}>
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="merchant-ops-pending-actions">
         <button
           type="button"
           disabled={busy}
           onClick={runAccept}
-          className="min-h-11 flex-1 rounded-md bg-accent px-4 py-2 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-60"
+          className="min-h-11 flex-1 rounded-xl bg-[#7c3aed] px-4 py-2 text-sm font-medium text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7c3aed] disabled:opacity-60"
         >
           {accepting ? "Aceptando..." : "Aceptar"}
         </button>
@@ -94,7 +94,7 @@ export function MerchantPendingOrderActions({ merchantId, orderId }: Props) {
             setReason("");
             dialogRef.current?.showModal();
           }}
-          className="min-h-11 rounded-md border border-red-300 px-4 py-2 text-sm font-medium text-red-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-60"
+          className="min-h-11 rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-60"
         >
           Rechazar
         </button>
@@ -108,7 +108,7 @@ export function MerchantPendingOrderActions({ merchantId, orderId }: Props) {
       <dialog
         ref={dialogRef}
         aria-labelledby={titleId}
-        className="w-[min(100%,28rem)] rounded-lg border border-border bg-white p-0 shadow-lg backdrop:bg-black/40"
+        className="fixed inset-0 m-auto h-fit max-h-[calc(100dvh-2rem)] w-[min(calc(100%-2rem),28rem)] overflow-y-auto rounded-lg border border-border bg-white p-0 shadow-lg backdrop:bg-black/40"
       >
         <form
           className="flex flex-col gap-4 p-4"

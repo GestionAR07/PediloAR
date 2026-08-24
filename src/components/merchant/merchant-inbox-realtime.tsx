@@ -7,7 +7,6 @@ import {
   recordSessionMerchantNewOrderInsert,
 } from "@/application/merchant/new-order-alert";
 import { subscribeMerchantOrderInserts } from "@/application/merchant/order-inbox-realtime";
-import { MerchantOrderSoundToggle } from "@/components/merchant/merchant-order-sound-toggle";
 import { OrderNotificationToast } from "@/components/merchant/order-notification-toast";
 import { createSupabaseBrowserClient } from "@/infrastructure/supabase/browser";
 import { isValidUuid } from "@/lib/uuid";
@@ -62,9 +61,6 @@ export function MerchantInboxRealtime({ merchantId }: Props) {
 
   return (
     <div className="pointer-events-none fixed inset-x-4 top-4 z-50 flex flex-col items-end gap-3 sm:inset-x-auto sm:right-4 sm:w-[22rem]">
-      <div className="pointer-events-auto">
-        <MerchantOrderSoundToggle />
-      </div>
       {visibleOrderIds.map((orderId) => (
         <OrderNotificationToast
           key={orderId}

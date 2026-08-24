@@ -79,6 +79,8 @@ describe("merchant inbox realtime static checks", () => {
 
     expect(page).toContain("MerchantInboxRealtime");
     expect(page).toContain("merchantId={merchantId}");
+    expect(page).toContain("MerchantOrderSoundToggle");
+    expect(component).not.toContain("MerchantOrderSoundToggle");
   });
 
   it("does not put PII on the broadcast transport", () => {

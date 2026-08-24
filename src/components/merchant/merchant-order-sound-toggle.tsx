@@ -25,7 +25,7 @@ export function MerchantOrderSoundToggle() {
         }
         void enableMerchantOrderSound();
       }}
-      className="inline-flex min-h-11 items-center rounded-full border border-violet-200 bg-white/95 px-4 text-sm font-semibold text-violet-800 shadow-sm hover:bg-violet-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700"
+      className="merchant-ops-sound inline-flex min-h-11 items-center rounded-full border border-violet-200 bg-white px-4 text-sm font-semibold text-violet-800 shadow-sm hover:bg-violet-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700"
     >
       {enabled ? "Silenciar sonido" : "Activar sonido"}
     </button>

@@ -4,12 +4,14 @@ import { logoutAction } from "@/app/login/actions";
 import { listMerchantInboxApp } from "@/application/merchant/order-inbox-wiring";
 import { MerchantInboxRealtime } from "@/components/merchant/merchant-inbox-realtime";
 import { MerchantOrderInbox } from "@/components/merchant/merchant-order-inbox";
+import { MerchantOrderSoundToggle } from "@/components/merchant/merchant-order-sound-toggle";
 import { isAuthzError } from "@/server/auth/errors";
 import { requireMerchantMembership } from "@/server/auth/authorization";
 import { findMerchantDetailForMember } from "@/infrastructure/db/repositories/merchant-repository";
 import { getMerchantOperationalStatus } from "@/domain/merchant/operational-availability";
 import type { MerchantStatus } from "@/domain/merchant/enums";
 import { formatInstantAsLocalTime } from "@/lib/format-local-time";
+import { APP_NAME } from "@/lib/app-info";
 import { getMerchantOperationalPresentation } from "@/lib/merchant-operational-presentation";
 import {
   pauseMerchantOrdersManualAction,
@@ -44,6 +46,38 @@ async function loadMerchant(merchantId: string) {
     }
     throw error;
   }
+}
+
+function MerchantOpsNav({ merchantId }: { merchantId: string }) {
+  const items = [
+    { href: `/merchant/${merchantId}`, label: "Pedidos", current: true },
+    { href: `/merchant/${merchantId}/catalog`, label: "Catálogo" },
+    { href: `/merchant/${merchantId}/profile`, label: "Portada" },
+    { href: `/merchant/${merchantId}/delivery`, label: "Envíos y zonas" },
+    {
+      href: `/merchant/${merchantId}/payment-methods`,
+      label: "Medios de pago",
+    },
+  ];
+
+  return (
+    <nav className="merchant-ops-nav" aria-label="Secciones del comercio">
+      {items.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          aria-current={item.current ? "page" : undefined}
+          className={
+            item.current
+              ? "merchant-ops-nav-link merchant-ops-nav-link--active"
+              : "merchant-ops-nav-link"
+          }
+        >
+          {item.label}
+        </Link>
+      ))}
+    </nav>
+  );
 }
 
 export default async function MerchantDetailPage({ params }: PageProps) {
@@ -87,35 +121,6 @@ export default async function MerchantDetailPage({ params }: PageProps) {
     inboxError = "No pudimos cargar los pedidos.";
   }
 
-  const hasPending = (inbox?.attention.length ?? 0) > 0;
-  const settingsNav = (
-    <nav className="flex flex-col gap-2 text-sm sm:flex-row">
-      <Link
-        href={`/merchant/${merchantId}/profile`}
-        className="inline-flex rounded-md border border-border px-4 py-3 font-medium text-accent underline-offset-4 hover:underline"
-      >
-        Portada del comercio →
-      </Link>
-      <Link
-        href={`/merchant/${merchantId}/catalog`}
-        className="inline-flex rounded-md border border-border px-4 py-3 font-medium text-accent underline-offset-4 hover:underline"
-      >
-        Gestionar catálogo →
-      </Link>
-      <Link
-        href={`/merchant/${merchantId}/payment-methods`}
-        className="inline-flex rounded-md border border-border px-4 py-3 font-medium text-accent underline-offset-4 hover:underline"
-      >
-        Medios de pago →
-      </Link>
-      <Link
-        href={`/merchant/${merchantId}/delivery`}
-        className="inline-flex rounded-md border border-border px-4 py-3 font-medium text-accent underline-offset-4 hover:underline"
-      >
-        Envíos y zonas →
-      </Link>
-    </nav>
-  );
   const inboxBlock = inboxError ? (
     <p className="text-sm text-muted">{inboxError}</p>
   ) : inbox ? (
@@ -127,74 +132,115 @@ export default async function MerchantDetailPage({ params }: PageProps) {
     />
   ) : null;
 
+  const accepting = operationalStatus === "ACCEPTING";
+
   return (
-    <main className="flex flex-1 flex-col gap-6 border-t border-border pt-10">
+    <main className="merchant-ops-dashboard flex min-w-0 flex-1 flex-col">
       <MerchantInboxRealtime merchantId={merchantId} />
-      <header className="space-y-2">
-        <p className="text-sm">
-          <Link
-            href="/"
-            className="text-accent underline-offset-4 hover:underline"
+
+      <header className="merchant-ops-header">
+        <div className="merchant-ops-header-brand min-w-0">
+          <p className="merchant-ops-mark">{APP_NAME}</p>
+          <h1 className="merchant-ops-title min-w-0 truncate">
+            {merchant.name}
+          </h1>
+          <p className="merchant-ops-kicker">Panel operativo</p>
+        </div>
+        <div className="merchant-ops-header-tools">
+          <span
+            className={
+              accepting
+                ? "merchant-ops-badge merchant-ops-badge--live"
+                : "merchant-ops-badge merchant-ops-badge--paused"
+            }
           >
-            ← Marketplace
+            {presentation.headline}
+          </span>
+          <Link
+            href={`/comercios/${merchantId}`}
+            className="merchant-ops-store-link"
+          >
+            Ver tienda
           </Link>
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {merchant.name}
-        </h1>
-        <p className="text-sm text-muted">Panel operativo del comercio.</p>
+          <MerchantOrderSoundToggle />
+        </div>
+        <form action={logoutAction} className="merchant-ops-header-secondary">
+          <button type="submit" className="merchant-ops-logout">
+            Cerrar sesión
+          </button>
+        </form>
       </header>
 
-      <MerchantOrderStatusPanel
-        merchantId={merchantId}
-        operationalStatus={operationalStatus}
-        presentation={presentation}
-        pauseTemporaryAction={pauseMerchantOrdersTemporaryAction}
-        pauseManualAction={pauseMerchantOrdersManualAction}
-        resumeAction={resumeMerchantOrdersAction}
-      />
+      <div className="merchant-ops-layout">
+        <MerchantOpsNav merchantId={merchantId} />
 
-      {hasPending ? (
-        <>
-          {inboxBlock}
-          {settingsNav}
-        </>
-      ) : (
-        <>
-          {settingsNav}
-          {inboxBlock}
-        </>
-      )}
+        <div className="merchant-ops-main min-w-0">
+          {inbox ? (
+            <section
+              className="merchant-ops-summary"
+              aria-label="Resumen de pedidos"
+            >
+              <article className="merchant-ops-stat">
+                <p className="merchant-ops-stat-label">Nuevos</p>
+                <p className="merchant-ops-stat-value">
+                  {inbox.attention.length}
+                </p>
+              </article>
+              <article className="merchant-ops-stat">
+                <p className="merchant-ops-stat-label">En preparación</p>
+                <p className="merchant-ops-stat-value">
+                  {inbox.preparing.length}
+                </p>
+              </article>
+              <article className="merchant-ops-stat">
+                <p className="merchant-ops-stat-label">Listos</p>
+                <p className="merchant-ops-stat-value">{inbox.ready.length}</p>
+              </article>
+              <article className="merchant-ops-stat">
+                <p className="merchant-ops-stat-label">Finalizados hoy</p>
+                <p className="merchant-ops-stat-value">{inbox.today.length}</p>
+              </article>
+            </section>
+          ) : null}
 
-      <dl className="space-y-2 text-sm">
-        <div>
-          <dt className="text-muted">Rol</dt>
-          <dd>{membership.role}</dd>
+          <div className="merchant-ops-workspace">
+            <div className="merchant-ops-board-wrap min-w-0">{inboxBlock}</div>
+            <div className="merchant-ops-side min-w-0">
+              <MerchantOrderStatusPanel
+                merchantId={merchantId}
+                operationalStatus={operationalStatus}
+                presentation={presentation}
+                pauseTemporaryAction={pauseMerchantOrdersTemporaryAction}
+                pauseManualAction={pauseMerchantOrdersManualAction}
+                resumeAction={resumeMerchantOrdersAction}
+              />
+              <section className="merchant-ops-account">
+                <h2>Cuenta y comercio</h2>
+                <dl>
+                  <div>
+                    <dt>Rol</dt>
+                    <dd>{membership.role}</dd>
+                  </div>
+                  <div>
+                    <dt>Estado del comercio</dt>
+                    <dd>{merchant.status}</dd>
+                  </div>
+                  <div>
+                    <dt>Ubicación</dt>
+                    <dd>
+                      {merchant.cityName} / {merchant.zoneName}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Usuario</dt>
+                    <dd>{user.email ?? user.id}</dd>
+                  </div>
+                </dl>
+              </section>
+            </div>
+          </div>
         </div>
-        <div>
-          <dt className="text-muted">Estado del comercio</dt>
-          <dd>{merchant.status}</dd>
-        </div>
-        <div>
-          <dt className="text-muted">Ubicación</dt>
-          <dd>
-            {merchant.cityName} / {merchant.zoneName}
-          </dd>
-        </div>
-        <div>
-          <dt className="text-muted">Usuario</dt>
-          <dd>{user.email ?? user.id}</dd>
-        </div>
-      </dl>
-
-      <form action={logoutAction}>
-        <button
-          type="submit"
-          className="rounded-md border border-border px-3 py-2 text-sm"
-        >
-          Cerrar sesión
-        </button>
-      </form>
+      </div>
     </main>
   );
 }

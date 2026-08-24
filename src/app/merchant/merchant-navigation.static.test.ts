@@ -11,18 +11,42 @@ function read(rel: string): string {
 describe("merchant back navigation", () => {
   it("merchant dashboard returns to the public marketplace", () => {
     const page = read("src/app/merchant/[merchantId]/page.tsx");
-    expect(page).toContain('href="/"');
-    expect(page).toContain("← Marketplace");
-    expect(page).not.toContain("← Mi comercio");
-    // Single-membership resolver still lives on /merchant index.
-    expect(page).not.toMatch(/href=["']\/merchant["']/);
-    expect(page).toContain("Gestionar catálogo");
-    expect(page).toContain("Portada del comercio");
+    expect(page).toContain("Pedidos");
+    expect(page).toContain("Catálogo");
+    expect(page).toContain("Portada");
     expect(page).toContain("Medios de pago");
     expect(page).toContain("Envíos y zonas");
-    expect(page).toContain("href={`/merchant/${merchantId}/profile`}");
-    expect(page).toContain("href={`/merchant/${merchantId}/payment-methods`}");
-    expect(page).toContain("href={`/merchant/${merchantId}/delivery`}");
+    expect(page).toContain("`/merchant/${merchantId}`");
+    expect(page).toContain("`/merchant/${merchantId}/catalog`");
+    expect(page).toContain("`/merchant/${merchantId}/profile`");
+    expect(page).toContain("`/merchant/${merchantId}/payment-methods`");
+    expect(page).toContain("`/merchant/${merchantId}/delivery`");
+    expect(page).toContain("href={`/comercios/${merchantId}`}");
+    expect(page).toContain("Ver tienda");
+    expect(page).toContain("MerchantOrderSoundToggle");
+    expect(page).toContain("MerchantInboxRealtime");
+    expect(page).toContain("inbox.attention.length");
+    expect(page).toContain("inbox.preparing.length");
+    expect(page).toContain("inbox.ready.length");
+    expect(page).toContain("inbox.today.length");
+    expect(page).not.toContain("public-storefront");
+    expect(page).not.toContain("← Marketplace");
+    expect(page).not.toContain("← Mi comercio");
+    expect(page).not.toMatch(/href=["']\/merchant["']/);
+    const shell = read("src/components/layout/site-shell.tsx");
+    expect(shell).toContain("function isMerchantDashboardPath");
+    expect(shell).toContain("segments.length === 2");
+    expect(shell).toContain('segments[0] === "merchant"');
+    expect(shell).toContain("isMerchantDashboardPath(pathname)");
+    expect(shell).toContain("MERCHANT_OPS_SHELL");
+    expect(shell).toContain("OPERATIONAL_SHELL");
+    expect(shell).toContain("merchant-ops");
+    expect(shell).not.toContain("max-w-[90rem]");
+    expect(shell).toContain("PUBLIC_STOREFRONT_SHELL");
+    const css = read("src/styles/globals.css");
+    expect(css).toContain(".merchant-ops-dashboard");
+    expect(css).toContain("max-width: 90rem");
+    expect(css).toContain("margin-inline: auto");
   });
 
   it("catalog returns to the merchant dashboard", () => {
