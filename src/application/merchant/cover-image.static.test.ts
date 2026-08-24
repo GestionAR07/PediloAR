@@ -52,12 +52,23 @@ describe("merchant cover image static checks", () => {
     const editor = read(
       "src/app/merchant/[merchantId]/profile/merchant-cover-editor.tsx",
     );
-    expect(editor).toContain("Portada del comercio");
-    expect(editor).toContain("MERCHANT_COVER_HELP_TEXT");
-    expect(editor).toContain("Subir imagen");
-    expect(editor).toContain("Cambiar imagen");
-    expect(editor).toContain("Eliminar imagen");
+    const profile = read("src/app/merchant/[merchantId]/profile/page.tsx");
+    expect(editor).toContain("Imagen de portada");
+    expect(profile).toContain("MerchantCoverEditor");
+    expect(profile).toContain("Datos del comercio");
+    expect(profile).not.toContain("<input");
+    expect(profile).not.toContain("<textarea");
+    expect(editor).toContain(
+      "Se muestra en el listado de comercios y en tu tienda.",
+    );
+    expect(editor).toContain("JPG, PNG o WEBP · Máximo 5 MB.");
+    expect(editor).toContain("Subir portada");
+    expect(editor).toContain("Cambiar portada");
+    expect(editor).toContain("Eliminar portada");
     expect(editor).toContain("MerchantCoverFallback");
+    expect(editor).toContain("gateProductImageBeforeUpload");
+    expect(editor).toContain("MERCHANT_COVER_ACCEPT_ATTR");
+    expect(editor).not.toContain("Portada del comercio");
     expect(editor).not.toContain("bucket");
     expect(editor).not.toContain("bodySizeLimit");
   });

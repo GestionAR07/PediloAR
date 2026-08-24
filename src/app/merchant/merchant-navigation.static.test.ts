@@ -16,14 +16,15 @@ describe("merchant back navigation", () => {
     expect(page).toContain('activeSection="orders"');
     expect(nav).toContain("Pedidos");
     expect(nav).toContain("Catálogo");
-    expect(nav).toContain("Portada");
-    expect(nav).toContain("Medios de pago");
-    expect(nav).toContain("Envíos y zonas");
+    expect(nav).toContain("Configuración");
+    expect(nav).not.toContain("Portada");
+    expect(nav).not.toContain("Envíos y zonas");
+    expect(nav).not.toContain("Medios de pago");
     expect(nav).toContain("`/merchant/${merchantId}`");
     expect(nav).toContain("`/merchant/${merchantId}/catalog`");
     expect(nav).toContain("`/merchant/${merchantId}/profile`");
-    expect(nav).toContain("`/merchant/${merchantId}/payment-methods`");
-    expect(nav).toContain("`/merchant/${merchantId}/delivery`");
+    expect(nav).not.toContain("`/merchant/${merchantId}/payment-methods`");
+    expect(nav).not.toContain("`/merchant/${merchantId}/delivery`");
     expect(page).toContain("href={`/comercios/${merchantId}`}");
     expect(page).toContain("Ver tienda");
     expect(page).toContain("MerchantOrderSoundToggle");
@@ -111,9 +112,28 @@ describe("merchant back navigation", () => {
   it("profile cover uses the shared merchant workspace shell", () => {
     const page = read("src/app/merchant/[merchantId]/profile/page.tsx");
     expect(page).toContain("MerchantWorkspacePage");
-    expect(page).toContain('activeSection="profile"');
+    expect(page).toContain('activeSection="settings"');
+    expect(page).toContain('title="Configuración"');
+    expect(page).toContain("MerchantSettingsNav");
+    expect(page).toContain('activeTab="store"');
     expect(page).toContain("merchantName={merchant.name}");
-    expect(page).toContain("Portada del comercio");
+    expect(page).toContain("Tienda");
+    expect(page).toContain("Revisá los datos y la imagen de tu comercio.");
+    expect(page).toContain("Datos del comercio");
+    expect(page).toContain("Nombre comercial");
+    expect(page).toContain("Tu rol");
+    expect(page).toContain("Usuario");
+    expect(page).toContain('case "OWNER"');
+    expect(page).toContain("Propietario");
+    expect(page).toContain('case "STAFF"');
+    expect(page).toContain("Personal");
+    expect(page).toContain('case "ACTIVE"');
+    expect(page).toContain("Activo");
+    expect(page).toContain('case "DRAFT"');
+    expect(page).toContain("Borrador");
+    expect(page).toContain('case "SUSPENDED"');
+    expect(page).toContain("Suspendido");
+    expect(page).toContain("user.email ?? user.id");
     expect(page).toContain("MerchantCoverEditor");
     expect(page).not.toContain("← Mi comercio");
   });
@@ -121,7 +141,10 @@ describe("merchant back navigation", () => {
   it("payment methods uses the shared merchant workspace shell", () => {
     const page = read("src/app/merchant/[merchantId]/payment-methods/page.tsx");
     expect(page).toContain("MerchantWorkspacePage");
-    expect(page).toContain('activeSection="payment-methods"');
+    expect(page).toContain('activeSection="settings"');
+    expect(page).toContain('title="Configuración"');
+    expect(page).toContain("MerchantSettingsNav");
+    expect(page).toContain('activeTab="payments"');
     expect(page).toContain("merchantName={merchant.name}");
     expect(page).toContain("Medios de pago");
     expect(page).toContain("PaymentMethodsForm");
@@ -131,12 +154,13 @@ describe("merchant back navigation", () => {
   it("delivery settings uses the shared merchant workspace shell", () => {
     const page = read("src/app/merchant/[merchantId]/delivery/page.tsx");
     expect(page).toContain("MerchantWorkspacePage");
-    expect(page).toContain('activeSection="delivery"');
+    expect(page).toContain('activeSection="settings"');
+    expect(page).toContain('title="Configuración"');
+    expect(page).toContain("MerchantSettingsNav");
+    expect(page).toContain('activeTab="delivery"');
     expect(page).toContain("merchantName={merchant.name}");
-    expect(page).toContain("Envíos y zonas");
-    expect(page).toContain(
-      "Configurá dónde realizás entregas y cuánto cuesta el envío.",
-    );
+    expect(page).toContain("Envíos");
+    expect(page).toContain("Definí dónde entregás y cuánto cuesta el envío.");
     expect(page).toContain("DeliverySettingsForm");
     expect(page).not.toContain("← Mi comercio");
   });

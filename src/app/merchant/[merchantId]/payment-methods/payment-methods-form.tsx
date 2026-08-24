@@ -59,7 +59,7 @@ export function PaymentMethodsForm({ merchantId, methods }: Props) {
             className="merchant-workspace-card merchant-workspace-payment-card"
           >
             <header className="merchant-workspace-zone-header">
-              <div>
+              <div className="min-w-0">
                 <h2 className="merchant-workspace-card-title">
                   {method.label}
                 </h2>
@@ -67,18 +67,33 @@ export function PaymentMethodsForm({ merchantId, methods }: Props) {
                   {PAYMENT_METHOD_CUSTOMER_COPY[method.code]}
                 </p>
               </div>
-              <label className="merchant-workspace-active-pill">
+              <label className="merchant-workspace-switch merchant-workspace-switch--compact">
                 <input
                   type="checkbox"
                   name={`active_${method.code}`}
                   defaultChecked={method.active}
-                  className="merchant-workspace-checkbox"
+                  className="merchant-workspace-switch-input"
                 />
-                <span>Activo</span>
+                <span
+                  className="merchant-workspace-switch-track"
+                  aria-hidden="true"
+                />
+                <span className="merchant-workspace-switch-copy">
+                  <span className="merchant-workspace-switch-label-on">
+                    Activo
+                  </span>
+                  <span className="merchant-workspace-switch-label-off">
+                    Activar
+                  </span>
+                </span>
               </label>
             </header>
 
-            <label className="merchant-workspace-field">
+            <p className="merchant-workspace-payment-instructions-hint">
+              Activá este medio para agregar instrucciones.
+            </p>
+
+            <label className="merchant-workspace-field merchant-workspace-payment-instructions">
               <span>Instrucciones para el cliente</span>
               <textarea
                 name={`instructions_${method.code}`}
@@ -110,13 +125,15 @@ export function PaymentMethodsForm({ merchantId, methods }: Props) {
         </p>
       ) : null}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="merchant-workspace-primary-btn"
-      >
-        {pending ? "Guardando…" : "Guardar cambios"}
-      </button>
+      <div className="merchant-workspace-form-actions">
+        <button
+          type="submit"
+          disabled={pending}
+          className="merchant-workspace-primary-btn"
+        >
+          {pending ? "Guardando…" : "Guardar cambios"}
+        </button>
+      </div>
     </form>
   );
 }

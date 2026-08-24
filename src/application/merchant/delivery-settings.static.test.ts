@@ -50,13 +50,22 @@ describe("merchant delivery settings static checks", () => {
     );
     const page = read("src/app/merchant/[merchantId]/delivery/page.tsx");
     const useCase = read("src/application/merchant/delivery-settings.ts");
-    expect(form).toContain("Realizo envíos con el comercio");
+    expect(form).toContain("Ofrecer envío a domicilio");
+    expect(form).toContain(
+      "Los clientes podrán elegir entrega en las zonas que tengas activas.",
+    );
     expect(form).toContain("merchant_delivery_enabled");
+    expect(form).toContain("merchant-workspace-switch-input");
+    expect(form).toContain("merchant-workspace-form-actions");
+    expect(form).toContain("Guardar cambios");
+    expect(form).not.toContain("Realizo envíos con el comercio");
     expect(form).not.toContain("platform_delivery");
     expect(form).not.toContain("PLATFORM_DELIVERY");
     expect(form).not.toContain("Delivery de la plataforma");
     expect(form).not.toContain("alert(");
-    expect(page).toContain("Envíos y zonas");
+    expect(page).toContain("Envíos");
+    expect(page).toContain('activeSection="settings"');
+    expect(page).toContain("MerchantSettingsNav");
     expect(useCase).not.toContain("insertZone");
     expect(useCase).not.toContain("insertCity");
   });

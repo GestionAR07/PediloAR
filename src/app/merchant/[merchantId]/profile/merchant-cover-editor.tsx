@@ -4,10 +4,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { MerchantCoverFallback } from "@/components/storefront/merchant-cover-fallback";
 import { gateProductImageBeforeUpload } from "@/lib/product-image-client-gate";
-import {
-  MERCHANT_COVER_ACCEPT_ATTR,
-  MERCHANT_COVER_HELP_TEXT,
-} from "@/lib/merchant-cover-image";
+import { MERCHANT_COVER_ACCEPT_ATTR } from "@/lib/merchant-cover-image";
 import type { MerchantCoverActionState } from "./action-state";
 
 type Props = {
@@ -86,76 +83,79 @@ export function MerchantCoverEditor({
 
   return (
     <section className="merchant-workspace-card merchant-workspace-cover">
-      <header className="space-y-1">
-        <h2 className="merchant-workspace-card-title">Portada del comercio</h2>
-        <p className="merchant-workspace-card-copy">
-          Esta imagen aparece en el listado público de comercios.
-        </p>
-        <p className="merchant-workspace-card-copy">
-          {MERCHANT_COVER_HELP_TEXT}
-        </p>
-      </header>
+      <h2 className="merchant-workspace-card-title">Imagen de portada</h2>
 
-      <div className="merchant-workspace-cover-preview">
-        {coverUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={coverUrl}
-            alt={`Portada de ${merchantName}`}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <MerchantCoverFallback name={merchantName} />
-        )}
-      </div>
+      <div className="merchant-workspace-cover-layout">
+        <div className="merchant-workspace-cover-preview">
+          {coverUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={coverUrl}
+              alt={`Portada de ${merchantName}`}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <MerchantCoverFallback name={merchantName} />
+          )}
+        </div>
 
-      {success ? (
-        <p
-          className="merchant-workspace-alert merchant-workspace-alert--success"
-          role="status"
-        >
-          {success}
-        </p>
-      ) : null}
-      {error ? (
-        <p
-          className="merchant-workspace-alert merchant-workspace-alert--error"
-          role="alert"
-        >
-          {error}
-        </p>
-      ) : null}
+        <div className="merchant-workspace-cover-side">
+          <p className="merchant-workspace-card-copy">
+            Se muestra en el listado de comercios y en tu tienda.
+          </p>
+          <p className="merchant-workspace-card-copy">
+            JPG, PNG o WEBP · Máximo 5 MB.
+          </p>
 
-      <div className="merchant-workspace-cover-actions">
-        <label className="merchant-workspace-primary-btn merchant-workspace-file-btn">
-          {coverUrl ? "Cambiar imagen" : "Subir imagen"}
-          <input
-            ref={fileInputRef}
-            type="file"
-            name="image"
-            accept={MERCHANT_COVER_ACCEPT_ATTR}
-            disabled={pending}
-            className="sr-only"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (!file) {
-                return;
-              }
-              onImageSelected(file);
-            }}
-          />
-        </label>
+          {success ? (
+            <p
+              className="merchant-workspace-alert merchant-workspace-alert--success"
+              role="status"
+            >
+              {success}
+            </p>
+          ) : null}
+          {error ? (
+            <p
+              className="merchant-workspace-alert merchant-workspace-alert--error"
+              role="alert"
+            >
+              {error}
+            </p>
+          ) : null}
 
-        {coverUrl ? (
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() => run(() => deleteAction(merchantId))}
-            className="merchant-workspace-danger-btn"
-          >
-            {pending ? "..." : "Eliminar imagen"}
-          </button>
-        ) : null}
+          <div className="merchant-workspace-cover-actions">
+            <label className="merchant-workspace-primary-btn merchant-workspace-file-btn">
+              {coverUrl ? "Cambiar portada" : "Subir portada"}
+              <input
+                ref={fileInputRef}
+                type="file"
+                name="image"
+                accept={MERCHANT_COVER_ACCEPT_ATTR}
+                disabled={pending}
+                className="sr-only"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (!file) {
+                    return;
+                  }
+                  onImageSelected(file);
+                }}
+              />
+            </label>
+
+            {coverUrl ? (
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => run(() => deleteAction(merchantId))}
+                className="merchant-workspace-danger-btn"
+              >
+                {pending ? "..." : "Eliminar portada"}
+              </button>
+            ) : null}
+          </div>
+        </div>
       </div>
     </section>
   );

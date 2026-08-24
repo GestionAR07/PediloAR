@@ -1,7 +1,6 @@
 import Link from "next/link";
 
-export type MerchantWorkspaceSection =
-  "orders" | "catalog" | "profile" | "delivery" | "payment-methods";
+export type MerchantWorkspaceSection = "orders" | "catalog" | "settings";
 
 type Props = {
   merchantId: string;
@@ -24,19 +23,9 @@ const SECTIONS: Array<{
     path: (merchantId) => `/merchant/${merchantId}/catalog`,
   },
   {
-    section: "profile",
-    label: "Portada",
+    section: "settings",
+    label: "Configuración",
     path: (merchantId) => `/merchant/${merchantId}/profile`,
-  },
-  {
-    section: "delivery",
-    label: "Envíos y zonas",
-    path: (merchantId) => `/merchant/${merchantId}/delivery`,
-  },
-  {
-    section: "payment-methods",
-    label: "Medios de pago",
-    path: (merchantId) => `/merchant/${merchantId}/payment-methods`,
   },
 ];
 

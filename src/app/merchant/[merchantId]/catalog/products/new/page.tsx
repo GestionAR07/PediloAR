@@ -7,6 +7,7 @@ import { listActiveMerchantCategories } from "@/infrastructure/db/repositories/c
 import { findMerchantDetailForMember } from "@/infrastructure/db/repositories/merchant-repository";
 import { createProductAction } from "../../actions";
 import { ProductFormSubmitButton } from "../../product-form-submit-button";
+import { ProductStockControl } from "../../product-stock-control";
 
 export const dynamic = "force-dynamic";
 
@@ -121,33 +122,7 @@ export default async function NewProductPage({ params }: PageProps) {
             />
           </label>
 
-          <div className="merchant-workspace-stock-block">
-            <label className="merchant-workspace-field">
-              <span>Stock</span>
-              <select
-                name="stockMode"
-                defaultValue="NOT_TRACKED"
-                className="merchant-workspace-input"
-              >
-                <option value="NOT_TRACKED">No controlar stock</option>
-                <option value="TRACKED">Controlar unidades disponibles</option>
-              </select>
-            </label>
-            <p className="merchant-workspace-field-help">
-              Pedilo dejará de ofrecerlo cuando no queden unidades.
-            </p>
-            <label className="merchant-workspace-field">
-              <span>Cantidad (si controlás stock)</span>
-              <input
-                name="stockQuantity"
-                type="number"
-                min={0}
-                step={1}
-                placeholder="10"
-                className="merchant-workspace-input"
-              />
-            </label>
-          </div>
+          <ProductStockControl />
         </div>
 
         <label className="merchant-workspace-field merchant-workspace-field--full">
@@ -160,7 +135,7 @@ export default async function NewProductPage({ params }: PageProps) {
         </label>
 
         <div className="merchant-workspace-commerce-states">
-          <p className="text-sm font-semibold text-[#3f3a55]">
+          <p className="merchant-workspace-commerce-states-title">
             Estados comerciales
           </p>
           <label className="merchant-workspace-check-row">
@@ -170,22 +145,33 @@ export default async function NewProductPage({ params }: PageProps) {
               defaultChecked
               className="merchant-workspace-checkbox"
             />
-            <span>
-              <span className="block font-semibold">Mostrar en la tienda</span>
-              <span className="block text-sm font-normal text-[#5b5470]">
-                El producto será visible para tus clientes.
+            <span className="merchant-workspace-check-copy">
+              <span className="merchant-workspace-check-title">
+                Mostrar en la tienda
+              </span>
+              <span className="merchant-workspace-check-help">
+                Visible para tus clientes.
               </span>
             </span>
           </label>
           <label className="merchant-workspace-check-row">
-            <input type="hidden" name="available" value="on" />
-            <span>
-              <span className="block font-semibold">Disponible para pedir</span>
-              <span className="block text-sm font-normal text-[#5b5470]">
+            <input
+              type="checkbox"
+              name="available"
+              value="on"
+              defaultChecked
+              className="merchant-workspace-checkbox"
+            />
+            <span className="merchant-workspace-check-copy">
+              <span className="merchant-workspace-check-title">
+                Disponible para pedir
+              </span>
+              <span className="merchant-workspace-check-help">
                 Podés pausarlo temporalmente sin eliminarlo.
               </span>
             </span>
           </label>
+          <input type="hidden" name="available" value="off" />
         </div>
 
         <ProductFormSubmitButton mode="create" />

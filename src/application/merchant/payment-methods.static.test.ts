@@ -47,4 +47,32 @@ describe("merchant payment method settings static checks", () => {
     );
     expect(actions).not.toMatch(/export const /);
   });
+
+  it("preserves payment field names with conditional instructions presentation", () => {
+    const form = read(
+      "src/app/merchant/[merchantId]/payment-methods/payment-methods-form.tsx",
+    );
+    expect(form).toContain("useActionState");
+    expect(form).toContain("saveMerchantPaymentMethodsAction");
+    expect(form).toContain("name={`active_${method.code}`}");
+    expect(form).toContain("defaultChecked={method.active}");
+    expect(form).toContain("name={`instructions_${method.code}`}");
+    expect(form).toContain("defaultValue={method.instructions}");
+    expect(form).toContain("merchant-workspace-payment-instructions");
+    expect(form).toContain("merchant-workspace-payment-instructions-hint");
+    expect(form).toContain("Activá este medio para agregar instrucciones.");
+    expect(form).toContain("merchant-workspace-switch--compact");
+    expect(form).toContain("merchant-workspace-switch-copy");
+    expect(form).toMatch(
+      /<label className="merchant-workspace-switch merchant-workspace-switch--compact">[\s\S]*merchant-workspace-switch-track[\s\S]*merchant-workspace-switch-copy/,
+    );
+    expect(form).toContain("merchant-workspace-switch-label-on");
+    expect(form).toContain("Activo");
+    expect(form).toContain("Activar");
+    expect(form).toContain("Instrucciones para el cliente");
+    expect(form).toContain("merchant-workspace-form-actions");
+    expect(form).toContain("Guardar cambios");
+    expect(form).not.toContain("merchant-workspace-active-pill");
+    expect(form).not.toContain("merchant-workspace-switch--labeled");
+  });
 });

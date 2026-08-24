@@ -51,7 +51,7 @@ async function loadMerchant(merchantId: string) {
 
 export default async function MerchantDetailPage({ params }: PageProps) {
   const { merchantId } = await params;
-  const { user, membership, merchant } = await loadMerchant(merchantId);
+  const { merchant } = await loadMerchant(merchantId);
   const now = new Date();
   const operationalStatus = getMerchantOperationalStatus(
     {
@@ -183,29 +183,6 @@ export default async function MerchantDetailPage({ params }: PageProps) {
                 pauseManualAction={pauseMerchantOrdersManualAction}
                 resumeAction={resumeMerchantOrdersAction}
               />
-              <section className="merchant-ops-account">
-                <h2>Cuenta y comercio</h2>
-                <dl>
-                  <div>
-                    <dt>Rol</dt>
-                    <dd>{membership.role}</dd>
-                  </div>
-                  <div>
-                    <dt>Estado del comercio</dt>
-                    <dd>{merchant.status}</dd>
-                  </div>
-                  <div>
-                    <dt>Ubicación</dt>
-                    <dd>
-                      {merchant.cityName} / {merchant.zoneName}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>Usuario</dt>
-                    <dd>{user.email ?? user.id}</dd>
-                  </div>
-                </dl>
-              </section>
             </div>
           </div>
         </div>

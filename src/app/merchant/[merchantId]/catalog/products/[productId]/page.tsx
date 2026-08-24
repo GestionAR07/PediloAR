@@ -27,6 +27,7 @@ import { OptionGroupsSection } from "../../option-groups-section";
 import { ProductFormSubmitButton } from "../../product-form-submit-button";
 import { ProductImageEditor } from "../../product-image-editor";
 import { ProductSaveFeedback } from "../../product-save-feedback";
+import { ProductStockControl } from "../../product-stock-control";
 
 export const dynamic = "force-dynamic";
 
@@ -228,32 +229,10 @@ export default async function EditProductPage({
                     />
                   </label>
 
-                  <div className="merchant-workspace-stock-block">
-                    <label className="merchant-workspace-field">
-                      <span>Stock</span>
-                      <select
-                        name="stockMode"
-                        defaultValue={product.stockMode}
-                        className="merchant-workspace-input"
-                      >
-                        <option value="NOT_TRACKED">No controlar stock</option>
-                        <option value="TRACKED">
-                          Controlar unidades disponibles
-                        </option>
-                      </select>
-                    </label>
-                    <label className="merchant-workspace-field">
-                      <span>Cantidad</span>
-                      <input
-                        name="stockQuantity"
-                        type="number"
-                        min={0}
-                        step={1}
-                        defaultValue={product.stockQuantity ?? ""}
-                        className="merchant-workspace-input"
-                      />
-                    </label>
-                  </div>
+                  <ProductStockControl
+                    stockModeDefault={product.stockMode}
+                    stockQuantityDefault={product.stockQuantity ?? ""}
+                  />
                 </div>
 
                 <label className="merchant-workspace-field merchant-workspace-field--full">
@@ -267,6 +246,9 @@ export default async function EditProductPage({
                 </label>
 
                 <div className="merchant-workspace-commerce-states">
+                  <p className="merchant-workspace-commerce-states-title">
+                    Estados comerciales
+                  </p>
                   <label className="merchant-workspace-check-row">
                     <input
                       type="checkbox"
@@ -274,11 +256,11 @@ export default async function EditProductPage({
                       defaultChecked={product.active}
                       className="merchant-workspace-checkbox"
                     />
-                    <span>
-                      <span className="block font-semibold">
+                    <span className="merchant-workspace-check-copy">
+                      <span className="merchant-workspace-check-title">
                         Mostrar en la tienda
                       </span>
-                      <span className="block text-sm font-normal text-[#5b5470]">
+                      <span className="merchant-workspace-check-help">
                         Visible para tus clientes.
                       </span>
                     </span>
@@ -287,18 +269,20 @@ export default async function EditProductPage({
                     <input
                       type="checkbox"
                       name="available"
+                      value="on"
                       defaultChecked={product.available}
                       className="merchant-workspace-checkbox"
                     />
-                    <span>
-                      <span className="block font-semibold">
+                    <span className="merchant-workspace-check-copy">
+                      <span className="merchant-workspace-check-title">
                         Disponible para pedir
                       </span>
-                      <span className="block text-sm font-normal text-[#5b5470]">
-                        Pausalo sin eliminarlo.
+                      <span className="merchant-workspace-check-help">
+                        Podés pausarlo temporalmente sin eliminarlo.
                       </span>
                     </span>
                   </label>
+                  <input type="hidden" name="available" value="off" />
                 </div>
 
                 <ProductFormSubmitButton mode="edit" />

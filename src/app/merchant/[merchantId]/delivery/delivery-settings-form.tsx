@@ -40,22 +40,25 @@ export function DeliverySettingsForm({ merchantId, settings }: Props) {
 
   return (
     <form action={formAction} className="merchant-workspace-form">
-      <label className="merchant-workspace-card merchant-workspace-toggle-card">
+      <label className="merchant-workspace-card merchant-workspace-toggle-card merchant-workspace-toggle-card--switch">
         <input
           type="checkbox"
           name="merchant_delivery_enabled"
           defaultChecked={settings.merchantDeliveryEnabled}
-          className="merchant-workspace-checkbox"
+          className="merchant-workspace-switch-input merchant-workspace-switch-input--overlay"
         />
-        <span>
-          <span className="block font-semibold">
-            Realizo envíos con el comercio
+        <div className="merchant-workspace-toggle-copy min-w-0">
+          <span className="merchant-workspace-card-title">
+            Ofrecer envío a domicilio
           </span>
-          <span className="mt-1 block text-sm text-[#5b5470]">
-            Si lo desactivás, el checkout no ofrece envío a domicilio. Las zonas
-            configuradas se conservan.
+          <span className="merchant-workspace-card-copy">
+            Los clientes podrán elegir entrega en las zonas que tengas activas.
           </span>
-        </span>
+        </div>
+        <span
+          className="merchant-workspace-switch-track merchant-workspace-switch-track--decor"
+          aria-hidden="true"
+        />
       </label>
 
       {settings.zones.length === 0 ? (
@@ -157,13 +160,15 @@ export function DeliverySettingsForm({ merchantId, settings }: Props) {
         </p>
       ) : null}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="merchant-workspace-primary-btn"
-      >
-        {pending ? "Guardando…" : "Guardar cambios"}
-      </button>
+      <div className="merchant-workspace-form-actions">
+        <button
+          type="submit"
+          disabled={pending}
+          className="merchant-workspace-primary-btn"
+        >
+          {pending ? "Guardando…" : "Guardar cambios"}
+        </button>
+      </div>
     </form>
   );
 }

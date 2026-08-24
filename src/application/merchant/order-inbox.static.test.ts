@@ -54,6 +54,7 @@ describe("merchant order inbox static checks", () => {
 
   it("inbox UI has semantic structure, real links, and no transition CTAs", () => {
     const page = read("src/app/merchant/[merchantId]/page.tsx");
+    const css = read("src/styles/globals.css");
     const card = read("src/components/merchant/merchant-order-card.tsx");
     const inbox = read("src/components/merchant/merchant-order-inbox.tsx");
     const detail = read("src/components/merchant/merchant-order-detail.tsx");
@@ -61,6 +62,17 @@ describe("merchant order inbox static checks", () => {
       "src/app/merchant/[merchantId]/orders/[orderId]/page.tsx",
     );
     expect(page).toContain("MerchantOrderInbox");
+    expect(page).toContain("MerchantInboxRealtime");
+    expect(page).toContain("MerchantOrderStatusPanel");
+    expect(page).toContain("merchant-ops-summary");
+    expect(page).toContain("inbox.attention.length");
+    expect(css).toContain(".merchant-ops-summary");
+    expect(css).toMatch(/\.merchant-ops-summary[\s\S]*display:\s*none/);
+    expect(css).toMatch(
+      /@media \(min-width: 768px\)[\s\S]*\.merchant-ops-summary[\s\S]*display:\s*grid/,
+    );
+    expect(page).not.toContain("merchant-ops-account");
+    expect(page).not.toContain("Cuenta y comercio");
     expect(inbox).toContain("Pedidos nuevos");
     expect(page).toContain("MerchantWorkspaceNav");
     expect(page).toContain("logoutAction");

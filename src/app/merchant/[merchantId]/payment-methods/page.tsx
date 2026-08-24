@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { listMerchantPaymentMethodSettingsApp } from "@/application/merchant/payment-method-wiring";
 import { presentPaymentMethodSettings } from "@/application/merchant/payment-methods";
+import { MerchantSettingsNav } from "@/components/merchant/merchant-settings-nav";
 import { MerchantWorkspacePage } from "@/components/merchant/merchant-workspace-page";
 import { findMerchantDetailForMember } from "@/infrastructure/db/repositories/merchant-repository";
 import { isAuthzError } from "@/server/auth/errors";
@@ -48,11 +49,22 @@ export default async function MerchantPaymentMethodsPage({
     <MerchantWorkspacePage
       merchantId={merchantId}
       merchantName={merchant.name}
-      activeSection="payment-methods"
-      title="Medios de pago"
-      description="Configurá cómo pueden pagarte tus clientes."
+      activeSection="settings"
+      title="Configuración"
+      description="Administrá cómo se presenta y funciona tu comercio."
     >
-      <PaymentMethodsForm merchantId={merchantId} methods={methods} />
+      <div className="merchant-workspace-settings-stack">
+        <MerchantSettingsNav merchantId={merchantId} activeTab="payments" />
+        <header className="merchant-workspace-settings-pane">
+          <h3 className="merchant-workspace-settings-pane-title">
+            Medios de pago
+          </h3>
+          <p className="merchant-workspace-settings-pane-copy">
+            Elegí cómo pueden pagarte tus clientes.
+          </p>
+        </header>
+        <PaymentMethodsForm merchantId={merchantId} methods={methods} />
+      </div>
     </MerchantWorkspacePage>
   );
 }

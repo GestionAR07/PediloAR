@@ -9,14 +9,24 @@ function read(rel: string): string {
 }
 
 describe("merchant private workspace shell", () => {
-  it("exposes shared navigation for the five private destinations", () => {
+  it("exposes shared navigation with Pedidos, Catálogo and Configuración", () => {
     const nav = read("src/components/merchant/merchant-workspace-nav.tsx");
     const shell = read("src/components/merchant/merchant-workspace-page.tsx");
+    const settingsNav = read(
+      "src/components/merchant/merchant-settings-nav.tsx",
+    );
     expect(nav).toContain('section: "orders"');
     expect(nav).toContain('section: "catalog"');
-    expect(nav).toContain('section: "profile"');
-    expect(nav).toContain('section: "delivery"');
-    expect(nav).toContain('section: "payment-methods"');
+    expect(nav).toContain('section: "settings"');
+    expect(nav).toContain("Pedidos");
+    expect(nav).toContain("Catálogo");
+    expect(nav).toContain("Configuración");
+    expect(nav).not.toContain('section: "profile"');
+    expect(nav).not.toContain('section: "delivery"');
+    expect(nav).not.toContain('section: "payment-methods"');
+    expect(nav).not.toContain("Portada");
+    expect(nav).not.toContain("Envíos y zonas");
+    expect(nav).not.toContain("Medios de pago");
     expect(nav).toContain("aria-current");
     expect(shell).toContain("MerchantWorkspaceNav");
     expect(shell).toContain("merchantName");
@@ -26,9 +36,20 @@ describe("merchant private workspace shell", () => {
     expect(shell).not.toContain("MerchantOrderSoundToggle");
     expect(shell).not.toContain("MerchantOrderStatusPanel");
     expect(shell).not.toContain("inbox.attention");
+    expect(settingsNav).toContain('aria-label="Configuración del comercio"');
+    expect(settingsNav).toContain("Tienda");
+    expect(settingsNav).toContain("Envíos");
+    expect(settingsNav).toContain("Medios de pago");
+    expect(settingsNav).toContain('tab: "store"');
+    expect(settingsNav).toContain('tab: "delivery"');
+    expect(settingsNav).toContain('tab: "payments"');
+    expect(settingsNav).toContain("aria-current");
+    expect(settingsNav).toContain("`/merchant/${merchantId}/profile`");
+    expect(settingsNav).toContain("`/merchant/${merchantId}/delivery`");
+    expect(settingsNav).toContain("`/merchant/${merchantId}/payment-methods`");
   });
 
-  it("limits MERCHANT_OPS_SHELL to the five authorized merchant routes", () => {
+  it("limits MERCHANT_OPS_SHELL to the authorized merchant routes", () => {
     const siteShell = read("src/components/layout/site-shell.tsx");
     expect(siteShell).toContain("isMerchantWorkspacePath");
     expect(siteShell).toContain("MERCHANT_WORKSPACE_LEAVES");
@@ -94,13 +115,53 @@ describe("merchant private workspace shell", () => {
     expect(delivery).toContain("router.refresh()");
     expect(delivery).toContain("saveMerchantDeliverySettingsAction");
     expect(delivery).toContain("merchant_delivery_enabled");
+    expect(delivery).toContain("Ofrecer envío a domicilio");
+    expect(delivery).toContain("merchant-workspace-form-actions");
     expect(payments).toContain("useActionState");
     expect(payments).toContain("router.refresh()");
     expect(payments).toContain("noneActive");
     expect(payments).toContain("saveMerchantPaymentMethodsAction");
+    expect(payments).toContain("active_${method.code}");
+    expect(payments).toContain("instructions_${method.code}");
+    expect(payments).toContain("merchant-workspace-payment-instructions");
+    expect(payments).toContain("merchant-workspace-switch--compact");
+    expect(payments).toContain("merchant-workspace-form-actions");
     expect(cover).toContain("gateProductImageBeforeUpload");
     expect(cover).toContain("upsertAction");
     expect(cover).toContain("deleteAction");
     expect(cover).toContain("router.refresh()");
+  });
+
+  it("keeps settings routes under Configuración with secondary tabs", () => {
+    const profile = read("src/app/merchant/[merchantId]/profile/page.tsx");
+    const delivery = read("src/app/merchant/[merchantId]/delivery/page.tsx");
+    const payments = read(
+      "src/app/merchant/[merchantId]/payment-methods/page.tsx",
+    );
+    const orders = read("src/app/merchant/[merchantId]/page.tsx");
+    for (const page of [profile, delivery, payments]) {
+      expect(page).toContain('activeSection="settings"');
+      expect(page).toContain('title="Configuración"');
+      expect(page).toContain(
+        "Administrá cómo se presenta y funciona tu comercio.",
+      );
+      expect(page).toContain("MerchantSettingsNav");
+    }
+    expect(profile).toContain('activeTab="store"');
+    expect(delivery).toContain('activeTab="delivery"');
+    expect(payments).toContain('activeTab="payments"');
+    expect(profile).toContain("Tienda");
+    expect(profile).toContain("Datos del comercio");
+    expect(profile).toContain("Revisá los datos y la imagen de tu comercio.");
+    expect(profile).toContain("MerchantCoverEditor");
+    expect(profile).toContain("upsertMerchantCoverAction");
+    expect(profile).toContain("deleteMerchantCoverAction");
+    expect(delivery).toContain("Envíos");
+    expect(payments).toContain("Medios de pago");
+    expect(orders).not.toContain("merchant-ops-account");
+    expect(orders).not.toContain("Cuenta y comercio");
+    expect(orders).toContain("merchant-ops-summary");
+    expect(orders).toContain("MerchantInboxRealtime");
+    expect(orders).toContain("MerchantOrderStatusPanel");
   });
 });
