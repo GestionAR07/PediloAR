@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Pedilo</title>
+  <desc id="desc">Bolsa de compras con un recorrido ascendente hacia un hogar.</desc>
+  <defs>
+    <linearGradient id="pedilo-gradient" x1="104" y1="116" x2="410" y2="408" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7C3AED" />
+      <stop offset="0.42" stop-color="#EC4899" />
+      <stop offset="0.72" stop-color="#FB7185" />
+      <stop offset="1" stop-color="#F97316" />
+    </linearGradient>
+  </defs>
+
+  <g fill="none" stroke="url(#pedilo-gradient)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M151 171H361c13 0 23 9 25 22l27 200c5 29-18 56-48 56H147c-30 0-53-27-48-56l27-200c2-13 12-22 25-22Z" />
+    <path d="M198 188v-44c0-42 26-72 58-72s58 30 58 72v44" />
+    <path d="M132 421c18-73 73-102 132-128 57-25 94-57 120-105" />
+    <path d="m350 194 38-12 4 40" />
+    <path d="M291 418v-66l52-48 53 48" />
+  </g>
+</svg>

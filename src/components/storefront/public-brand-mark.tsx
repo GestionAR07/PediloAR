@@ -24,24 +24,20 @@ function cx(...parts: Array<string | false | undefined>): string {
 }
 
 /**
- * Approved Pedilo raster mark.
- * Keep the high-resolution PNG as the single source for responsive web variants.
+ * Simplified Pedilo vector symbol for navigation-sized brand placements.
  */
 export function PublicBrandMark({ size = "header", className }: Props) {
   return (
     <Image
-      src="/brand/pedilo-mark.png"
+      src="/brand/pedilo-symbol.svg"
       alt=""
-      width={1254}
-      height={1254}
+      width={512}
+      height={512}
       sizes={imageSizes[size]}
-      className={cx(
-        "shrink-0 object-contain drop-shadow-[0_8px_16px_rgba(46,16,73,.28)]",
-        sizeClass[size],
-        className,
-      )}
+      className={cx("shrink-0 object-contain", sizeClass[size], className)}
       aria-hidden
       priority={size === "header"}
+      unoptimized
     />
   );
 }
