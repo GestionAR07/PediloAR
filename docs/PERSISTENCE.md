@@ -84,7 +84,12 @@ Frontera (`money-mapping.ts`):
 
 **Scope elegido: global.**
 
-Las keys son tokens de alta entropía (UUID / secure). Un intento de creación de pedido se identifica de forma global; reintentos del cliente colisionan deliberadamente con la misma key. Scope por merchant/customer añadiría complejidad sin beneficio en MVP (y haría más frágil el short-circuit de retry antes de conocer identidad completa).
+Las keys son tokens de alta entropía (UUID / secure). Un intento de creación de
+pedido se identifica de forma global; reintentos del cliente colisionan
+deliberadamente con la misma key. Antes de devolver un replay, la aplicación
+también exige que el `customer_user_id` persistido coincida con la sesión
+verificada. La restricción UNIQUE sigue siendo global y la identidad se valida
+en la capa de aplicación.
 
 Unique de persistencia es defensa adicional a `parseIdempotencyKey` del dominio.
 

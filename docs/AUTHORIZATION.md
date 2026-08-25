@@ -15,7 +15,7 @@ public.user_profiles
         │
         ├── platform ADMIN → operaciones de plataforma (server-side)
         │
-        └── platform USER (default) → cliente futuro + posible staff de comercios
+        └── platform USER (default) → cliente + posible staff de comercios
                 │
                 ▼
         public.merchant_users
@@ -65,6 +65,7 @@ Trigger `on_auth_user_created` en `auth.users` INSERT → `user_profiles` con:
 - `platform_role = USER`
 - `status = ACTIVE`
 - `display_name` opcional desde metadata (nunca se usa para authz)
+- `phone` opcional desde metadata (dato de contacto, nunca se usa para authz)
 
 Función `SECURITY DEFINER` con `search_path = ''` e insert schema-qualified.
 
@@ -105,13 +106,18 @@ No hard-delete de órdenes/historial. `merchant_users` usa `ON DELETE RESTRICT` 
 
 RLS **enabled** en todas las tablas `public` del schema marketplace.
 
-Policies creadas en 3A:
+Policies de identidad y cuenta:
 
 | Tabla            | Policy                      | Acción                                              |
 | ---------------- | --------------------------- | --------------------------------------------------- |
 | `user_profiles`  | `user_profiles_select_own`  | SELECT propia fila (authenticated)                  |
 | `merchant_users` | `merchant_users_select_own` | SELECT propias memberships                          |
 | `merchants`      | `merchants_select_member`   | SELECT comercios donde el user es membership activa |
+| `orders`         | `orders_select_own`         | SELECT pedidos con `customer_user_id = auth.uid()`  |
+
+Ítems, opciones, eventos y entregas aplican la misma propiedad mediante
+policies con `EXISTS` contra el pedido. El repositorio server-side repite el
+filtro `customer_user_id` como regla de aplicación (defensa en profundidad).
 
 - Sin `USING (true)`.
 - Sin UPDATE de `user_profiles` por clientes autenticados (impide self-elevate de `platform_role`).
@@ -121,11 +127,13 @@ El servidor Next usa `DATABASE_URL` (role de conexión que no queda sujeto a las
 
 ## Rutas mínimas
 
-| Ruta        | Guard                  |
-| ----------- | ---------------------- |
-| `/login`    | público (no signup)    |
-| `/admin`    | ADMIN + ACTIVE         |
-| `/merchant` | ACTIVE + ≥1 membership |
+| Ruta                         | Guard                      |
+| ---------------------------- | -------------------------- |
+| `/login`, `/registro`        | público                    |
+| `/cuenta`, `/cuenta/pedidos` | sesión verificada + ACTIVE |
+| `/checkout`                  | sesión verificada + ACTIVE |
+| `/admin`                     | ADMIN + ACTIVE             |
+| `/merchant`                  | ACTIVE + ≥1 membership     |
 
 ## Fase 3B (onboarding)
 
@@ -136,4 +144,6 @@ Ver [`MERCHANT_ONBOARDING.md`](./MERCHANT_ONBOARDING.md).
 - Membership `merchant_users.role = OWNER` es la fuente de autoridad.
 - Flujo: invite → `/auth/confirm` → `/set-password` → `/merchant`.
 
-No incluye: public customer signup, OAuth, MFA, Storage, catálogo, checkout.
+El alta de comercios continúa siendo asistida. El registro público incorporado
+posteriormente crea cuentas de cliente `USER`; nunca crea merchants ni otorga
+roles `OWNER`/`STAFF`.

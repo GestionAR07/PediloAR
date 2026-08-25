@@ -13,6 +13,7 @@ export type UserProfileRecord = {
   platformRole: PlatformRole;
   status: UserProfileStatus;
   displayName: string | null;
+  phone: string | null;
 };
 
 export type MerchantMembership = {

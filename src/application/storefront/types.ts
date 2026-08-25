@@ -121,5 +121,6 @@ export type PublicMerchantPage = {
 export type PublicNavContext = {
   isAuthenticated: boolean;
   isAdmin: boolean;
+  accountHref: string | null;
   merchantHomeHref: string | null;
 };

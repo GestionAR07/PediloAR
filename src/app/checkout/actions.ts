@@ -12,6 +12,8 @@ import {
 } from "@/application/checkout/wiring";
 import { hasDatabaseConfig } from "@/infrastructure/db/env";
 import { isValidUuid } from "@/lib/uuid";
+import { isAuthzError } from "@/server/auth/errors";
+import { requireActiveUser } from "@/server/auth/authorization";
 import type {
   CheckoutActionFailure,
   CheckoutConfigActionResult,
@@ -115,7 +117,21 @@ export async function placeOrderAction(
     );
   }
 
-  const result = await placeOrderApp(parsed.value);
+  let customerUserId: string;
+  try {
+    const context = await requireActiveUser();
+    customerUserId = context.user.id;
+  } catch (error) {
+    if (
+      isAuthzError(error) &&
+      (error.code === "UNAUTHENTICATED" || error.code === "CONFIG_MISSING")
+    ) {
+      return failure(CHECKOUT_ERROR_CODES.AUTHENTICATION_REQUIRED);
+    }
+    return failure(CHECKOUT_ERROR_CODES.ACCOUNT_UNAVAILABLE);
+  }
+
+  const result = await placeOrderApp(parsed.value, customerUserId);
   if (!result.ok) {
     return failure(
       result.error.code,

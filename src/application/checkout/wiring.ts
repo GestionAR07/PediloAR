@@ -57,14 +57,21 @@ export async function reviewCheckoutApp(input: PrepareOrderInput) {
 /**
  * Transactional order placement. Not a public Server Action.
  */
-export async function placeOrderApp(input: PrepareOrderInput) {
+export async function placeOrderApp(
+  input: PrepareOrderInput,
+  customerUserId: string,
+) {
   const deps = prepareDeps();
-  return placeOrder(input, {
-    ...deps,
-    findOrderByIdempotencyKey,
-    persistPreparedOrder: (prepared) =>
-      persistPreparedOrderInTransaction(prepared, deps.now()),
-  });
+  return placeOrder(
+    input,
+    {
+      ...deps,
+      findOrderByIdempotencyKey,
+      persistPreparedOrder: (prepared) =>
+        persistPreparedOrderInTransaction(prepared, deps.now()),
+    },
+    { customerUserId },
+  );
 }
 
 /**

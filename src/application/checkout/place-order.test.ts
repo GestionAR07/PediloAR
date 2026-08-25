@@ -59,6 +59,7 @@ const CHOICE_CARNE_ID = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
 const CHOICE_JYQ_ID = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
 const CHOICE_VERDURA_ID = "ffffffff-ffff-4fff-8fff-ffffffffffff";
 const IDEMPOTENCY_KEY = "checkout-retry-key-01";
+const CUSTOMER_USER_ID = "12121212-1212-4212-8212-121212121212";
 
 type StoredItem = {
   productId: string;
@@ -527,6 +528,7 @@ class MemoryCheckout {
       orderId,
       status: "PENDING",
       merchantId: prepared.merchantId,
+      customerUserId: prepared.customerUserId,
       totalCents: prepared.totalCents,
       fulfillmentMethod: prepared.fulfillmentMethod,
       customerNameSnapshot: prepared.customerNameSnapshot,
@@ -977,6 +979,17 @@ describe("placeOrder pickup happy path", () => {
     expect(stored.aggregate.totalCents).toBe(200000);
     expect(world.productStock(PROD_TRACKED_ID)).toBe(3);
   });
+
+  it("associates the verified customer without trusting the checkout payload", async () => {
+    const world = new MemoryCheckout();
+    const result = await placeOrder(pickupInput(), world.deps(), {
+      customerUserId: CUSTOMER_USER_ID,
+    });
+    expect(result.ok).toBe(true);
+    const stored = world.onlyOrder();
+    expect(stored.aggregate.customerUserId).toBe(CUSTOMER_USER_ID);
+    expect(stored.event.actorId).toBe(CUSTOMER_USER_ID);
+  });
 });
 
 describe("placeOrder merchant delivery happy path", () => {
@@ -1113,6 +1126,20 @@ describe("placeOrder idempotency", () => {
     expect(second.value.orderId).toBe(first.value.orderId);
     expect(world.orders.size).toBe(1);
     expect(deps.listProductsByIds).toHaveBeenCalledTimes(1);
+  });
+
+  it("never replays an order created by another customer account", async () => {
+    const world = new MemoryCheckout();
+    const deps = world.deps();
+    await placeOrder(pickupInput(), deps, {
+      customerUserId: CUSTOMER_USER_ID,
+    });
+    const second = await placeOrder(pickupInput(), deps, {
+      customerUserId: "13131313-1313-4313-8313-131313131313",
+    });
+    expect(second.ok).toBe(false);
+    if (second.ok) return;
+    expect(second.error.code).toBe(CHECKOUT_ERROR_CODES.IDEMPOTENCY_CONFLICT);
   });
 
   it("replays the same normalized request when line order differs", async () => {

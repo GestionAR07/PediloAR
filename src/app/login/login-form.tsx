@@ -16,7 +16,7 @@ export function LoginForm({ nextPath }: LoginFormProps) {
   );
 
   return (
-    <form action={formAction} className="flex w-full max-w-sm flex-col gap-4">
+    <form action={formAction} className="flex w-full flex-col gap-4">
       {nextPath ? <input type="hidden" name="next" value={nextPath} /> : null}
 
       <label className="flex flex-col gap-1.5 text-sm">
@@ -26,7 +26,7 @@ export function LoginForm({ nextPath }: LoginFormProps) {
           name="email"
           autoComplete="email"
           required
-          className="rounded-md border border-border bg-background px-3 py-2 text-foreground outline-none ring-accent focus:ring-2"
+          className="min-h-12 rounded-2xl border border-violet-100 bg-white px-4 text-foreground outline-none ring-violet-500 focus:ring-2"
         />
       </label>
 
@@ -37,7 +37,7 @@ export function LoginForm({ nextPath }: LoginFormProps) {
           name="password"
           autoComplete="current-password"
           required
-          className="rounded-md border border-border bg-background px-3 py-2 text-foreground outline-none ring-accent focus:ring-2"
+          className="min-h-12 rounded-2xl border border-violet-100 bg-white px-4 text-foreground outline-none ring-violet-500 focus:ring-2"
         />
       </label>
 
@@ -50,7 +50,7 @@ export function LoginForm({ nextPath }: LoginFormProps) {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-accent px-3 py-2 text-sm font-medium text-white transition disabled:opacity-60"
+        className="grad-btn min-h-12 rounded-full px-5 text-sm font-extrabold text-white shadow-glow transition disabled:opacity-60"
       >
         {pending ? "Ingresando…" : "Ingresar"}
       </button>

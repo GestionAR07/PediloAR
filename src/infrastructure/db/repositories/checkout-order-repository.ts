@@ -74,6 +74,7 @@ export async function findOrderByIdempotencyKey(
       orderId: orders.id,
       status: orders.status,
       merchantId: orders.merchantId,
+      customerUserId: orders.customerUserId,
       totalCents: orders.totalCents,
       fulfillmentMethod: orders.fulfillmentMethod,
       customerNameSnapshot: orders.customerNameSnapshot,

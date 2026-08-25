@@ -71,6 +71,7 @@ async function loadProfile(userId: string): Promise<UserProfileRecord | null> {
       platformRole: userProfiles.platformRole,
       status: userProfiles.status,
       displayName: userProfiles.displayName,
+      phone: userProfiles.phone,
     })
     .from(userProfiles)
     .where(eq(userProfiles.id, userId))
@@ -90,6 +91,7 @@ async function loadProfile(userId: string): Promise<UserProfileRecord | null> {
     platformRole: row.platformRole as PlatformRole,
     status: row.status as UserProfileStatus,
     displayName: row.displayName,
+    phone: row.phone,
   };
 }
 

@@ -45,11 +45,14 @@ describe("qwen public discovery v1 static checks", () => {
     expect(merchantAccess).toContain('aria-label="Mi comercio"');
     expect(merchantAccess).toContain('className="inline-flex min-h-11');
     expect(merchantAccess).not.toContain('className="hidden rounded-full');
-    expect(header.match(/\{!nav\.merchantHomeHref \? \(/g)).toHaveLength(2);
-    expect(header).not.toContain('"Cuenta"');
+    expect(header).toContain("nav.accountHref");
+    expect(header).toContain("href={nav.accountHref}");
+    expect(header).toContain("Mi cuenta");
+    expect(
+      header.match(/\{!nav\.merchantHomeHref && !nav\.accountHref \? \(/g),
+    ).toHaveLength(2);
     expect(header).toContain("Ingresar");
-    expect(header).toContain("Acceso comercios");
-    expect(header).toContain('? "Acceso" : "Ingresar"');
+    expect(header).not.toContain("Acceso comercios");
   });
 
   it("does not import webqwen mocks or fake metrics", () => {
@@ -389,9 +392,9 @@ describe("qwen public discovery v1 static checks", () => {
     expect(header).not.toContain('type="search"');
     expect(header).not.toContain("Crear cuenta");
 
-    expect(fs.existsSync(path.join(root, "public/brand/pedilo-symbol.svg"))).toBe(
-      true,
-    );
+    expect(
+      fs.existsSync(path.join(root, "public/brand/pedilo-symbol.svg")),
+    ).toBe(true);
     expect(
       fs.statSync(path.join(root, "public/brand/pedilo-symbol.svg")).size,
     ).toBeGreaterThan(1_000);
@@ -406,9 +409,9 @@ describe("qwen public discovery v1 static checks", () => {
     ).toBe(true);
     expect(fs.existsSync(path.join(root, "src/app/icon.png"))).toBe(true);
     expect(fs.existsSync(path.join(root, "src/app/apple-icon.png"))).toBe(true);
-    expect(fs.statSync(path.join(root, "src/app/icon.png")).size).toBeGreaterThan(
-      100_000,
-    );
+    expect(
+      fs.statSync(path.join(root, "src/app/icon.png")).size,
+    ).toBeGreaterThan(100_000);
     expect(
       fs.statSync(path.join(root, "src/app/apple-icon.png")).size,
     ).toBeGreaterThan(10_000);

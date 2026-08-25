@@ -124,15 +124,21 @@ describe("merchant inbox realtime static checks", () => {
       "0004_brown_forgotten_one.sql",
       "0005_merchant_order_private_broadcast.sql",
       "0006_uneven_patriot.sql",
+      "0007_customer_accounts.sql",
     ]);
 
     for (const file of sqlFiles) {
       const sql = fs.readFileSync(path.join(drizzleDir, file), "utf8");
       expect(sql.includes("USING (true)")).toBe(false);
       expect(sql.includes("USING(true)")).toBe(false);
-      expect(sql).not.toMatch(
-        /CREATE POLICY\s+"[^"]*"\s+ON\s+"?orders"?[\s\S]*FOR SELECT/i,
-      );
+      if (file === "0007_customer_accounts.sql") {
+        expect(sql).toContain('CREATE POLICY "orders_select_own"');
+        expect(sql).toContain("USING (auth.uid() = customer_user_id)");
+      } else {
+        expect(sql).not.toMatch(
+          /CREATE POLICY\s+"[^"]*"\s+ON\s+"?orders"?[\s\S]*FOR SELECT/i,
+        );
+      }
     }
   });
 });

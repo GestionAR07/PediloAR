@@ -4,8 +4,8 @@ import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/server";
 import { hasSupabasePublicConfig } from "@/infrastructure/supabase/env";
 import { getDb } from "@/infrastructure/db/client";
-import { userProfiles } from "@/infrastructure/db/schema";
-import { eq } from "drizzle-orm";
+import { merchantUsers, userProfiles } from "@/infrastructure/db/schema";
+import { and, eq } from "drizzle-orm";
 import { hasDatabaseConfig } from "@/infrastructure/db/env";
 import { isSafeInternalPath, sanitizeInternalPath } from "@/lib/safe-redirect";
 
@@ -46,12 +46,16 @@ export async function loginAction(
     return { error: "Credenciales inválidas. Verificá email y contraseña." };
   }
 
+  let defaultPath = "/cuenta";
   // Soft-check suspended users when DATABASE_URL is available.
   if (hasDatabaseConfig()) {
     try {
       const db = getDb();
       const rows = await db
-        .select({ status: userProfiles.status })
+        .select({
+          status: userProfiles.status,
+          platformRole: userProfiles.platformRole,
+        })
         .from(userProfiles)
         .where(eq(userProfiles.id, data.user.id))
         .limit(1);
@@ -61,6 +65,23 @@ export async function loginAction(
         return {
           error: "Tu cuenta está suspendida. Contactá al administrador.",
         };
+      }
+      if (rows[0]?.platformRole === "ADMIN") {
+        defaultPath = "/admin";
+      } else {
+        const memberships = await db
+          .select({ merchantId: merchantUsers.merchantId })
+          .from(merchantUsers)
+          .where(
+            and(
+              eq(merchantUsers.userId, data.user.id),
+              eq(merchantUsers.active, true),
+            ),
+          )
+          .limit(1);
+        if (memberships[0]) {
+          defaultPath = `/merchant/${memberships[0].merchantId}`;
+        }
       }
     } catch {
       // Profile check failure should not leak internals; allow session
@@ -73,7 +94,7 @@ export async function loginAction(
     redirect(sanitizeInternalPath(nextRaw));
   }
 
-  redirect("/");
+  redirect(defaultPath);
 }
 
 export async function logoutAction(): Promise<void> {

@@ -32,10 +32,11 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const token_hash = searchParams.get("token_hash");
+  const code = searchParams.get("code");
   const type = searchParams.get("type");
   const next = sanitizeInternalPath(searchParams.get("next"), "/set-password");
 
-  if (!token_hash || !type) {
+  if (!code && (!token_hash || !type)) {
     return NextResponse.redirect(
       new URL("/login?error=invalid_token", request.url),
     );
@@ -50,7 +51,7 @@ export async function GET(request: NextRequest) {
     "email",
     "email_change",
   ]);
-  if (!allowedTypes.has(type)) {
+  if (!code && (!type || !allowedTypes.has(type))) {
     return NextResponse.redirect(
       new URL("/login?error=invalid_token", request.url),
     );
@@ -78,11 +79,18 @@ export async function GET(request: NextRequest) {
     },
   });
 
-  const { error } = await supabase.auth.verifyOtp({
-    type: type as
-      "invite" | "signup" | "magiclink" | "recovery" | "email" | "email_change",
-    token_hash,
-  });
+  const { error } = code
+    ? await supabase.auth.exchangeCodeForSession(code)
+    : await supabase.auth.verifyOtp({
+        type: type as
+          | "invite"
+          | "signup"
+          | "magiclink"
+          | "recovery"
+          | "email"
+          | "email_change",
+        token_hash: token_hash!,
+      });
 
   if (error) {
     return NextResponse.redirect(

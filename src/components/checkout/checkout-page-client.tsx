@@ -96,7 +96,11 @@ function getServerDiscoveryZoneSnapshot(): string {
   return "";
 }
 
-export function CheckoutPageClient() {
+export function CheckoutPageClient({
+  initialCustomer,
+}: {
+  initialCustomer: { name: string; phone: string };
+}) {
   const { cart, hydrated, totalCents, clear } = useCart();
   const storedAttempt = useSyncExternalStore(
     subscribeCheckoutAttempt,
@@ -121,8 +125,8 @@ export function CheckoutPageClient() {
 
   const [config, setConfig] = useState<CheckoutConfiguration | null>(null);
   const [configError, setConfigError] = useState<string | null>(null);
-  const [customerName, setCustomerName] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerName, setCustomerName] = useState(initialCustomer.name);
+  const [customerPhone, setCustomerPhone] = useState(initialCustomer.phone);
   const [fulfillmentMethod, setFulfillmentMethod] = useState("");
   const [deliveryZoneId, setDeliveryZoneId] = useState("");
   const [street, setStreet] = useState("");
@@ -462,8 +466,14 @@ export function CheckoutPageClient() {
             </div>
           </dl>
           <Link
-            href="/"
+            href={`/cuenta/pedidos/${success.orderId}`}
             className={`grad-btn inline-flex min-h-12 w-full items-center justify-center rounded-full px-4 text-sm font-extrabold text-white shadow-glow ${focusRing}`}
+          >
+            Seguir mi pedido
+          </Link>
+          <Link
+            href="/"
+            className={`inline-flex min-h-11 w-full items-center justify-center rounded-full border border-violet-100 px-4 text-sm font-bold text-violet-800 ${focusRing}`}
           >
             Volver al inicio
           </Link>
@@ -827,6 +837,15 @@ export function CheckoutPageClient() {
             >
               {displayedError}
             </p>
+          ) : null}
+
+          {errorCode === CHECKOUT_ERROR_CODES.AUTHENTICATION_REQUIRED ? (
+            <Link
+              href="/login?next=/checkout"
+              className={`inline-flex min-h-11 w-full items-center justify-center rounded-full border border-violet-200 px-4 text-sm font-extrabold text-violet-800 ${focusRing}`}
+            >
+              Volver a ingresar
+            </Link>
           ) : null}
 
           {isStaleCartError(errorCode ?? "") ? (

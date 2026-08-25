@@ -1,6 +1,10 @@
 import { CHECKOUT_ERROR_CODES } from "./errors";
 
 const MESSAGES: Record<string, string> = {
+  [CHECKOUT_ERROR_CODES.AUTHENTICATION_REQUIRED]:
+    "Ingresá a tu cuenta para confirmar el pedido.",
+  [CHECKOUT_ERROR_CODES.ACCOUNT_UNAVAILABLE]:
+    "Tu cuenta no está disponible para realizar pedidos.",
   [CHECKOUT_ERROR_CODES.MERCHANT_NOT_FOUND]: "El comercio no existe.",
   [CHECKOUT_ERROR_CODES.MERCHANT_NOT_ACCEPTING]:
     "Este comercio no está tomando pedidos en este momento.",

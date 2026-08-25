@@ -3,6 +3,9 @@ import { getPublicNavContextApp } from "@/application/storefront/wiring";
 import { CheckoutPageClient } from "@/components/checkout/checkout-page-client";
 import { PublicHeader } from "@/components/storefront/public-header";
 import { APP_NAME } from "@/lib/app-info";
+import { redirect } from "next/navigation";
+import { requireActiveUser } from "@/server/auth/authorization";
+import { isAuthzError } from "@/server/auth/errors";
 
 export const dynamic = "force-dynamic";
 
@@ -12,12 +15,26 @@ export const metadata: Metadata = {
 };
 
 export default async function CheckoutPage() {
+  let account;
+  try {
+    account = await requireActiveUser();
+  } catch (error) {
+    if (isAuthzError(error)) {
+      redirect("/login?next=/checkout");
+    }
+    throw error;
+  }
   const nav = await getPublicNavContextApp();
 
   return (
     <main className="flex flex-1 flex-col">
       <PublicHeader nav={nav} />
-      <CheckoutPageClient />
+      <CheckoutPageClient
+        initialCustomer={{
+          name: account.profile.displayName ?? "",
+          phone: account.profile.phone ?? "",
+        }}
+      />
     </main>
   );
 }

@@ -49,7 +49,7 @@ describe("loginAction password handling", () => {
     form.set("password", "  Exact Pass!");
 
     await expect(loginAction({ error: null }, form)).rejects.toThrow(
-      "NEXT_REDIRECT:/",
+      "NEXT_REDIRECT:/cuenta",
     );
 
     expect(signInWithPassword).toHaveBeenCalledWith({

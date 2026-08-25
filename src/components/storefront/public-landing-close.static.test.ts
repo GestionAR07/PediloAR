@@ -137,7 +137,8 @@ describe("public landing close sections", () => {
     expect(cta).not.toContain("Crear comercio");
     expect(cta).not.toContain("Empezar gratis");
     expect(cta).not.toContain("<form");
-    expect(login).toContain("No hay registro público.");
+    expect(login).toContain("Crear cuenta");
+    expect(login).toContain("/registro");
     expect(hrefsIn(cta)).toEqual(["/login"]);
   });
 

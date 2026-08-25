@@ -14,6 +14,7 @@ const activeUser: UserProfileRecord = {
   platformRole: "USER",
   status: "ACTIVE",
   displayName: "User",
+  phone: null,
 };
 
 const admin: UserProfileRecord = {
@@ -21,6 +22,7 @@ const admin: UserProfileRecord = {
   platformRole: "ADMIN",
   status: "ACTIVE",
   displayName: "Admin",
+  phone: null,
 };
 
 const ownerMembership: MerchantMembership = {

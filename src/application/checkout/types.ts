@@ -168,7 +168,7 @@ export type PreparedDeliverySnapshot = {
 export type PreparedOrder = {
   merchantId: string;
   merchantNameSnapshot: string;
-  customerUserId: null;
+  customerUserId: string | null;
   customerNameSnapshot: string;
   customerPhoneSnapshot: string;
   fulfillmentMethod: FulfillmentMethod;
@@ -202,6 +202,8 @@ export type PersistedCheckoutOrder = {
   orderId: string;
   status: string;
   merchantId: string;
+  /** Missing only in legacy test doubles; persisted rows always provide it. */
+  customerUserId?: string | null;
   totalCents: number;
   fulfillmentMethod: string;
   customerNameSnapshot: string;

@@ -31,6 +31,11 @@ export type PlaceOrderDeps = PrepareOrderDeps & {
   ) => Promise<PersistPreparedOrderResult>;
 };
 
+export type PlaceOrderContext = {
+  /** Verified on the server; never read from the checkout payload. */
+  customerUserId?: string | null;
+};
+
 function fail(
   code: (typeof CHECKOUT_ERROR_CODES)[keyof typeof CHECKOUT_ERROR_CODES],
   message: string,
@@ -42,7 +47,16 @@ function fail(
 function replayOrConflict(
   existing: PersistedCheckoutOrder,
   input: PrepareOrderInput,
+  context: PlaceOrderContext,
 ): Result<PlacedOrderResult, CheckoutApplicationError> {
+  const requestedCustomerUserId = context.customerUserId ?? null;
+  if ((existing.customerUserId ?? null) !== requestedCustomerUserId) {
+    return fail(
+      CHECKOUT_ERROR_CODES.IDEMPOTENCY_CONFLICT,
+      "Ya existe un pedido con esta clave de idempotencia y otra cuenta.",
+    );
+  }
+
   const requestIntent = canonicalIntentFromRequest(input);
   const persistedIntent = canonicalIntentFromPersisted(existing);
   if (!requestIntent.ok || requestIntent.value !== persistedIntent) {
@@ -74,6 +88,7 @@ function replayOrConflict(
 export async function placeOrder(
   input: PrepareOrderInput,
   deps: PlaceOrderDeps,
+  context: PlaceOrderContext = {},
 ): Promise<Result<PlacedOrderResult, CheckoutApplicationError>> {
   const keyResult = parseIdempotencyKey(input.idempotencyKey ?? "");
   if (!keyResult.ok) {
@@ -85,7 +100,7 @@ export async function placeOrder(
 
   const existing = await deps.findOrderByIdempotencyKey(keyResult.value);
   if (existing) {
-    return replayOrConflict(existing, input);
+    return replayOrConflict(existing, input, context);
   }
 
   const prepared = await prepareOrder(input, deps);
@@ -105,7 +120,11 @@ export async function placeOrder(
     }
   }
 
-  const persisted = await deps.persistPreparedOrder(prepared.value);
+  const trustedPrepared: PreparedOrder = {
+    ...prepared.value,
+    customerUserId: context.customerUserId ?? null,
+  };
+  const persisted = await deps.persistPreparedOrder(trustedPrepared);
   if (persisted.status === "created") {
     return ok({
       ...persisted.order,
@@ -123,5 +142,5 @@ export async function placeOrder(
       "No se pudo confirmar el pedido.",
     );
   }
-  return replayOrConflict(winner, input);
+  return replayOrConflict(winner, input, context);
 }

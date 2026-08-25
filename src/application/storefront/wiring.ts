@@ -115,6 +115,7 @@ export async function getPublicNavContextApp(): Promise<PublicNavContext> {
   const empty: PublicNavContext = {
     isAuthenticated: false,
     isAdmin: false,
+    accountHref: null,
     merchantHomeHref: null,
   };
 
@@ -140,7 +141,12 @@ export async function getPublicNavContextApp(): Promise<PublicNavContext> {
       .limit(1);
     const profile = profileRows[0];
     if (!profile || profile.status !== "ACTIVE") {
-      return { isAuthenticated: true, isAdmin: false, merchantHomeHref: null };
+      return {
+        isAuthenticated: true,
+        isAdmin: false,
+        accountHref: null,
+        merchantHomeHref: null,
+      };
     }
 
     const membershipRows = await db
@@ -158,6 +164,7 @@ export async function getPublicNavContextApp(): Promise<PublicNavContext> {
     return {
       isAuthenticated: true,
       isAdmin: profile.platformRole === "ADMIN",
+      accountHref: "/cuenta",
       merchantHomeHref: membershipRows[0]
         ? `/merchant/${membershipRows[0].merchantId}`
         : null,

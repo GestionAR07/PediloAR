@@ -22,6 +22,7 @@ import {
 import { cities, zones } from "./geo";
 import { merchants } from "./merchant";
 import { productOptionChoices, productOptionGroups, products } from "./catalog";
+import { userProfiles } from "./user-profile";
 
 /**
  * Commercial order. NO delivery_id column — Delivery.order_id is the only link.
@@ -41,10 +42,12 @@ export const orders = pgTable(
       .notNull()
       .references(() => merchants.id, { onDelete: "restrict" }),
     /**
-     * Future Auth subject (customer). Nullable for guest flow later.
-     * No FK until Auth strategy is approved — opaque UUID only.
+     * Verified customer account. Nullable only for historical/guest orders;
+     * authenticated checkout always supplies this value.
      */
-    customerUserId: uuid("customer_user_id"),
+    customerUserId: uuid("customer_user_id").references(() => userProfiles.id, {
+      onDelete: "set null",
+    }),
     /** Frozen buyer name at checkout. Required for guest and authenticated orders. */
     customerNameSnapshot: text("customer_name_snapshot").notNull(),
     /** Frozen buyer phone at checkout. Stored as presented text, not a number. */

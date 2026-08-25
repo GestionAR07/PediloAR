@@ -109,6 +109,16 @@ export function PublicHeader({
               <span className="max-[359px]:hidden">Mi comercio</span>
             </Link>
           ) : null}
+          {!nav.merchantHomeHref && nav.accountHref ? (
+            <Link
+              href={nav.accountHref}
+              aria-label="Mi cuenta"
+              className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-3 text-sm font-bold text-violet-700 transition hover:text-fuchsia-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] max-[359px]:h-11 max-[359px]:w-11 max-[359px]:px-0"
+            >
+              <UserIcon className="hidden h-5 w-5 max-[359px]:block" />
+              <span className="max-[359px]:hidden">Mi cuenta</span>
+            </Link>
+          ) : null}
           {nav.isAdmin ? (
             <Link
               href="/admin"
@@ -117,24 +127,22 @@ export function PublicHeader({
               Admin
             </Link>
           ) : null}
-          {!nav.merchantHomeHref ? (
+          {!nav.merchantHomeHref && !nav.accountHref ? (
             <Link
               href="/login"
               className="hidden min-h-11 items-center whitespace-nowrap rounded-full px-3 py-2 text-sm font-bold text-slate-600 transition hover:text-fuchsia-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] lg:inline-flex"
             >
-              {nav.isAuthenticated ? "Acceso comercios" : "Ingresar"}
+              Ingresar
             </Link>
           ) : null}
-          {!nav.merchantHomeHref ? (
+          {!nav.merchantHomeHref && !nav.accountHref ? (
             <Link
               href="/login"
-              aria-label={nav.isAuthenticated ? "Acceso comercios" : "Ingresar"}
+              aria-label="Ingresar"
               className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-3 text-sm font-bold text-violet-700 max-[359px]:h-11 max-[359px]:w-11 max-[359px]:px-0 lg:hidden"
             >
               <UserIcon className="hidden h-5 w-5 max-[359px]:block" />
-              <span className="max-[359px]:hidden">
-                {nav.isAuthenticated ? "Acceso" : "Ingresar"}
-              </span>
+              <span className="max-[359px]:hidden">Ingresar</span>
             </Link>
           ) : null}
           <Link
