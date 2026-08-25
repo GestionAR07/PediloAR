@@ -37,7 +37,7 @@ export function PublicMerchantCta() {
 
         <div className="relative grid min-w-0 items-center gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-14">
           <div className="min-w-0 max-w-xl">
-            <PublicBrandMark size="compact" />
+            <PublicBrandMark size="compact" surface="dark" />
             <p className="mt-5 text-xs font-extrabold tracking-[0.2em] text-orange-300">
               PARA COMERCIOS
             </p>

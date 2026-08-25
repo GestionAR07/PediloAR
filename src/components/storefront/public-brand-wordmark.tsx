@@ -58,7 +58,9 @@ export function PublicBrandWordmark({
         className,
       )}
     >
-      {resolvedShowMark ? <PublicBrandMark size={size} /> : null}
+      {resolvedShowMark ? (
+        <PublicBrandMark size={size} surface={resolvedSurface} />
+      ) : null}
       <span
         className={cx(
           "brand-wordmark-text font-display font-extrabold",

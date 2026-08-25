@@ -313,6 +313,9 @@ describe("qwen public discovery v1 static checks", () => {
       "src/components/storefront/public-brand-wordmark.tsx",
     );
     const header = read("src/components/storefront/public-header.tsx");
+    const merchantCta = read(
+      "src/components/storefront/public-merchant-cta.tsx",
+    );
     const page = read("src/app/page.tsx");
     const css = read("src/styles/globals.css");
     const cartPage = read("src/app/carrito/page.tsx");
@@ -345,8 +348,8 @@ describe("qwen public discovery v1 static checks", () => {
     expect(hero).not.toContain("image.qwenlm.ai");
 
     expect(visual).toContain("data-hero-media-slot");
-    expect(visual).toContain("/brand/pedilo-symbol-original.png");
-    expect(visual).toContain("/brand/pedilo-mark.png");
+    expect(visual).toContain("/brand/pedilo-symbol.svg");
+    expect(visual).toContain("/brand/pedilo-brand-tile.svg");
     expect(visual).toContain("PUBLIC_BRAND_MARK_SRC");
     expect(visual).toContain("Comercios");
     expect(visual).toContain("de tu zona");
@@ -362,34 +365,53 @@ describe("qwen public discovery v1 static checks", () => {
     expect(visual).not.toContain("h-[280px]");
 
     expect(mark).toContain('from "next/image"');
-    expect(mark).toContain('src="/brand/pedilo-symbol-original.png"');
-    expect(mark).toContain("width={443}");
-    expect(mark).toContain("height={433}");
+    expect(mark).toContain('light: "/brand/pedilo-brand-tile.svg"');
+    expect(mark).toContain('dark: "/brand/pedilo-symbol.svg"');
+    expect(mark).toContain('surface = "light"');
+    expect(mark).toContain("src={markSrc[surface]}");
+    expect(mark).toContain("width={160}");
+    expect(mark).toContain("height={160}");
     expect(mark).toContain("sizes={imageSizes[size]}");
+    expect(mark).toContain("unoptimized");
     expect(visual).toContain('className="object-contain"');
     expect(mark).not.toContain("<svg");
     expect(mark).toContain("h-10 w-10");
+    expect(mark).toContain("sm:h-11 sm:w-11");
     expect(mark).toContain("h-8 w-8");
     expect(mark).toContain("h-12 w-12");
     expect(wordmark).toContain("PublicBrandMark");
+    expect(wordmark).toContain("surface={resolvedSurface}");
     expect(wordmark).not.toContain("APP_NAME.slice(0, 1)");
     expect(header).toContain("PublicBrandWordmark");
+    expect(merchantCta).toContain(
+      '<PublicBrandMark size="compact" surface="dark" />',
+    );
     expect(header).not.toContain('type="search"');
     expect(header).not.toContain("Crear cuenta");
 
-    expect(fs.existsSync(path.join(root, "public/brand/pedilo-symbol-original.png"))).toBe(
+    expect(fs.existsSync(path.join(root, "public/brand/pedilo-symbol.svg"))).toBe(
       true,
     );
     expect(
-      fs.statSync(path.join(root, "public/brand/pedilo-symbol-original.png")).size,
-    ).toBeGreaterThan(50_000);
-    expect(fs.existsSync(path.join(root, "public/brand/pedilo-mark.png"))).toBe(
-      true,
-    );
+      fs.statSync(path.join(root, "public/brand/pedilo-symbol.svg")).size,
+    ).toBeGreaterThan(1_000);
+    expect(
+      fs.existsSync(path.join(root, "public/brand/pedilo-brand-tile.svg")),
+    ).toBe(true);
+    expect(
+      fs.existsSync(path.join(root, "public/brand/pedilo-app-icon.svg")),
+    ).toBe(true);
+    expect(
+      fs.existsSync(path.join(root, "public/brand/pedilo-symbol-original.png")),
+    ).toBe(true);
     expect(fs.existsSync(path.join(root, "src/app/icon.png"))).toBe(true);
+    expect(fs.existsSync(path.join(root, "src/app/apple-icon.png"))).toBe(true);
+    expect(fs.statSync(path.join(root, "src/app/icon.png")).size).toBeGreaterThan(
+      100_000,
+    );
     expect(
-      fs.statSync(path.join(root, "public/brand/pedilo-mark.png")).size,
-    ).toBeGreaterThan(100_000);
+      fs.statSync(path.join(root, "src/app/apple-icon.png")).size,
+    ).toBeGreaterThan(10_000);
 
     expect(css).toContain("@keyframes ps-hero-in");
     expect(css).toMatch(
