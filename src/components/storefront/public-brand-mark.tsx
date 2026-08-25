@@ -24,20 +24,19 @@ function cx(...parts: Array<string | false | undefined>): string {
 }
 
 /**
- * Simplified Pedilo vector symbol for navigation-sized brand placements.
+ * Approved Pedilo C symbol, cleaned on transparency for responsive placements.
  */
 export function PublicBrandMark({ size = "header", className }: Props) {
   return (
     <Image
-      src="/brand/pedilo-symbol.svg"
+      src="/brand/pedilo-symbol-c.png"
       alt=""
-      width={512}
-      height={512}
+      width={646}
+      height={752}
       sizes={imageSizes[size]}
       className={cx("shrink-0 object-contain", sizeClass[size], className)}
       aria-hidden
       priority={size === "header"}
-      unoptimized
     />
   );
 }
