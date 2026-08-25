@@ -6,8 +6,8 @@ import {
   StoreIcon,
 } from "@/components/ui/public-icons";
 
-export const PUBLIC_HERO_MEDIA_SRC = "/brand/pedilo-hero-media.svg";
-export const PUBLIC_BRAND_MARK_SRC = "/brand/pedilo-mark.svg";
+export const PUBLIC_HERO_MEDIA_SRC = "/brand/pedilo-mark.png";
+export const PUBLIC_BRAND_MARK_SRC = "/brand/pedilo-mark.png";
 
 type Props = {
   mediaSrc?: string;
@@ -62,7 +62,6 @@ export function PublicHeroVisual({
           fill
           sizes="(min-width: 1024px) 400px, (min-width: 640px) 330px, 72vw"
           className="object-cover"
-          unoptimized
           priority
         />
       </div>
@@ -74,7 +73,6 @@ export function PublicHeroVisual({
           fill
           sizes="112px"
           className="object-cover"
-          unoptimized
         />
       </div>
 

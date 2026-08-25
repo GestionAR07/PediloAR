@@ -345,8 +345,8 @@ describe("qwen public discovery v1 static checks", () => {
     expect(hero).not.toContain("image.qwenlm.ai");
 
     expect(visual).toContain("data-hero-media-slot");
-    expect(visual).toContain("/brand/pedilo-hero-media.svg");
-    expect(visual).toContain("/brand/pedilo-mark.svg");
+    expect(visual).toContain("/brand/pedilo-mark.png");
+    expect(visual).toContain("PUBLIC_BRAND_MARK_SRC");
     expect(visual).toContain("Comercios");
     expect(visual).toContain("de tu zona");
     expect(visual).toContain("Retiro o entrega");
@@ -360,8 +360,12 @@ describe("qwen public discovery v1 static checks", () => {
     expect(visual).not.toContain("spin-slow");
     expect(visual).not.toContain("h-[280px]");
 
-    expect(mark).toContain('viewBox="0 0 48 48"');
-    expect(mark).toContain("#FB923C");
+    expect(mark).toContain('from "next/image"');
+    expect(mark).toContain('src="/brand/pedilo-mark.png"');
+    expect(mark).toContain("width={1254}");
+    expect(mark).toContain("height={1254}");
+    expect(mark).toContain("sizes={imageSizes[size]}");
+    expect(mark).not.toContain("<svg");
     expect(mark).toContain("h-10 w-10");
     expect(mark).toContain("h-8 w-8");
     expect(mark).toContain("h-12 w-12");
@@ -371,19 +375,13 @@ describe("qwen public discovery v1 static checks", () => {
     expect(header).not.toContain('type="search"');
     expect(header).not.toContain("Crear cuenta");
 
-    expect(fs.existsSync(path.join(root, "public/brand/pedilo-mark.svg"))).toBe(
+    expect(fs.existsSync(path.join(root, "public/brand/pedilo-mark.png"))).toBe(
       true,
     );
+    expect(fs.existsSync(path.join(root, "src/app/icon.png"))).toBe(true);
     expect(
-      fs.existsSync(path.join(root, "public/brand/pedilo-hero-media.svg")),
-    ).toBe(true);
-    const markAsset = read("public/brand/pedilo-mark.svg");
-    const heroAsset = read("public/brand/pedilo-hero-media.svg");
-    expect(markAsset).toContain('viewBox="0 0 48 48"');
-    expect(markAsset).not.toMatch(/<text/i);
-    expect(heroAsset).toContain('viewBox="0 0 400 400"');
-    expect(heroAsset).not.toContain("image.qwenlm.ai");
-    expect(heroAsset).not.toMatch(/<text/i);
+      fs.statSync(path.join(root, "public/brand/pedilo-mark.png")).size,
+    ).toBeGreaterThan(100_000);
 
     expect(css).toContain("@keyframes ps-hero-in");
     expect(css).toMatch(
