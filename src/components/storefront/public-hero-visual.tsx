@@ -6,7 +6,7 @@ import {
   StoreIcon,
 } from "@/components/ui/public-icons";
 
-export const PUBLIC_HERO_MEDIA_SRC = "/brand/pedilo-symbol-c.png";
+export const PUBLIC_HERO_MEDIA_SRC = "/brand/pedilo-symbol-original.png";
 export const PUBLIC_BRAND_MARK_SRC = "/brand/pedilo-mark.png";
 
 type Props = {
@@ -55,7 +55,7 @@ export function PublicHeroVisual({
       <div className="public-hero-visual-atmosphere" aria-hidden />
 
       <div data-hero-media-slot className="public-hero-media-slot">
-        {/* Approved transparent C symbol, preserved without geometric reinterpretation. */}
+        {/* Original transparent Pedilo symbol, preserving the approved artwork. */}
         <Image
           src={mediaSrc}
           alt={mediaAlt}

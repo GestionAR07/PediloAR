@@ -24,15 +24,15 @@ function cx(...parts: Array<string | false | undefined>): string {
 }
 
 /**
- * Approved Pedilo C symbol, cleaned on transparency for responsive placements.
+ * Original Pedilo symbol, extracted from the approved artwork with transparency.
  */
 export function PublicBrandMark({ size = "header", className }: Props) {
   return (
     <Image
-      src="/brand/pedilo-symbol-c.png"
+      src="/brand/pedilo-symbol-original.png"
       alt=""
-      width={646}
-      height={752}
+      width={443}
+      height={433}
       sizes={imageSizes[size]}
       className={cx("shrink-0 object-contain", sizeClass[size], className)}
       aria-hidden

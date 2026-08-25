@@ -345,7 +345,7 @@ describe("qwen public discovery v1 static checks", () => {
     expect(hero).not.toContain("image.qwenlm.ai");
 
     expect(visual).toContain("data-hero-media-slot");
-    expect(visual).toContain("/brand/pedilo-symbol-c.png");
+    expect(visual).toContain("/brand/pedilo-symbol-original.png");
     expect(visual).toContain("/brand/pedilo-mark.png");
     expect(visual).toContain("PUBLIC_BRAND_MARK_SRC");
     expect(visual).toContain("Comercios");
@@ -362,9 +362,9 @@ describe("qwen public discovery v1 static checks", () => {
     expect(visual).not.toContain("h-[280px]");
 
     expect(mark).toContain('from "next/image"');
-    expect(mark).toContain('src="/brand/pedilo-symbol-c.png"');
-    expect(mark).toContain("width={646}");
-    expect(mark).toContain("height={752}");
+    expect(mark).toContain('src="/brand/pedilo-symbol-original.png"');
+    expect(mark).toContain("width={443}");
+    expect(mark).toContain("height={433}");
     expect(mark).toContain("sizes={imageSizes[size]}");
     expect(visual).toContain('className="object-contain"');
     expect(mark).not.toContain("<svg");
@@ -377,12 +377,12 @@ describe("qwen public discovery v1 static checks", () => {
     expect(header).not.toContain('type="search"');
     expect(header).not.toContain("Crear cuenta");
 
-    expect(fs.existsSync(path.join(root, "public/brand/pedilo-symbol-c.png"))).toBe(
+    expect(fs.existsSync(path.join(root, "public/brand/pedilo-symbol-original.png"))).toBe(
       true,
     );
-    expect(read("public/brand/pedilo-symbol-c.png")).toContain(
-      'viewBox="0 0 512 512"',
-    );
+    expect(
+      fs.statSync(path.join(root, "public/brand/pedilo-symbol-original.png")).size,
+    ).toBeGreaterThan(50_000);
     expect(fs.existsSync(path.join(root, "public/brand/pedilo-mark.png"))).toBe(
       true,
     );
