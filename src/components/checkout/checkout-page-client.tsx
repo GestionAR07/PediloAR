@@ -255,6 +255,10 @@ export function CheckoutPageClient({
     selectedDeliveryZone != null &&
     selectedDeliveryZone.minimumOrderCents > 0 &&
     totalCents < selectedDeliveryZone.minimumOrderCents;
+  const minimumRemainingCents =
+    belowMinimum && selectedDeliveryZone
+      ? selectedDeliveryZone.minimumOrderCents - totalCents
+      : 0;
   const configLoading =
     hydrated &&
     !isCartEmpty(cart) &&
@@ -265,6 +269,7 @@ export function CheckoutPageClient({
   const canReview =
     !formLocked &&
     !reviewing &&
+    !belowMinimum &&
     Boolean(config?.merchant.acceptingOrders) &&
     (config?.paymentMethods.length ?? 0) > 0 &&
     nameValue.trim().length > 0 &&
@@ -879,7 +884,8 @@ export function CheckoutPageClient({
                   role="status"
                 >
                   Pedido mínimo de esta zona:{" "}
-                  {formatCents(selectedDeliveryZone.minimumOrderCents)}.
+                  {formatCents(selectedDeliveryZone.minimumOrderCents)}. Agregá{" "}
+                  {formatCents(minimumRemainingCents)} más para continuar.
                 </p>
               ) : null}
               <button
