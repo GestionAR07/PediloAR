@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const links = [
   { href: "/cuenta", label: "Resumen", exact: true },
   { href: "/cuenta/pedidos", label: "Mis pedidos", exact: false },
+  { href: "/cuenta/perfil", label: "Mis datos", exact: false },
 ] as const;
 
 export function CustomerAccountNav() {

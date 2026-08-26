@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { sanitizeInternalPath } from "@/lib/safe-redirect";
 import { APP_NAME } from "@/lib/app-info";
+import { isGoogleOAuthEnabled } from "@/config/auth-providers";
 import { PublicBrandWordmark } from "@/components/storefront/public-brand-wordmark";
 import { RegisterForm } from "./register-form";
 
@@ -33,7 +34,10 @@ export default async function RegisterPage({
           Confirmá pedidos y seguí su estado desde tu panel.
         </p>
         <div className="mt-7">
-          <RegisterForm nextPath={nextPath} />
+          <RegisterForm
+            nextPath={nextPath}
+            googleOAuthEnabled={isGoogleOAuthEnabled()}
+          />
         </div>
       </section>
     </main>

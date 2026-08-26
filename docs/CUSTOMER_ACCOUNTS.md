@@ -3,6 +3,8 @@
 ## Alcance implementado
 
 - Registro público en `/registro` mediante Supabase Auth.
+- Acceso opcional con Google OAuth/PKCE en registro y login, expuesto solo con
+  `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true` después de configurar el proveedor.
 - Login compartido para clientes, administradores y miembros de comercios.
 - Checkout protegido: navegar y armar el carrito sigue siendo público; para
   finalizar el pedido se requiere una cuenta `ACTIVE`.
@@ -11,14 +13,31 @@
 - Panel `/cuenta` con pedidos activos y datos básicos del perfil.
 - Historial `/cuenta/pedidos` y detalle privado por pedido.
 - Seguimiento automático cada 20 segundos mientras el pedido no sea terminal.
+- Edición de nombre y teléfono en `/cuenta/perfil`; los usuarios OAuth deben
+  completar ambos antes de llegar al checkout.
 - Timeline construido desde `order_events` y snapshots históricos del pedido.
+
+## Configuración de Google OAuth
+
+1. Crear un cliente OAuth de tipo Web en Google Auth Platform.
+2. Registrar `http://localhost:3001` como origen autorizado para DEV.
+3. Registrar como URI de redirección el callback que muestra Supabase en
+   Authentication → Providers → Google:
+   `https://<project-ref>.supabase.co/auth/v1/callback`.
+4. Cargar Client ID y Client Secret en Supabase y habilitar Google.
+5. Confirmar que `http://localhost:3001/auth/confirm` está en la redirect allow
+   list de Supabase.
+6. Recién entonces establecer `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true` y
+   reiniciar Next.js.
+
+El secreto de Google no se guarda en `.env.local` ni en Git: vive en Supabase.
 
 ## Límites de esta fase
 
 - Pedidos históricos con `customer_user_id IS NULL` se conservan, pero no se
   adjudican automáticamente a una cuenta por teléfono o email.
 - No hay cancelación desde el cliente todavía.
-- No hay libreta de direcciones ni edición de perfil todavía.
+- No hay libreta de direcciones todavía.
 - No hay recuperación de contraseña completa todavía.
 
 ## Seguridad

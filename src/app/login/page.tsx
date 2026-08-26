@@ -2,6 +2,7 @@ import { LoginForm } from "./login-form";
 import { sanitizeInternalPath } from "@/lib/safe-redirect";
 import Link from "next/link";
 import { PublicBrandWordmark } from "@/components/storefront/public-brand-wordmark";
+import { isGoogleOAuthEnabled } from "@/config/auth-providers";
 
 type LoginPageProps = {
   searchParams: Promise<{ next?: string; error?: string }>;
@@ -17,6 +18,8 @@ function friendlyLoginError(code: string | undefined): string | null {
       return "El enlace de confirmación no es válido.";
     case "auth_config":
       return "La autenticación no está configurada en este entorno.";
+    case "oauth_session":
+      return "No pudimos completar el acceso con Google. Intentá nuevamente.";
     default:
       return null;
   }
@@ -55,7 +58,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </p>
         ) : null}
         <div className="mt-7">
-          <LoginForm nextPath={nextPath} />
+          <LoginForm
+            nextPath={nextPath}
+            googleOAuthEnabled={isGoogleOAuthEnabled()}
+          />
         </div>
         <p className="mt-5 text-center text-sm text-muted">
           ¿Todavía no tenés cuenta?{" "}

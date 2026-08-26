@@ -6,6 +6,10 @@ import { APP_NAME } from "@/lib/app-info";
 import { redirect } from "next/navigation";
 import { requireActiveUser } from "@/server/auth/authorization";
 import { isAuthzError } from "@/server/auth/errors";
+import {
+  customerProfileHref,
+  hasCompleteCustomerContact,
+} from "@/application/customer/profile";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +27,9 @@ export default async function CheckoutPage() {
       redirect("/login?next=/checkout");
     }
     throw error;
+  }
+  if (!hasCompleteCustomerContact(account.profile)) {
+    redirect(customerProfileHref("/checkout", true));
   }
   const nav = await getPublicNavContextApp();
 

@@ -46,6 +46,22 @@ describe("customer account security and wiring", () => {
     expect(action).not.toContain("SUPABASE_SECRET_KEY");
   });
 
+  it("adds guarded Google OAuth and requires complete checkout contact", () => {
+    const oauth = read("src/app/auth/oauth/actions.ts");
+    const continuation = read("src/app/auth/oauth/continue/page.tsx");
+    const checkout = read("src/app/checkout/page.tsx");
+    const profileAction = read("src/app/cuenta/perfil/actions.ts");
+    expect(oauth).toContain('provider: "google"');
+    expect(oauth).toContain("signInWithOAuth");
+    expect(oauth).toContain("sanitizeInternalPath");
+    expect(oauth).toContain("isGoogleOAuthEnabled");
+    expect(continuation).toContain("hasCompleteCustomerContact");
+    expect(checkout).toContain('customerProfileHref("/checkout", true)');
+    expect(profileAction).toContain("updateCustomerProfileApp");
+    expect(profileAction).not.toContain("platformRole");
+    expect(profileAction).not.toContain("status:");
+  });
+
   it("adds an ownership FK and customer-only RLS policies", () => {
     const migration = read("drizzle/0007_customer_accounts.sql");
     expect(migration).toContain(
