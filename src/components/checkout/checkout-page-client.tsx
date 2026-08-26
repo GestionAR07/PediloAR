@@ -879,14 +879,23 @@ export function CheckoutPageClient({
           ) : (
             <div className="space-y-2">
               {showMinimumHint && selectedDeliveryZone ? (
-                <p
-                  className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950"
-                  role="status"
-                >
-                  Pedido mínimo de esta zona:{" "}
-                  {formatCents(selectedDeliveryZone.minimumOrderCents)}. Agregá{" "}
-                  {formatCents(minimumRemainingCents)} más para continuar.
-                </p>
+                <>
+                  <p
+                    className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950"
+                    role="status"
+                  >
+                    Pedido mínimo de esta zona:{" "}
+                    {formatCents(selectedDeliveryZone.minimumOrderCents)}.
+                    Agregá {formatCents(minimumRemainingCents)} más para
+                    continuar.
+                  </p>
+                  <Link
+                    href={`/comercios/${cart.merchantId}`}
+                    className={`inline-flex min-h-11 w-full items-center justify-center rounded-full border border-violet-200 bg-white px-4 text-sm font-extrabold text-violet-800 ${focusRing}`}
+                  >
+                    Explorar productos
+                  </Link>
+                </>
               ) : null}
               <button
                 type="button"
