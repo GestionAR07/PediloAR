@@ -1,6 +1,7 @@
 export const CHECKOUT_ATTEMPT_STORAGE_KEY = "mr.checkout.attempt";
 export const CHECKOUT_SUCCESS_STORAGE_KEY = "mr.checkout.success";
 export const CHECKOUT_FROZEN_STORAGE_KEY = "mr.checkout.frozen";
+export const CHECKOUT_FORM_DRAFT_STORAGE_KEY = "mr.checkout.form-draft";
 
 export type CheckoutAttemptPhase = "form" | "reviewed" | "unknown";
 
@@ -20,6 +21,20 @@ export type CheckoutSuccessState = {
   fulfillmentMethod: string;
   status: "PENDING";
   replayed: boolean;
+};
+
+export type CheckoutFormSessionDraft = {
+  version: 1;
+  merchantId: string;
+  customerName: string;
+  customerPhone: string;
+  fulfillmentMethod: string;
+  deliveryZoneId: string;
+  street: string;
+  number: string;
+  floorApartment: string;
+  reference: string;
+  paymentMethodCode: string;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -231,6 +246,70 @@ export function clearCheckoutSuccess(
   if (!storage) return;
   try {
     storage.removeItem(CHECKOUT_SUCCESS_STORAGE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+export function parseCheckoutFormSessionDraft(
+  raw: string | null,
+): CheckoutFormSessionDraft | null {
+  if (!raw) return null;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!isRecord(parsed) || parsed.version !== 1) return null;
+    const required: Array<keyof Omit<CheckoutFormSessionDraft, "version">> = [
+      "merchantId",
+      "customerName",
+      "customerPhone",
+      "fulfillmentMethod",
+      "deliveryZoneId",
+      "street",
+      "number",
+      "floorApartment",
+      "reference",
+      "paymentMethodCode",
+    ];
+    for (const key of required) {
+      if (typeof parsed[key] !== "string") return null;
+    }
+    return parsed as CheckoutFormSessionDraft;
+  } catch {
+    return null;
+  }
+}
+
+export function readCheckoutFormSessionDraft(
+  storage: Pick<Storage, "getItem"> | null | undefined,
+): CheckoutFormSessionDraft | null {
+  if (!storage) return null;
+  try {
+    return parseCheckoutFormSessionDraft(
+      storage.getItem(CHECKOUT_FORM_DRAFT_STORAGE_KEY),
+    );
+  } catch {
+    return null;
+  }
+}
+
+export function writeCheckoutFormSessionDraft(
+  storage: Pick<Storage, "setItem"> | null | undefined,
+  draft: CheckoutFormSessionDraft,
+): void {
+  if (!storage) return;
+  try {
+    storage.setItem(CHECKOUT_FORM_DRAFT_STORAGE_KEY, JSON.stringify(draft));
+  } catch {
+    // ignore quota / private mode
+  }
+}
+
+export function clearCheckoutFormSessionDraft(
+  storage: Pick<Storage, "removeItem"> | null | undefined,
+): void {
+  if (!storage) return;
+  try {
+    storage.removeItem(CHECKOUT_FORM_DRAFT_STORAGE_KEY);
   } catch {
     // ignore
   }

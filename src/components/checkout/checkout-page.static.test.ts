@@ -172,6 +172,27 @@ describe("qwen checkout v4 static checks", () => {
     expect(css).toContain(".checkout-choice");
   });
 
+  it("restores the same-merchant form draft after exploring products", () => {
+    const client = read("src/components/checkout/checkout-page-client.tsx");
+    const session = read("src/lib/checkout/session.ts");
+    const sessionStore = read("src/lib/checkout/session-store.ts");
+    const confirmFn = client.slice(
+      client.indexOf("async function confirmWithDraft"),
+      client.indexOf("async function handleConfirm"),
+    );
+
+    expect(session).toContain("CHECKOUT_FORM_DRAFT_STORAGE_KEY");
+    expect(sessionStore).toContain("window.sessionStorage");
+    expect(client).toContain("getCheckoutFormSessionDraft");
+    expect(client).toContain("setCheckoutFormSessionDraft");
+    expect(client).toContain("restoredDraftMerchantId");
+    expect(client).toContain("storedDraft?.merchantId === merchantId");
+    expect(confirmFn).toContain("setCheckoutFormSessionDraft(null)");
+    expect(confirmFn.indexOf("setCheckoutFormSessionDraft(null)")).toBeLessThan(
+      confirmFn.indexOf("clear()"),
+    );
+  });
+
   it("keeps checkout section headings inside cards and clarifies review hierarchy", () => {
     const client = read("src/components/checkout/checkout-page-client.tsx");
     const css = read("src/styles/globals.css");

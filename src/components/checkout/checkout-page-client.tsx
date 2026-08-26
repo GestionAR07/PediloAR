@@ -45,12 +45,14 @@ import {
 } from "@/lib/checkout/review-invalidation";
 import {
   getCheckoutAttemptSnapshot,
+  getCheckoutFormSessionDraft,
   getCheckoutSuccessSnapshot,
   getFrozenCheckoutDraftSnapshot,
   getServerCheckoutAttemptSnapshot,
   getServerCheckoutSuccessSnapshot,
   getServerFrozenCheckoutDraftSnapshot,
   setCheckoutAttempt,
+  setCheckoutFormSessionDraft,
   setCheckoutSuccess,
   setFrozenCheckoutDraft,
   subscribeCheckoutAttempt,
@@ -139,6 +141,7 @@ export function CheckoutPageClient({
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [reviewing, setReviewing] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [restoredDraftMerchantId, setRestoredDraftMerchantId] = useState("");
   const confirmLock = useRef(false);
 
   const success = isCartEmpty(cart) ? storedSuccess : null;
@@ -224,6 +227,79 @@ export function CheckoutPageClient({
       ),
     [storedAttempt, signature],
   );
+
+  useEffect(() => {
+    if (!hydrated) return;
+    if (isCartEmpty(cart)) {
+      setCheckoutFormSessionDraft(null);
+      return;
+    }
+
+    const merchantId = cart.merchantId;
+    const timeoutId = window.setTimeout(() => {
+      const storedDraft = getCheckoutFormSessionDraft();
+      if (storedDraft?.merchantId === merchantId) {
+        setCustomerName(storedDraft.customerName);
+        setCustomerPhone(storedDraft.customerPhone);
+        setFulfillmentMethod(storedDraft.fulfillmentMethod);
+        setDeliveryZoneId(storedDraft.deliveryZoneId);
+        setStreet(storedDraft.street);
+        setNumber(storedDraft.number);
+        setFloorApartment(storedDraft.floorApartment);
+        setReference(storedDraft.reference);
+        setPaymentMethodCode(storedDraft.paymentMethodCode);
+      } else {
+        setCheckoutFormSessionDraft(null);
+        setCustomerName(initialCustomer.name);
+        setCustomerPhone(initialCustomer.phone);
+        setFulfillmentMethod("");
+        setDeliveryZoneId("");
+        setStreet("");
+        setNumber("");
+        setFloorApartment("");
+        setReference("");
+        setPaymentMethodCode("");
+      }
+      setRestoredDraftMerchantId(merchantId);
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [hydrated, cart, initialCustomer.name, initialCustomer.phone]);
+
+  useEffect(() => {
+    if (
+      !hydrated ||
+      isCartEmpty(cart) ||
+      restoredDraftMerchantId !== cart.merchantId
+    ) {
+      return;
+    }
+    setCheckoutFormSessionDraft({
+      version: 1,
+      merchantId: cart.merchantId,
+      customerName,
+      customerPhone,
+      fulfillmentMethod: effectiveFulfillment,
+      deliveryZoneId: effectiveDeliveryZoneId,
+      street,
+      number,
+      floorApartment,
+      reference,
+      paymentMethodCode: effectivePayment,
+    });
+  }, [
+    hydrated,
+    cart,
+    restoredDraftMerchantId,
+    customerName,
+    customerPhone,
+    effectiveFulfillment,
+    effectiveDeliveryZoneId,
+    street,
+    number,
+    floorApartment,
+    reference,
+    effectivePayment,
+  ]);
 
   useEffect(() => {
     if (!hydrated || isCartEmpty(cart) || success) return;
@@ -385,6 +461,7 @@ export function CheckoutPageClient({
       });
       setCheckoutAttempt(null);
       setFrozenCheckoutDraft(null);
+      setCheckoutFormSessionDraft(null);
       clear();
       setReview(null);
     } catch {

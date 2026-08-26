@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
+  CHECKOUT_FORM_DRAFT_STORAGE_KEY,
+  clearCheckoutFormSessionDraft,
   createIdempotencyKey,
   markAttemptReviewed,
   markAttemptUnknown,
   parseCheckoutAttempt,
+  parseCheckoutFormSessionDraft,
+  readCheckoutFormSessionDraft,
   resolveAttemptForSignature,
   clearAttemptQuote,
+  writeCheckoutFormSessionDraft,
+  type CheckoutFormSessionDraft,
 } from "./session";
 
 describe("checkout attempt lifecycle", () => {
@@ -68,5 +74,51 @@ describe("checkout attempt lifecycle", () => {
     expect(clearAttemptQuote(markAttemptUnknown(reviewed)).phase).toBe(
       "unknown",
     );
+  });
+});
+
+describe("checkout form session draft", () => {
+  it("persists and clears only the temporary form fields", () => {
+    const items = new Map<string, string>();
+    const storage = {
+      getItem: (key: string) => items.get(key) ?? null,
+      setItem: (key: string, value: string) => items.set(key, value),
+      removeItem: (key: string) => items.delete(key),
+    };
+    const draft = {
+      version: 1,
+      merchantId: "merchant-1",
+      customerName: "Pediloar",
+      customerPhone: "2804123456",
+      fulfillmentMethod: "MERCHANT_DELIVERY",
+      deliveryZoneId: "zone-1",
+      street: "123",
+      number: "123",
+      floorApartment: "Casa de prueba",
+      reference: "Portón violeta",
+      paymentMethodCode: "CASH",
+    } satisfies CheckoutFormSessionDraft;
+
+    writeCheckoutFormSessionDraft(storage, draft);
+    expect(items.has(CHECKOUT_FORM_DRAFT_STORAGE_KEY)).toBe(true);
+    expect(readCheckoutFormSessionDraft(storage)).toEqual(draft);
+
+    clearCheckoutFormSessionDraft(storage);
+    expect(readCheckoutFormSessionDraft(storage)).toBeNull();
+  });
+
+  it("rejects malformed or unsupported drafts", () => {
+    expect(parseCheckoutFormSessionDraft(null)).toBeNull();
+    expect(parseCheckoutFormSessionDraft("not-json")).toBeNull();
+    expect(
+      parseCheckoutFormSessionDraft(
+        JSON.stringify({ version: 2, merchantId: "merchant-1" }),
+      ),
+    ).toBeNull();
+    expect(
+      parseCheckoutFormSessionDraft(
+        JSON.stringify({ version: 1, merchantId: "merchant-1" }),
+      ),
+    ).toBeNull();
   });
 });

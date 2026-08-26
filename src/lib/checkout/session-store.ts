@@ -1,14 +1,18 @@
 import {
   clearCheckoutAttempt,
+  clearCheckoutFormSessionDraft,
   clearCheckoutSuccess,
   clearFrozenCheckoutDraft,
   readCheckoutAttempt,
+  readCheckoutFormSessionDraft,
   readCheckoutSuccess,
   readFrozenCheckoutDraft,
   writeCheckoutAttempt,
+  writeCheckoutFormSessionDraft,
   writeCheckoutSuccess,
   writeFrozenCheckoutDraft,
   type CheckoutAttemptState,
+  type CheckoutFormSessionDraft,
   type CheckoutSuccessState,
   type FrozenCheckoutDraft,
 } from "./session";
@@ -33,6 +37,21 @@ function clientStorage(): Storage | null {
     return window.sessionStorage;
   } catch {
     return null;
+  }
+}
+
+export function getCheckoutFormSessionDraft(): CheckoutFormSessionDraft | null {
+  return readCheckoutFormSessionDraft(clientStorage());
+}
+
+export function setCheckoutFormSessionDraft(
+  next: CheckoutFormSessionDraft | null,
+): void {
+  const storage = clientStorage();
+  if (next) {
+    writeCheckoutFormSessionDraft(storage, next);
+  } else {
+    clearCheckoutFormSessionDraft(storage);
   }
 }
 
