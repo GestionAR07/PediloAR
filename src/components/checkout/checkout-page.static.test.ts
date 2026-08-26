@@ -74,6 +74,13 @@ describe("qwen checkout v4 static checks", () => {
     expect(client).toContain("El detalle completo está en la revisión");
     expect(client).toContain("DELIVERY_MINIMUM_NOT_MET");
     expect(client).toContain("showMinimumHint");
+    expect(client).toContain("minimumRemainingCents");
+    expect(client).toContain("más para continuar");
+    const canReviewBlock = client.slice(
+      client.indexOf("const canReview"),
+      client.indexOf("const showAuthoritativeReview"),
+    );
+    expect(canReviewBlock).toContain("!belowMinimum");
     expect(client).not.toContain("router.push");
     expect(client).not.toContain("router.replace");
     expect(client).not.toContain("ProductOptionsSheet");
