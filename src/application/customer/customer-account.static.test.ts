@@ -50,6 +50,11 @@ describe("customer account security and wiring", () => {
     const oauth = read("src/app/auth/oauth/actions.ts");
     const continuation = read("src/app/auth/oauth/continue/page.tsx");
     const checkout = read("src/app/checkout/page.tsx");
+    const accountLoader = read("src/app/cuenta/_lib/load-customer.ts");
+    const account = read("src/app/cuenta/page.tsx");
+    const orderList = read("src/app/cuenta/pedidos/page.tsx");
+    const orderDetail = read("src/app/cuenta/pedidos/[orderId]/page.tsx");
+    const profile = read("src/app/cuenta/perfil/page.tsx");
     const profileAction = read("src/app/cuenta/perfil/actions.ts");
     expect(oauth).toContain('provider: "google"');
     expect(oauth).toContain("signInWithOAuth");
@@ -57,6 +62,13 @@ describe("customer account security and wiring", () => {
     expect(oauth).toContain("isGoogleOAuthEnabled");
     expect(continuation).toContain("hasCompleteCustomerContact");
     expect(checkout).toContain('customerProfileHref("/checkout", true)');
+    expect(accountLoader).toContain("hasCompleteCustomerContact");
+    expect(accountLoader).toContain("customerProfileHref(destination, true)");
+    for (const protectedAccountPage of [account, orderList, orderDetail]) {
+      expect(protectedAccountPage).toContain("loadCompleteCustomerPage");
+    }
+    expect(profile).toContain("loadCustomerPage");
+    expect(profile).not.toContain("loadCompleteCustomerPage");
     expect(profileAction).toContain("updateCustomerProfileApp");
     expect(profileAction).not.toContain("platformRole");
     expect(profileAction).not.toContain("status:");

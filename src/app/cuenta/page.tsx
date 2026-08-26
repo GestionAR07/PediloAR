@@ -4,12 +4,15 @@ import { listCustomerOrdersApp } from "@/application/customer/wiring";
 import { CustomerOrderCard } from "@/components/customer/customer-order-card";
 import { logoutAction } from "@/app/login/actions";
 import { APP_NAME } from "@/lib/app-info";
-import { loadCustomerPage } from "./_lib/load-customer";
+import { loadCompleteCustomerPage } from "./_lib/load-customer";
 
 export const metadata: Metadata = { title: `Mi cuenta · ${APP_NAME}` };
 
 export default async function CustomerAccountPage() {
-  const { context, orders } = await loadCustomerPage(listCustomerOrdersApp);
+  const { context, orders } = await loadCompleteCustomerPage(
+    listCustomerOrdersApp,
+    "/cuenta",
+  );
   const displayName = context.profile.displayName?.trim() || "tu cuenta";
 
   return (

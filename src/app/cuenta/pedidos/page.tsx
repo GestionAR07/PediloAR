@@ -2,12 +2,15 @@ import type { Metadata } from "next";
 import { listCustomerOrdersApp } from "@/application/customer/wiring";
 import { CustomerOrderCard } from "@/components/customer/customer-order-card";
 import { APP_NAME } from "@/lib/app-info";
-import { loadCustomerPage } from "../_lib/load-customer";
+import { loadCompleteCustomerPage } from "../_lib/load-customer";
 
 export const metadata: Metadata = { title: `Mis pedidos · ${APP_NAME}` };
 
 export default async function CustomerOrdersPage() {
-  const { orders } = await loadCustomerPage(listCustomerOrdersApp);
+  const { orders } = await loadCompleteCustomerPage(
+    listCustomerOrdersApp,
+    "/cuenta/pedidos",
+  );
   return (
     <div className="space-y-8">
       <header>

@@ -6,7 +6,7 @@ import { CustomerOrderAutoRefresh } from "@/components/customer/customer-order-a
 import { moneyCents } from "@/domain/money/money-cents";
 import { formatMoneyCentsArs } from "@/lib/format-money";
 import { APP_NAME } from "@/lib/app-info";
-import { loadCustomerPage } from "../../_lib/load-customer";
+import { loadCompleteCustomerPage } from "../../_lib/load-customer";
 
 export const metadata: Metadata = { title: `Detalle del pedido · ${APP_NAME}` };
 
@@ -26,7 +26,10 @@ export default async function CustomerOrderDetailPage({
   params: Promise<{ orderId: string }>;
 }) {
   const { orderId } = await params;
-  const { order } = await loadCustomerPage(() => getCustomerOrderApp(orderId));
+  const { order } = await loadCompleteCustomerPage(
+    () => getCustomerOrderApp(orderId),
+    `/cuenta/pedidos/${encodeURIComponent(orderId)}`,
+  );
   if (!order.ok) {
     if (order.error.code === "ORDER_NOT_FOUND") notFound();
     return (
