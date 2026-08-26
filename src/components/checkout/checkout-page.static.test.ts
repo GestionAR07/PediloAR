@@ -75,7 +75,9 @@ describe("qwen checkout v4 static checks", () => {
     expect(client).toContain("DELIVERY_MINIMUM_NOT_MET");
     expect(client).toContain("showMinimumHint");
     expect(client).toContain("minimumRemainingCents");
-    expect(client).toContain("más para continuar");
+    expect(client.replace(/\s+/g, " ")).toContain("más para continuar");
+    expect(client).toContain("Explorar productos");
+    expect(client).toContain("href={`/comercios/${cart.merchantId}`}");
     const canReviewBlock = client.slice(
       client.indexOf("const canReview"),
       client.indexOf("const showAuthoritativeReview"),
