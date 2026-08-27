@@ -38,8 +38,10 @@ function HeroCard({
           {icon}
         </span>
         <div className="min-w-0">
-          <p className="text-xs font-bold text-white">{title}</p>
-          <p className="text-[11px] font-medium text-slate-300">{detail}</p>
+          <p className="text-xs font-bold text-[var(--ps-deep)]">{title}</p>
+          <p className="text-[11px] font-medium text-[var(--color-muted)]">
+            {detail}
+          </p>
         </div>
       </div>
     </div>
@@ -55,7 +57,7 @@ export function PublicHeroVisual({
       <div className="public-hero-visual-atmosphere" aria-hidden />
 
       <div data-hero-media-slot className="public-hero-media-slot">
-        {/* Transparent vector mark for the dark hero surface. */}
+        {/* Brand mark on the luminous hero surface. */}
         <Image
           src={mediaSrc}
           alt={mediaAlt}
@@ -79,7 +81,7 @@ export function PublicHeroVisual({
       <div className="public-hero-card-slot public-hero-card-slot--a">
         <HeroCard
           variant="a"
-          tone="bg-gradient-to-br from-violet-500 to-fuchsia-500"
+          tone="bg-gradient-to-br from-[var(--ps-blue)] to-[var(--ps-sky)]"
           icon={<StoreIcon className="h-5 w-5" />}
           title="Comercios"
           detail="de tu zona"
@@ -88,7 +90,7 @@ export function PublicHeroVisual({
       <div className="public-hero-card-slot public-hero-card-slot--b">
         <HeroCard
           variant="b"
-          tone="bg-gradient-to-br from-orange-400 to-rose-500"
+          tone="bg-gradient-to-br from-[var(--ps-sky)] to-[var(--ps-sky-medium)]"
           icon={<BikeIcon className="h-5 w-5" />}
           title="Retiro o entrega"
           detail="según el comercio"
@@ -97,7 +99,7 @@ export function PublicHeroVisual({
       <div className="public-hero-card-slot public-hero-card-slot--c">
         <HeroCard
           variant="c"
-          tone="bg-gradient-to-br from-lime-400 to-emerald-500"
+          tone="bg-gradient-to-br from-[var(--ps-yellow)] to-[var(--ps-yellow-hover)] text-[var(--ps-deep)]"
           icon={<ShoppingBagIcon className="h-5 w-5" />}
           title="Pedido simple"
           detail="sin vueltas"

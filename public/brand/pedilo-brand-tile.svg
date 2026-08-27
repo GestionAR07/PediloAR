@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title description">
   <title id="title">Ícono de Pedilo</title>
-  <desc id="description">Bolsa de compras con camino y casa sobre una placa violeta oscura.</desc>
+  <desc id="description">Bolsa de compras con camino y casa sobre una placa azul profunda.</desc>
 
   <defs>
     <linearGradient id="tile-gradient" x1="22" y1="16" x2="139" y2="148" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#171035"/>
-      <stop offset="0.58" stop-color="#0E0820"/>
-      <stop offset="1" stop-color="#0B0618"/>
+      <stop offset="0" stop-color="#075D96"/>
+      <stop offset="0.58" stop-color="#083F66"/>
+      <stop offset="1" stop-color="#062F4C"/>
     </linearGradient>
     <linearGradient id="path-gradient" x1="49.83" x2="107.3" y1="66.15" y2="37.21" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#D946EF"/>
-      <stop offset="0.48" stop-color="#F472B6"/>
-      <stop offset="1" stop-color="#FB923C"/>
+      <stop offset="0" stop-color="#20AEE5"/>
+      <stop offset="0.48" stop-color="#62C5EB"/>
+      <stop offset="1" stop-color="#FFC51B"/>
     </linearGradient>
     <linearGradient id="handle-gradient" x1="54.07" x2="91.6" y1="52.17" y2="28.97" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#A78BFA"/>
-      <stop offset="1" stop-color="#7C3AED"/>
+      <stop offset="0" stop-color="#62C5EB"/>
+      <stop offset="1" stop-color="#075D96"/>
     </linearGradient>
     <linearGradient id="home-gradient" x1="55.23" x2="121.9" y1="132.3" y2="83.02" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#A78BFA"/>
-      <stop offset="0.5" stop-color="#D946EF"/>
-      <stop offset="1" stop-color="#F472B6"/>
+      <stop offset="0" stop-color="#075D96"/>
+      <stop offset="0.5" stop-color="#20AEE5"/>
+      <stop offset="1" stop-color="#62C5EB"/>
     </linearGradient>
   </defs>
 
   <rect x="5" y="5" width="150" height="150" rx="38" fill="url(#tile-gradient)"/>
-  <rect x="5.75" y="5.75" width="148.5" height="148.5" rx="37.25" fill="none" stroke="#7C3AED" stroke-opacity="0.58" stroke-width="1.5"/>
+  <rect x="5.75" y="5.75" width="148.5" height="148.5" rx="37.25" fill="none" stroke="#20AEE5" stroke-opacity="0.58" stroke-width="1.5"/>
 
   <svg x="23" y="21" width="114" height="114" viewBox="20 13 118 118" aria-hidden="true">
     <path fill="url(#path-gradient)" d="m47.9 126.2h-16.9c-5.5-0.3-8.3-4.7-7.5-9.4l12.3-77.5 0.5-0.5h14.7l0.3 0.3v5.4l-0.4 0.3h-9l-0.2 0.2-5.9 37c-1.5 8.2-2.5 17.6-4 25.5l-1.8 10.3c0 0.7 0.6 1.9 1.7 1.9l3-0.1 0.9-0.1c-0.7-3.9-1-7.5 1.1-12.7 2.7-6.8 6.5-11.1 12.7-15.3 4.9-3.2 10.5-4.9 16.7-6.8 12.5-3.9 20.3-7.1 27.9-14.8 4.6-4.7 5.9-7 8-11.9 1.5-3.5 2.6-8.3 2.5-13l-0.4-0.4-9.4 0.2-0.3-0.3v-5.8l0.3 0.1h15.3l0.3 0.3 1 5.9c1.3 7.4 2.2 15.5 3.6 23l1.5 10.9-3-3-4.1-3.5c-1.1-2.1-0.6-6.8-1.9-10.5-1.1-0.1-1.5 2.6-1.8 3.1-2 3.4-4.4 7.2-8.6 11.3s-11.4 8.3-19 11c-10.9 4.2-18.9 5.2-26.7 11.7-2.3 1.8-4.7 4-6.7 7.6-1.6 3-2.5 6-1.9 11.4 1 5.6 4 6.5 5.3 8l-0.1 0.2z"/>

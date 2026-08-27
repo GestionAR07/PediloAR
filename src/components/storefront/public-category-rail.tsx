@@ -82,10 +82,10 @@ export function PublicCategoryRail({
   return (
     <section id="categorias" className="min-w-0 max-w-full space-y-5">
       <div className="min-w-0">
-        <p className="mb-2 text-xs font-extrabold tracking-[0.2em] break-words text-fuchsia-600">
+        <p className="mb-2 text-xs font-extrabold tracking-[0.2em] break-words text-[var(--ps-sky)]">
           EXPLORÁ
         </p>
-        <h2 className="font-display text-2xl font-extrabold tracking-tight break-words text-[var(--ps-night-900)] lg:text-4xl">
+        <h2 className="font-display text-2xl font-extrabold tracking-tight break-words text-[var(--ps-deep)] lg:text-4xl">
           ¿Qué te apetece hoy?
         </h2>
       </div>

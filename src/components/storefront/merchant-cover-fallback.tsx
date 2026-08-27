@@ -3,9 +3,9 @@ type Props = {
 };
 
 const GRADIENTS = [
-  "from-violet-800 via-violet-600 to-fuchsia-500",
-  "from-[var(--ps-night-800)] via-violet-700 to-fuchsia-600",
-  "from-violet-700 via-fuchsia-600 to-orange-400",
+  "from-[var(--ps-deep)] via-[var(--ps-blue)] to-[var(--ps-sky)]",
+  "from-[var(--ps-blue)] via-[var(--ps-sky)] to-[var(--ps-sky-medium)]",
+  "from-[var(--ps-blue)] via-[var(--ps-sky)] to-[var(--ps-yellow)]",
 ] as const;
 
 /**
@@ -29,7 +29,7 @@ export function MerchantCoverFallback({ name }: Props) {
       />
       <span
         aria-hidden
-        className="absolute bottom-4 left-4 h-20 w-20 rounded-[2rem] bg-fuchsia-400/20 blur-lg"
+        className="absolute bottom-4 left-4 h-20 w-20 rounded-[2rem] bg-[var(--ps-sky)]/25 blur-lg"
       />
       <span
         aria-hidden

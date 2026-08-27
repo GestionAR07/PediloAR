@@ -69,14 +69,14 @@ export function PublicDiscoverySection({
       <section id="comercios" className="min-w-0 scroll-mt-24 space-y-6">
         <div className="flex min-w-0 flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0 max-w-full space-y-1">
-            <p className="mb-2 text-xs font-extrabold tracking-[0.2em] break-words text-orange-500">
+            <p className="mb-2 text-xs font-extrabold tracking-[0.2em] break-words text-[var(--ps-sky)]">
               COMERCIOS CERCA TUYO
             </p>
-            <h2 className="font-display text-2xl font-extrabold tracking-tight break-words text-[var(--ps-night-900)] lg:text-4xl">
+            <h2 className="font-display text-2xl font-extrabold tracking-tight break-words text-[var(--ps-deep)] lg:text-4xl">
               Descubrí qué pedir hoy
             </h2>
             {selectedZone ? (
-              <p className="text-sm font-bold text-violet-700">
+              <p className="text-sm font-bold text-[var(--ps-blue)]">
                 En {selectedZone.name}
               </p>
             ) : (
@@ -99,13 +99,13 @@ export function PublicDiscoverySection({
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Buscar comercios..."
                 autoComplete="off"
-                className="min-h-11 w-full min-w-0 max-w-full rounded-full border-2 border-violet-100 bg-white py-2.5 pr-12 pl-11 text-sm font-medium text-[var(--ps-night-900)] shadow-soft outline-none transition placeholder:text-slate-400 focus:border-fuchsia-300 focus:ring-4 focus:ring-fuchsia-100"
+                className="min-h-11 w-full min-w-0 max-w-full rounded-full border-2 border-sky-100 bg-white py-2.5 pr-12 pl-11 text-sm font-medium text-[var(--ps-deep)] shadow-soft outline-none transition placeholder:text-slate-400 focus:border-[var(--ps-sky)] focus:ring-4 focus:ring-sky-100"
               />
               {trimmedQuery ? (
                 <button
                   type="button"
                   onClick={clearSearch}
-                  className="absolute top-1/2 right-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition hover:bg-violet-50 hover:text-violet-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+                  className="absolute top-1/2 right-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition hover:bg-sky-50 hover:text-[var(--ps-blue)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-sky)]"
                 >
                   <CloseIcon className="h-4 w-4" />
                   <span className="sr-only">Limpiar búsqueda</span>
@@ -145,11 +145,11 @@ export function PublicDiscoverySection({
 
 function EmptyZoneState({ zoneName }: { zoneName: string }) {
   return (
-    <div className="rounded-[2rem] border-2 border-dashed border-violet-200 bg-white px-6 py-16 text-center">
-      <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-100 text-violet-500">
+    <div className="rounded-[2rem] border-2 border-dashed border-sky-200 bg-white px-6 py-16 text-center">
+      <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-sky-100 text-[var(--ps-sky)]">
         <StoreIcon className="h-8 w-8" />
       </span>
-      <p className="font-display mt-4 text-lg font-extrabold text-[var(--ps-night-900)]">
+      <p className="font-display mt-4 text-lg font-extrabold text-[var(--ps-deep)]">
         Estamos sumando comercios en {zoneName}
       </p>
       <p className="mx-auto mt-2 max-w-sm text-sm text-muted">
@@ -157,7 +157,7 @@ function EmptyZoneState({ zoneName }: { zoneName: string }) {
       </p>
       <Link
         href="/login"
-        className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full px-5 text-sm font-extrabold text-fuchsia-600 transition hover:text-fuchsia-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+        className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full px-5 text-sm font-extrabold text-[var(--ps-blue)] transition hover:text-[var(--ps-sky)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-sky)]"
       >
         Sumar mi comercio
       </Link>
@@ -183,11 +183,11 @@ function EmptyFilterState({
     : "No encontramos comercios en esta categoría.";
 
   return (
-    <div className="rounded-[2rem] border-2 border-dashed border-violet-200 bg-white px-6 py-16 text-center">
-      <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-100 text-violet-500">
+    <div className="rounded-[2rem] border-2 border-dashed border-sky-200 bg-white px-6 py-16 text-center">
+      <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-sky-100 text-[var(--ps-sky)]">
         <SearchIcon className="h-8 w-8" />
       </span>
-      <p className="font-display mt-4 text-lg font-extrabold text-[var(--ps-night-900)]">
+      <p className="font-display mt-4 text-lg font-extrabold text-[var(--ps-deep)]">
         {heading}
       </p>
       <p className="mx-auto mt-2 max-w-sm text-sm text-muted">
@@ -200,7 +200,7 @@ function EmptyFilterState({
           <button
             type="button"
             onClick={onClearSearch}
-            className="inline-flex min-h-11 items-center justify-center rounded-full px-5 text-sm font-extrabold text-fuchsia-600 transition hover:text-fuchsia-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+            className="inline-flex min-h-11 items-center justify-center rounded-full px-5 text-sm font-extrabold text-[var(--ps-blue)] transition hover:text-[var(--ps-sky)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-sky)]"
           >
             Limpiar búsqueda
           </button>
@@ -208,7 +208,7 @@ function EmptyFilterState({
         <button
           type="button"
           onClick={onClearAll}
-          className="inline-flex min-h-11 items-center justify-center rounded-full px-5 text-sm font-extrabold text-violet-700 transition hover:text-fuchsia-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+          className="inline-flex min-h-11 items-center justify-center rounded-full px-5 text-sm font-extrabold text-[var(--ps-blue)] transition hover:text-[var(--ps-sky)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-sky)]"
         >
           Ver todos
         </button>

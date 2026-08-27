@@ -57,11 +57,11 @@ export function MerchantCard({ merchant, zoneId = null }: Props) {
   return (
     <Link
       href={href}
-      className="card-lift group block h-full max-w-full min-w-0 cursor-pointer overflow-hidden rounded-[1.75rem] border border-violet-100/70 bg-white shadow-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+      className="card-lift group block h-full max-w-full min-w-0 cursor-pointer overflow-hidden rounded-[1.75rem] border border-sky-100/80 bg-white shadow-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-sky)]"
     >
-      <div className="relative isolate h-48 overflow-hidden bg-gradient-to-br from-violet-200 to-fuchsia-200 sm:h-52">
+      <div className="relative isolate h-48 overflow-hidden bg-gradient-to-br from-sky-100 to-sky-200 sm:h-52">
         <MerchantCover name={merchant.name} coverUrl={merchant.coverUrl} />
-        <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-[var(--ps-night)]/60 px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-white uppercase backdrop-blur">
+        <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-[var(--ps-deep)]/70 px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-white uppercase backdrop-blur">
           <span
             className={`h-1.5 w-1.5 rounded-full ${toneDot(merchant.availabilityTone)}`}
           />
@@ -69,7 +69,7 @@ export function MerchantCard({ merchant, zoneId = null }: Props) {
         </span>
       </div>
       <div className="flex flex-col gap-1 p-5 sm:p-6">
-        <h3 className="font-display text-lg leading-tight font-extrabold tracking-tight break-words text-[var(--ps-night-900)] sm:text-xl">
+        <h3 className="font-display text-lg leading-tight font-extrabold tracking-tight break-words text-[var(--ps-deep)] sm:text-xl">
           {merchant.name}
         </h3>
         <p className="text-xs font-bold tracking-wider text-slate-400 uppercase">
@@ -88,18 +88,18 @@ export function MerchantCard({ merchant, zoneId = null }: Props) {
           <div className="mt-3.5 flex flex-wrap items-center gap-4 text-xs font-bold text-slate-600">
             {logistics.estimatedMinutesLabel ? (
               <span className="inline-flex items-center gap-1.5">
-                <ClockIcon className="h-4 w-4 text-fuchsia-500" />
+                <ClockIcon className="h-4 w-4 text-[var(--ps-sky)]" />
                 {logistics.estimatedMinutesLabel}
               </span>
             ) : null}
             {logistics.deliveryAvailable ? (
               <span className="inline-flex items-center gap-1.5">
-                <BikeIcon className="h-4 w-4 text-lime-600" />
+                <BikeIcon className="h-4 w-4 text-[var(--ps-blue)]" />
                 {logistics.deliveryFeeLabel ?? "Envío"}
               </span>
             ) : null}
             {logistics.pickupAvailable ? (
-              <span className="rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-semibold text-violet-800">
+              <span className="rounded-full bg-sky-50 px-2.5 py-0.5 text-xs font-semibold text-[var(--ps-blue)]">
                 Retiro
               </span>
             ) : null}

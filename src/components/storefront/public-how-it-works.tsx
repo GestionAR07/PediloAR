@@ -19,21 +19,21 @@ const STEPS: ReadonlyArray<{
     title: "Elegí tu zona",
     body: "Encontrá los comercios disponibles cerca tuyo.",
     Icon: MapPinIcon,
-    tone: "from-violet-500 to-fuchsia-500",
+    tone: "from-[var(--ps-blue)] to-[var(--ps-sky)]",
   },
   {
     n: "02",
     title: "Armá tu pedido",
     body: "Elegí productos, cantidades y opciones disponibles.",
     Icon: ShoppingBagIcon,
-    tone: "from-orange-400 to-rose-500",
+    tone: "from-[var(--ps-sky)] to-[var(--ps-sky-medium)]",
   },
   {
     n: "03",
     title: "Confirmá tu pedido",
     body: "Completá tus datos, elegí retiro o envío si el comercio lo ofrece, y confirmá el pedido.",
     Icon: CheckIcon,
-    tone: "from-lime-400 to-emerald-500",
+    tone: "from-[var(--ps-yellow)] to-[var(--ps-yellow-hover)] text-[var(--ps-deep)]",
   },
 ];
 
@@ -45,12 +45,12 @@ export function PublicHowItWorks() {
       aria-labelledby="how-it-works-heading"
     >
       <div className="mx-auto max-w-2xl text-center">
-        <p className="text-xs font-extrabold tracking-[0.2em] text-orange-500">
+        <p className="text-xs font-extrabold tracking-[0.2em] text-[var(--ps-sky)]">
           ASÍ DE SIMPLE
         </p>
         <h2
           id="how-it-works-heading"
-          className="how-it-works-title font-display mt-3 font-extrabold tracking-tight break-words text-[var(--ps-night-900)]"
+          className="how-it-works-title font-display mt-3 font-extrabold tracking-tight break-words text-[var(--ps-deep)]"
         >
           Pedí cerca, sin vueltas.
         </h2>
@@ -59,9 +59,9 @@ export function PublicHowItWorks() {
       <ol className="how-it-works-grid mt-10 grid min-w-0 grid-cols-1 gap-5 md:grid-cols-3 md:gap-6 lg:mt-12">
         {STEPS.map(({ n, title, body, Icon, tone }) => (
           <li key={n} className="min-w-0">
-            <article className="how-it-works-card flex h-full min-w-0 flex-col rounded-[1.75rem] border border-violet-100/70 bg-white p-6 shadow-soft sm:p-7">
+            <article className="how-it-works-card flex h-full min-w-0 flex-col rounded-[1.75rem] border border-sky-100/80 bg-white p-6 shadow-soft sm:p-7">
               <p
-                className="font-display text-5xl font-extrabold tracking-tight text-violet-200 sm:text-6xl"
+                className="font-display text-5xl font-extrabold tracking-tight text-sky-100 sm:text-6xl"
                 aria-hidden
               >
                 {n}
@@ -71,7 +71,7 @@ export function PublicHowItWorks() {
               >
                 <Icon className="h-5 w-5" />
               </span>
-              <h3 className="font-display mt-5 text-lg font-extrabold tracking-tight break-words text-[var(--ps-night-900)] sm:text-xl">
+              <h3 className="font-display mt-5 text-lg font-extrabold tracking-tight break-words text-[var(--ps-deep)] sm:text-xl">
                 {title}
               </h3>
               <p className="mt-2 text-sm leading-relaxed break-words text-muted">

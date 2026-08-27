@@ -68,9 +68,9 @@ export function ZonePicker({
   return (
     <section id="zona" className="min-w-0 scroll-mt-24 space-y-4">
       {compact && activeZone ? (
-        <div className="flex w-full min-w-0 flex-col gap-3 rounded-[1.5rem] border border-violet-100/70 bg-white/90 px-4 py-3 shadow-soft sm:flex-row sm:items-center sm:justify-between sm:px-5">
+        <div className="flex w-full min-w-0 flex-col gap-3 rounded-[1.5rem] border border-sky-100/80 bg-white/90 px-4 py-3 shadow-soft sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div className="min-w-0 max-w-full">
-            <p className="font-display text-lg font-extrabold tracking-tight break-words text-[var(--ps-night-900)]">
+            <p className="font-display text-lg font-extrabold tracking-tight break-words text-[var(--ps-deep)]">
               Comercios en {activeZone.name}
             </p>
             <p className="mt-0.5 text-xs text-muted">
@@ -81,17 +81,17 @@ export function ZonePicker({
             type="button"
             onClick={() => setChangingZone((open) => !open)}
             aria-expanded={changingZone}
-            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full px-4 text-sm font-extrabold text-violet-700 transition hover:bg-violet-50 hover:text-fuchsia-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full px-4 text-sm font-extrabold text-[var(--ps-blue)] transition hover:bg-sky-50 hover:text-[var(--ps-sky)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-sky)]"
           >
             Cambiar zona
           </button>
         </div>
       ) : (
         <div className="space-y-1">
-          <p className="mb-2 text-xs font-extrabold tracking-[0.2em] text-fuchsia-600">
+          <p className="mb-2 text-xs font-extrabold tracking-[0.2em] text-[var(--ps-sky)]">
             TU ZONA
           </p>
-          <h2 className="font-display text-2xl font-extrabold tracking-tight text-[var(--ps-night-900)] lg:text-4xl">
+          <h2 className="font-display text-2xl font-extrabold tracking-tight text-[var(--ps-deep)] lg:text-4xl">
             ¿Dónde querés comprar?
           </h2>
           <p className="text-sm text-muted">
@@ -103,7 +103,7 @@ export function ZonePicker({
       {showChooser ? (
         <div className="space-y-3">
           {compact ? (
-            <p className="text-sm font-extrabold text-[var(--ps-night-900)]">
+            <p className="text-sm font-extrabold text-[var(--ps-deep)]">
               ¿Dónde querés comprar?
             </p>
           ) : null}
@@ -121,17 +121,17 @@ export function ZonePicker({
                     type="button"
                     onClick={() => selectZone(zone.id)}
                     aria-pressed={selected}
-                    className={`flex min-h-14 w-full items-center gap-3 rounded-2xl border p-3 text-left text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] ${
+                    className={`flex min-h-14 w-full items-center gap-3 rounded-2xl border p-3 text-left text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-sky)] ${
                       selected
-                        ? "border-violet-200 bg-violet-50 text-foreground shadow-soft"
-                        : "border-transparent bg-white text-foreground shadow-soft hover:border-violet-100 hover:bg-violet-50"
+                        ? "border-sky-200 bg-sky-50 text-foreground shadow-soft"
+                        : "border-transparent bg-white text-foreground shadow-soft hover:border-sky-100 hover:bg-sky-50"
                     }`}
                   >
                     <span
                       className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
                         selected
-                          ? "bg-gradient-to-br from-violet-600 to-fuchsia-500 text-white"
-                          : "bg-violet-100 text-violet-700"
+                          ? "bg-gradient-to-br from-[var(--ps-blue)] to-[var(--ps-sky)] text-white"
+                          : "bg-sky-100 text-[var(--ps-blue)]"
                       }`}
                     >
                       <MapPinIcon className="h-4 w-4" />

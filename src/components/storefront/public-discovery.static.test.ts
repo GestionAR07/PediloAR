@@ -139,8 +139,10 @@ describe("qwen public discovery v1 static checks", () => {
     expect(shell).toContain("max-w-3xl");
     expect(shell).toContain("public-storefront");
     expect(css).toContain(".public-storefront");
-    expect(css).toContain("#faf8ff");
-    expect(css).toContain("#7c3aed");
+    expect(css).toContain("#f7fcff");
+    expect(css).toContain("#20aee5");
+    expect(css).toContain("#083f66");
+    expect(css).toContain("#ffc51b");
     expect(globalsRoot).toContain("#2f5d50");
     expect(merchantPage).not.toContain("public-storefront");
     expect(adminLayout).not.toContain("public-storefront");
@@ -201,7 +203,7 @@ describe("qwen public discovery v1 static checks", () => {
 
     expect(header).toContain("nav-blur");
     expect(header).toContain("sticky top-0 z-40");
-    expect(header).toContain("border-b border-violet-100/70");
+    expect(header).toContain("border-b border-sky-100/80");
     expect(navBlur).toContain("background-color: var(--ps-cream)");
     expect(navBlur).not.toContain("backdrop-filter");
     expect(navBlur).not.toContain("0.88");
@@ -387,7 +389,7 @@ describe("qwen public discovery v1 static checks", () => {
     expect(wordmark).not.toContain("APP_NAME.slice(0, 1)");
     expect(header).toContain("PublicBrandWordmark");
     expect(merchantCta).toContain(
-      '<PublicBrandMark size="compact" surface="dark" />',
+      '<PublicBrandMark size="compact" surface="light" />',
     );
     expect(header).not.toContain('type="search"');
     expect(header).not.toContain("Crear cuenta");
@@ -733,7 +735,7 @@ describe("qwen public discovery v1 static checks", () => {
     expect(hero).toContain("public-hero-wave");
     expect(hero).toContain("text-[var(--ps-cream)]");
     expect(hero).toContain('preserveAspectRatio="none"');
-    expect(css).toContain("--ps-cream: #faf8ff");
+    expect(css).toContain("--ps-cream: #f7fcff");
     expect(css).toMatch(
       /\.public-storefront \{[\s\S]*background-color:\s*var\(--ps-cream\)/,
     );

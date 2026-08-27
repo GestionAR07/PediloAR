@@ -18,16 +18,16 @@ export function PublicFooter() {
           <PublicBrandWordmark
             size="compact"
             tone="gradient"
-            surface="dark"
+            surface="light"
             showMark
           />
-          <p className="mt-4 text-sm leading-relaxed break-words text-slate-400">
+          <p className="mt-4 text-sm leading-relaxed break-words text-[var(--color-muted)]">
             {APP_TAGLINE}
           </p>
         </div>
 
         <nav className="min-w-0" aria-label="Explorar">
-          <p className="text-xs font-extrabold tracking-[0.18em] text-slate-500 uppercase">
+          <p className="text-xs font-extrabold tracking-[0.18em] text-[var(--ps-blue)] uppercase">
             Explorar
           </p>
           <ul className="mt-4 space-y-1">
@@ -35,7 +35,7 @@ export function PublicFooter() {
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="inline-flex min-h-11 items-center text-sm font-semibold break-words text-slate-300 transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                  className="inline-flex min-h-11 items-center text-sm font-semibold break-words text-[var(--color-muted)] transition hover:text-[var(--ps-sky)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-sky)]"
                 >
                   {link.label}
                 </Link>
@@ -45,14 +45,14 @@ export function PublicFooter() {
         </nav>
 
         <nav className="min-w-0" aria-label="Comercios">
-          <p className="text-xs font-extrabold tracking-[0.18em] text-slate-500 uppercase">
+          <p className="text-xs font-extrabold tracking-[0.18em] text-[var(--ps-blue)] uppercase">
             Comercios
           </p>
           <ul className="mt-4 space-y-1">
             <li>
               <Link
                 href="/login"
-                className="inline-flex min-h-11 items-center text-sm font-semibold break-words text-slate-300 transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="inline-flex min-h-11 items-center text-sm font-semibold break-words text-[var(--color-muted)] transition hover:text-[var(--ps-sky)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-sky)]"
               >
                 Acceso comercios
               </Link>
@@ -61,8 +61,8 @@ export function PublicFooter() {
         </nav>
       </div>
 
-      <div className="border-t border-white/10">
-        <p className="mx-auto w-full max-w-7xl px-4 py-5 text-xs break-words text-slate-500 sm:px-6 lg:px-8">
+      <div className="border-t border-sky-100/90">
+        <p className="mx-auto w-full max-w-7xl px-4 py-5 text-xs break-words text-[var(--color-muted)] sm:px-6 lg:px-8">
           © {year} {APP_NAME}
         </p>
       </div>

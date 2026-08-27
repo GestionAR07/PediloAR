@@ -5,7 +5,7 @@ export function PublicHero() {
   return (
     <section
       id="inicio"
-      className="relative overflow-x-clip bg-[var(--ps-night-900)] text-white"
+      className="relative overflow-x-clip bg-[var(--ps-sky-soft)] text-[var(--ps-deep)]"
     >
       <div className="public-hero-atmosphere" aria-hidden />
 
@@ -15,25 +15,25 @@ export function PublicHero() {
             <span className="h-2 w-2 shrink-0 rounded-full bg-green-400" />
             Operando en {APP_SERVICE_AREA}
           </p>
-          <h1 className="public-hero-title font-display mt-6 max-w-full font-extrabold tracking-tight break-words">
+          <h1 className="public-hero-title font-display mt-6 max-w-full font-extrabold tracking-tight break-words text-[var(--ps-deep)]">
             Todo lo de tu zona,
             <br />
             <span className="grad-text">en un solo lugar.</span>
           </h1>
-          <p className="mx-auto mt-6 w-full max-w-lg text-base break-words text-slate-300/90 sm:text-lg lg:mx-0">
+          <p className="mx-auto mt-6 w-full max-w-lg text-base break-words text-[var(--color-muted)] sm:text-lg lg:mx-0">
             Elegí tu zona, descubrí comercios cercanos y armá tu pedido sin
             vueltas.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
             <a
               href="#comercios"
-              className="grad-btn inline-flex min-h-12 items-center rounded-full px-7 py-3 text-sm font-extrabold text-white shadow-glow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="grad-btn inline-flex min-h-12 items-center rounded-full px-7 py-3 text-sm font-extrabold shadow-glow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-sky)]"
             >
               Ver comercios
             </a>
             <a
               href="#zona"
-              className="glass inline-flex min-h-12 items-center rounded-full px-7 py-3 text-sm font-extrabold text-white transition hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="inline-flex min-h-12 items-center rounded-full border border-[var(--ps-sky)]/40 bg-white/80 px-7 py-3 text-sm font-extrabold text-[var(--ps-blue)] transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-sky)]"
             >
               Elegir zona
             </a>

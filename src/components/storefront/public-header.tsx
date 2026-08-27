@@ -56,11 +56,11 @@ export function PublicHeader({
   }
 
   return (
-    <header className="public-storefront nav-blur sticky top-0 z-40 border-b border-violet-100/70 transition-shadow">
+    <header className="public-storefront nav-blur sticky top-0 z-40 border-b border-sky-100/80 transition-shadow">
       <div className="mx-auto flex h-16 w-full min-w-0 max-w-7xl items-center gap-1.5 px-4 sm:gap-3 sm:px-6 lg:h-20 lg:px-8">
         <Link
           href="/"
-          className="inline-flex min-h-11 min-w-0 shrink-0 items-center rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+          className="inline-flex min-h-11 min-w-0 shrink-0 items-center rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-sky)]"
         >
           <PublicBrandWordmark size="header" tone="plain" />
         </Link>
@@ -69,11 +69,11 @@ export function PublicHeader({
           <button
             type="button"
             onClick={() => setZoneOpen(true)}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-violet-100 text-violet-700 transition hover:bg-violet-200/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] sm:h-auto sm:min-h-11 sm:w-auto sm:gap-2 sm:border sm:border-violet-100 sm:bg-violet-50 sm:py-1.5 sm:pr-3 sm:pl-2 sm:text-left sm:text-inherit sm:hover:bg-violet-100"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky-100 text-[var(--ps-blue)] transition hover:bg-sky-200/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-sky)] sm:h-auto sm:min-h-11 sm:w-auto sm:gap-2 sm:border sm:border-sky-100 sm:bg-sky-50 sm:py-1.5 sm:pr-3 sm:pl-2 sm:text-left sm:text-inherit sm:hover:bg-sky-100"
             aria-haspopup="dialog"
             aria-expanded={zoneOpen}
           >
-            <span className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-500 text-white shadow-glow sm:flex">
+            <span className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--ps-blue)] to-[var(--ps-sky)] text-white shadow-glow sm:flex">
               <MapPinIcon className="h-4 w-4" />
             </span>
             <MapPinIcon className="h-5 w-5 sm:hidden" />
@@ -103,7 +103,7 @@ export function PublicHeader({
             <Link
               href={nav.merchantHomeHref}
               aria-label="Mi comercio"
-              className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-3 text-sm font-bold text-violet-700 transition hover:text-fuchsia-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] max-[359px]:h-11 max-[359px]:w-11 max-[359px]:px-0"
+              className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-3 text-sm font-bold text-[var(--ps-blue)] transition hover:text-[var(--ps-sky)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-sky)] max-[359px]:h-11 max-[359px]:w-11 max-[359px]:px-0"
             >
               <UserIcon className="hidden h-5 w-5 max-[359px]:block" />
               <span className="max-[359px]:hidden">Mi comercio</span>
@@ -113,7 +113,7 @@ export function PublicHeader({
             <Link
               href={nav.accountHref}
               aria-label="Mi cuenta"
-              className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-3 text-sm font-bold text-violet-700 transition hover:text-fuchsia-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] max-[359px]:h-11 max-[359px]:w-11 max-[359px]:px-0"
+              className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-3 text-sm font-bold text-[var(--ps-blue)] transition hover:text-[var(--ps-sky)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-sky)] max-[359px]:h-11 max-[359px]:w-11 max-[359px]:px-0"
             >
               <UserIcon className="hidden h-5 w-5 max-[359px]:block" />
               <span className="max-[359px]:hidden">Mi cuenta</span>
@@ -122,7 +122,7 @@ export function PublicHeader({
           {nav.isAdmin ? (
             <Link
               href="/admin"
-              className="hidden rounded-full px-3 py-2 text-sm font-bold text-slate-600 transition hover:text-fuchsia-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] lg:inline"
+              className="hidden rounded-full px-3 py-2 text-sm font-bold text-slate-600 transition hover:text-[var(--ps-sky)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-sky)] lg:inline"
             >
               Admin
             </Link>
@@ -130,7 +130,7 @@ export function PublicHeader({
           {!nav.merchantHomeHref && !nav.accountHref ? (
             <Link
               href="/login"
-              className="hidden min-h-11 items-center whitespace-nowrap rounded-full px-3 py-2 text-sm font-bold text-slate-600 transition hover:text-fuchsia-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] lg:inline-flex"
+              className="hidden min-h-11 items-center whitespace-nowrap rounded-full px-3 py-2 text-sm font-bold text-slate-600 transition hover:text-[var(--ps-sky)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-sky)] lg:inline-flex"
             >
               Ingresar
             </Link>
@@ -139,7 +139,7 @@ export function PublicHeader({
             <Link
               href="/login"
               aria-label="Ingresar"
-              className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-3 text-sm font-bold text-violet-700 max-[359px]:h-11 max-[359px]:w-11 max-[359px]:px-0 lg:hidden"
+              className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-3 text-sm font-bold text-[var(--ps-blue)] max-[359px]:h-11 max-[359px]:w-11 max-[359px]:px-0 lg:hidden"
             >
               <UserIcon className="hidden h-5 w-5 max-[359px]:block" />
               <span className="max-[359px]:hidden">Ingresar</span>
@@ -147,12 +147,12 @@ export function PublicHeader({
           ) : null}
           <Link
             href="/carrito"
-            className="grad-btn relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white shadow-glow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+            className="grad-btn relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full shadow-glow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-sky)]"
           >
             <ShoppingBagIcon className="h-5 w-5" />
             <span className="sr-only">Carrito</span>
             {hydrated && badgeCount > 0 ? (
-              <span className="absolute -top-1 -right-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-orange-500 px-1 text-[11px] font-extrabold text-white">
+              <span className="absolute -top-1 -right-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-[var(--ps-yellow)] px-1 text-[11px] font-extrabold text-[var(--ps-deep)]">
                 {badgeCount}
               </span>
             ) : null}
@@ -185,7 +185,7 @@ export function PublicHeader({
               <button
                 type="button"
                 onClick={() => setZoneOpen(false)}
-                className="flex h-11 w-11 items-center justify-center rounded-xl hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+                className="flex h-11 w-11 items-center justify-center rounded-xl hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-sky)]"
               >
                 <CloseIcon className="h-5 w-5" />
                 <span className="sr-only">Cerrar</span>
@@ -200,13 +200,13 @@ export function PublicHeader({
                     type="button"
                     onClick={() => chooseZone(zone.id)}
                     aria-pressed={selected}
-                    className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] ${
+                    className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-sky)] ${
                       selected
-                        ? "border-violet-200 bg-violet-50"
-                        : "border-transparent hover:border-violet-100 hover:bg-violet-50"
+                        ? "border-sky-200 bg-sky-50"
+                        : "border-transparent hover:border-sky-100 hover:bg-sky-50"
                     }`}
                   >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--ps-blue)] to-[var(--ps-sky)] text-white">
                       <MapPinIcon className="h-4 w-4" />
                     </span>
                     <span>

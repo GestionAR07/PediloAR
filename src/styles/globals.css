@@ -35,18 +35,26 @@ body {
 
 /* Public storefront skin — does not replace :root for /merchant or /admin. */
 .public-storefront {
-  --color-bg: #faf8ff;
-  --color-fg: #0e0820;
-  --color-muted: #5b5470;
-  --color-border: #e4dcf7;
-  --color-accent: #7c3aed;
-  --ps-cream: #faf8ff;
-  --ps-night: #0b0618;
-  --ps-night-800: #171035;
-  --ps-night-900: #0e0820;
-  --ps-violet: #7c3aed;
-  --ps-fuchsia: #d946ef;
-  --ps-orange: #f97316;
+  --ps-deep: #083f66;
+  --ps-blue: #075d96;
+  --ps-sky: #20aee5;
+  --ps-sky-medium: #62c5eb;
+  --ps-sky-soft: #dff5ff;
+  --ps-yellow: #ffc51b;
+  --ps-yellow-hover: #ecaf00;
+  --ps-cream: #f7fcff;
+  --color-bg: var(--ps-cream);
+  --color-fg: var(--ps-deep);
+  --color-muted: #4a6b82;
+  --color-border: #cfeaf7;
+  --color-accent: var(--ps-sky);
+  /* Legacy aliases → Chubut palette (titles / focus / accents). */
+  --ps-night: var(--ps-deep);
+  --ps-night-800: var(--ps-blue);
+  --ps-night-900: var(--ps-deep);
+  --ps-violet: var(--ps-sky);
+  --ps-fuchsia: var(--ps-sky-medium);
+  --ps-orange: var(--ps-yellow);
   background-color: var(--ps-cream);
   color: var(--color-fg);
   font-family: var(--font-inter), var(--font-sans);
@@ -54,7 +62,7 @@ body {
 }
 
 .public-storefront ::selection {
-  background: #7c3aed;
+  background: var(--ps-sky);
   color: #fff;
 }
 
@@ -63,7 +71,12 @@ body {
 }
 
 .public-storefront .grad-text {
-  background: linear-gradient(90deg, #a78bfa 0%, #f472b6 45%, #fb923c 100%);
+  background: linear-gradient(
+    90deg,
+    var(--ps-blue) 0%,
+    var(--ps-sky) 55%,
+    var(--ps-sky-medium) 100%
+  );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -73,22 +86,28 @@ body {
 .public-storefront .grad-btn {
   background-image: linear-gradient(
     135deg,
-    #7c3aed 0%,
-    #d946ef 55%,
-    #f97316 120%
+    var(--ps-yellow) 0%,
+    var(--ps-yellow-hover) 100%
   );
   background-size: 160% 160%;
   background-position: 0% 50%;
+  color: var(--ps-deep);
   transition:
     background-position 0.4s ease,
+    background-image 0.3s ease,
     transform 0.2s ease,
     box-shadow 0.3s ease;
 }
 
 .public-storefront .grad-btn:hover {
   background-position: 100% 50%;
+  background-image: linear-gradient(
+    135deg,
+    var(--ps-yellow-hover) 0%,
+    #d9a000 100%
+  );
   transform: translateY(-2px);
-  box-shadow: 0 14px 40px -10px rgba(217, 70, 239, 0.55);
+  box-shadow: 0 14px 40px -10px rgba(255, 197, 27, 0.5);
 }
 
 .public-storefront .grad-btn:disabled,
@@ -110,24 +129,32 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.14);
 }
 
+/* Light surfaces (Home hero + luminous panels). */
+.public-storefront #inicio .glass,
+.public-storefront .merchant-cta-panel--light .glass {
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(8, 63, 102, 0.12);
+  color: var(--ps-deep);
+}
+
 .public-storefront .nav-blur {
   background-color: var(--ps-cream);
 }
 
 .public-storefront .shadow-soft {
-  box-shadow: 0 20px 45px -20px rgba(109, 40, 217, 0.18);
+  box-shadow: 0 20px 45px -20px rgba(8, 63, 102, 0.12);
 }
 
 .public-storefront .shadow-glow {
-  box-shadow: 0 12px 40px -10px rgba(124, 58, 237, 0.5);
+  box-shadow: 0 12px 40px -10px rgba(32, 174, 229, 0.4);
 }
 
 .public-storefront .shadow-glow-pink {
-  box-shadow: 0 12px 40px -10px rgba(236, 72, 153, 0.45);
+  box-shadow: 0 12px 40px -10px rgba(98, 197, 235, 0.4);
 }
 
 .public-storefront .shadow-glow-orange {
-  box-shadow: 0 12px 40px -10px rgba(249, 115, 22, 0.45);
+  box-shadow: 0 12px 40px -10px rgba(255, 197, 27, 0.4);
 }
 
 .public-storefront .card-lift {
@@ -138,7 +165,7 @@ body {
 
 .public-storefront .card-lift:hover {
   transform: translateY(-8px);
-  box-shadow: 0 24px 50px -18px rgba(109, 40, 217, 0.28);
+  box-shadow: 0 24px 50px -18px rgba(8, 63, 102, 0.16);
 }
 
 .public-storefront .zoom-img {
@@ -212,36 +239,56 @@ body {
 .public-storefront .category-tile-swatch--active {
   box-shadow:
     0 0 0 3px #fff,
-    0 0 0 6px var(--ps-violet),
-    0 12px 28px -10px rgba(124, 58, 237, 0.55);
+    0 0 0 6px var(--ps-sky),
+    0 12px 28px -10px rgba(32, 174, 229, 0.4);
 }
 
 .public-storefront .category-tile-swatch--all {
-  background-image: linear-gradient(135deg, #7c3aed 0%, #d946ef 100%);
+  background-image: linear-gradient(
+    135deg,
+    var(--ps-blue) 0%,
+    var(--ps-sky) 100%
+  );
 }
 
 .public-storefront .category-tile-swatch--violet {
-  background-image: linear-gradient(to bottom right, #8b5cf6, #d946ef);
+  background-image: linear-gradient(
+    to bottom right,
+    var(--ps-blue),
+    var(--ps-sky)
+  );
 }
 
 .public-storefront .category-tile-swatch--orange {
-  background-image: linear-gradient(to bottom right, #fb923c, #f43f5e);
+  background-image: linear-gradient(
+    to bottom right,
+    var(--ps-sky),
+    var(--ps-sky-medium)
+  );
 }
 
 .public-storefront .category-tile-swatch--cyan {
-  background-image: linear-gradient(to bottom right, #38bdf8, #0891b2);
+  background-image: linear-gradient(
+    to bottom right,
+    var(--ps-sky-medium),
+    var(--ps-blue)
+  );
 }
 
 .public-storefront .category-tile-swatch--green {
-  background-image: linear-gradient(to bottom right, #a3e635, #059669);
+  background-image: linear-gradient(to bottom right, #62c5eb, #075d96);
 }
 
 .public-storefront .category-tile-swatch--amber {
-  background-image: linear-gradient(to bottom right, #fbbf24, #ea580c);
+  background-image: linear-gradient(
+    to bottom right,
+    var(--ps-yellow),
+    var(--ps-yellow-hover)
+  );
 }
 
 .public-storefront .category-tile-swatch--rose {
-  background-image: linear-gradient(to bottom right, #f472b6, #f43f5e);
+  background-image: linear-gradient(to bottom right, #62c5eb, #20aee5);
 }
 
 @media (max-width: 1023px) {
@@ -260,9 +307,9 @@ body {
 }
 
 .public-storefront .chip-active {
-  background: linear-gradient(135deg, #7c3aed, #d946ef);
+  background: linear-gradient(135deg, var(--ps-blue), var(--ps-sky));
   color: #fff !important;
-  box-shadow: 0 8px 24px -8px rgba(217, 70, 239, 0.6);
+  box-shadow: 0 8px 24px -8px rgba(32, 174, 229, 0.45);
   border-color: transparent;
   transition:
     box-shadow 0.25s ease,
@@ -341,17 +388,17 @@ body {
   background:
     radial-gradient(
       ellipse 80% 70% at 8% 0%,
-      rgb(217 70 239 / 0.34) 0%,
+      rgb(32 174 229 / 0.22) 0%,
       transparent 68%
     ),
     radial-gradient(
       ellipse 75% 65% at 100% 38%,
-      rgb(124 58 237 / 0.34) 0%,
+      rgb(98 197 235 / 0.28) 0%,
       transparent 70%
     ),
     radial-gradient(
       ellipse 60% 55% at 42% 100%,
-      rgb(249 115 22 / 0.2) 0%,
+      rgb(255 197 27 / 0.12) 0%,
       transparent 68%
     );
 }
@@ -392,14 +439,14 @@ body {
   background:
     radial-gradient(
       ellipse 46% 42% at 50% 48%,
-      rgb(217 70 239 / 0.55) 0%,
-      rgb(124 58 237 / 0.28) 42%,
-      rgb(249 115 22 / 0.12) 68%,
+      rgb(32 174 229 / 0.35) 0%,
+      rgb(7 93 150 / 0.18) 42%,
+      rgb(255 197 27 / 0.1) 68%,
       transparent 100%
     ),
     radial-gradient(
       ellipse 28% 26% at 50% 48%,
-      rgb(217 70 239 / 0.32) 0%,
+      rgb(98 197 235 / 0.32) 0%,
       transparent 100%
     );
 }
@@ -464,7 +511,7 @@ body {
   left: 14%;
   height: 0.7rem;
   width: 0.7rem;
-  background: #e879f9;
+  background: var(--ps-sky);
 }
 
 .public-storefront .public-hero-dot--b {
@@ -472,7 +519,7 @@ body {
   bottom: 22%;
   height: 0.5rem;
   width: 0.5rem;
-  background: #fb923c;
+  background: var(--ps-yellow);
 }
 
 .public-storefront .public-hero-card {
@@ -562,14 +609,14 @@ body {
     z-index: 0;
     height: 0;
     pointer-events: none;
-    border-top: 2px dashed rgb(196 181 253 / 0.85);
+    border-top: 2px dashed rgb(98 197 235 / 0.65);
   }
 }
 
 @media (hover: hover) and (pointer: fine) {
   .public-storefront .how-it-works-card:hover {
     transform: translateY(-6px);
-    box-shadow: 0 24px 50px -18px rgba(109, 40, 217, 0.22);
+    box-shadow: 0 24px 50px -18px rgba(8, 63, 102, 0.14);
   }
 }
 
@@ -596,17 +643,17 @@ body {
   background:
     radial-gradient(
       ellipse 70% 80% at 0% 0%,
-      rgb(217 70 239 / 0.28) 0%,
+      rgb(32 174 229 / 0.2) 0%,
       transparent 62%
     ),
     radial-gradient(
       ellipse 60% 70% at 100% 100%,
-      rgb(124 58 237 / 0.32) 0%,
+      rgb(98 197 235 / 0.28) 0%,
       transparent 65%
     ),
     radial-gradient(
       ellipse 42% 48% at 72% 18%,
-      rgb(249 115 22 / 0.16) 0%,
+      rgb(255 197 27 / 0.12) 0%,
       transparent 70%
     );
 }
@@ -620,7 +667,7 @@ body {
   width: 16rem;
   height: 16rem;
   border-radius: 999px;
-  background: rgb(217 70 239 / 0.12);
+  background: rgb(32 174 229 / 0.14);
 }
 
 .public-storefront .merchant-cta-chip {
@@ -628,8 +675,9 @@ body {
 }
 
 .public-storefront .public-footer {
-  background: var(--ps-night);
-  color: #cbd5e1;
+  background: var(--ps-cream);
+  color: var(--ps-deep);
+  border-top: 1px solid rgb(207 234 247 / 0.9);
 }
 
 .public-storefront .merchant-storefront-hero-atmosphere {
@@ -799,34 +847,34 @@ body {
 }
 
 .public-storefront .brand-wordmark-stem {
-  color: var(--ps-night-900);
+  color: var(--ps-deep);
 }
 
 .public-storefront .brand-wordmark--plain .brand-wordmark-accent {
-  color: #6d28d9;
+  color: var(--ps-sky);
 }
 
 .public-storefront .brand-wordmark--gradient .brand-wordmark-accent {
   background-image: linear-gradient(
     90deg,
-    #7c3aed 0%,
-    #c026d3 48%,
-    #d946ef 100%
+    var(--ps-blue) 0%,
+    var(--ps-sky) 48%,
+    var(--ps-sky-medium) 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
-  color: #6d28d9;
+  color: var(--ps-blue);
   -webkit-text-fill-color: transparent;
 }
 
 .public-storefront .brand-wordmark--dark .brand-wordmark-stem {
-  color: #faf8ff;
+  color: #f7fcff;
 }
 
 .public-storefront
   .brand-wordmark--dark.brand-wordmark--plain
   .brand-wordmark-accent {
-  color: #c4b5fd;
+  color: var(--ps-sky-medium);
 }
 
 .public-storefront
@@ -834,18 +882,18 @@ body {
   .brand-wordmark-accent {
   background-image: linear-gradient(
     90deg,
-    #ddd6fe 0%,
-    #e879f9 46%,
-    #f0abfc 100%
+    var(--ps-sky-medium) 0%,
+    var(--ps-sky) 46%,
+    var(--ps-yellow) 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
-  color: #e9d5ff;
+  color: var(--ps-sky-medium);
   -webkit-text-fill-color: transparent;
 }
 
 .public-storefront .brand-wordmark--hero .brand-wordmark-text {
-  filter: drop-shadow(0 12px 28px rgba(192, 38, 211, 0.32));
+  filter: drop-shadow(0 12px 28px rgba(32, 174, 229, 0.28));
 }
 
 .public-storefront .grad-btn:active {
