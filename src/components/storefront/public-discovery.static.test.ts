@@ -174,8 +174,8 @@ describe("qwen public discovery v1 static checks", () => {
     expect(css).not.toContain(".pulse-dot");
 
     expect(hero).toContain("lg:grid-cols-2");
-    expect(hero).toContain("lg:pt-20");
-    expect(hero).toContain("lg:pb-28");
+    expect(hero).toContain("lg:pt-11");
+    expect(hero).toContain("lg:pb-20");
     expect(hero).toContain("public-hero-atmosphere");
     expect(hero).toContain("aria-hidden");
     expect(hero).not.toContain("blur-[130px]");
@@ -356,10 +356,10 @@ describe("qwen public discovery v1 static checks", () => {
     expect(visual).toContain("PEDILO_HERO_GROCERY_BAG_SRC");
     expect(visual).toContain("PEDILO_BRAND_TILE_SRC");
     expect(visual).toContain("PUBLIC_BRAND_MARK_SRC");
-    expect(visual).toContain("Comercios");
-    expect(visual).toContain("de tu zona");
+    expect(visual).toContain("Comercios cerca");
+    expect(visual).toContain("Encontrá lo que buscás");
     expect(visual).toContain("Retiro o entrega");
-    expect(visual).toContain("Pedido simple");
+    expect(visual).not.toContain("Pedido simple");
     expect(visual).not.toContain("Pedido en camino");
     expect(visual).not.toContain("reseñas");
     expect(visual).not.toContain("Pago confirmado");
@@ -717,16 +717,17 @@ describe("qwen public discovery v1 static checks", () => {
     expect(visual).toContain("public-hero-card-slot--a");
     expect(visual).toContain("public-hero-card-slot--b");
     expect(visual).toContain("public-hero-card-slot--c");
-    expect(visual).toContain("Comercios");
+    expect(visual).toContain("Comercios cerca");
+    expect(visual).toContain("Encontrá lo que buscás");
     expect(visual).toContain("Retiro o entrega");
-    expect(visual).toContain("Pedido simple");
+    expect(visual).not.toContain("Pedido simple");
     expect(visual).not.toContain("overflow-hidden sm:");
     expect(visual).not.toMatch(/className="[^"]*overflow-hidden/);
     expect(hero).toContain("public-hero-title");
     expect(css).toContain(".public-hero-title");
     expect(css).toContain("clamp(1.9rem");
     expect(css).toContain("ellipse 46% 42%");
-    expect(css).toContain("left: 30%");
+    expect(css).toContain("at 50% 50%");
     const visualAtmosphere = css.slice(
       css.indexOf(".public-hero-visual-atmosphere"),
       css.indexOf(".public-hero-media-slot"),
