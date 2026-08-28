@@ -45,8 +45,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         selectedZoneId={discovery.selectedZone?.id ?? null}
       />
       <PublicHero />
+      <PublicHowItWorks />
 
-      <div className="mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-10 px-4 pt-10 pb-6 sm:px-6 lg:px-8 lg:gap-12 lg:pt-14 lg:pb-8">
+      <div className="mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-10 px-4 pt-8 pb-6 sm:px-6 lg:gap-12 lg:px-8 lg:pt-10 lg:pb-8">
         <ZonePicker
           zones={discovery.zones}
           selectedZoneId={discovery.selectedZone?.id ?? null}
@@ -58,7 +59,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           categories={discovery.categories}
         />
       </div>
-      <PublicHowItWorks />
       <PublicMerchantCta />
       <PublicFooter />
     </main>

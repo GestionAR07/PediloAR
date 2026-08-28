@@ -30,7 +30,7 @@ export function RegisterForm({
             autoComplete="name"
             maxLength={80}
             required
-            className="min-h-12 w-full rounded-2xl border border-violet-100 bg-white px-4 outline-none ring-violet-500 focus:ring-2"
+            className="min-h-12 w-full rounded-2xl border border-sky-100 bg-white px-4 outline-none ring-[var(--ps-cyan)] focus:ring-2"
           />
         </label>
         <label className="block text-sm">
@@ -42,7 +42,7 @@ export function RegisterForm({
             autoComplete="tel"
             maxLength={32}
             required
-            className="min-h-12 w-full rounded-2xl border border-violet-100 bg-white px-4 outline-none ring-violet-500 focus:ring-2"
+            className="min-h-12 w-full rounded-2xl border border-sky-100 bg-white px-4 outline-none ring-[var(--ps-cyan)] focus:ring-2"
           />
         </label>
         <label className="block text-sm">
@@ -52,7 +52,7 @@ export function RegisterForm({
             type="email"
             autoComplete="email"
             required
-            className="min-h-12 w-full rounded-2xl border border-violet-100 bg-white px-4 outline-none ring-violet-500 focus:ring-2"
+            className="min-h-12 w-full rounded-2xl border border-sky-100 bg-white px-4 outline-none ring-[var(--ps-cyan)] focus:ring-2"
           />
         </label>
         <label className="block text-sm">
@@ -64,7 +64,7 @@ export function RegisterForm({
             minLength={8}
             maxLength={72}
             required
-            className="min-h-12 w-full rounded-2xl border border-violet-100 bg-white px-4 outline-none ring-violet-500 focus:ring-2"
+            className="min-h-12 w-full rounded-2xl border border-sky-100 bg-white px-4 outline-none ring-[var(--ps-cyan)] focus:ring-2"
           />
         </label>
         <label className="block text-sm">
@@ -76,7 +76,7 @@ export function RegisterForm({
             minLength={8}
             maxLength={72}
             required
-            className="min-h-12 w-full rounded-2xl border border-violet-100 bg-white px-4 outline-none ring-violet-500 focus:ring-2"
+            className="min-h-12 w-full rounded-2xl border border-sky-100 bg-white px-4 outline-none ring-[var(--ps-cyan)] focus:ring-2"
           />
         </label>
         {state.error ? (
@@ -98,7 +98,7 @@ export function RegisterForm({
         <button
           type="submit"
           disabled={pending || Boolean(state.success)}
-          className="grad-btn min-h-12 w-full rounded-full px-5 text-sm font-extrabold text-white shadow-glow disabled:opacity-60"
+          className="grad-btn min-h-12 w-full rounded-full px-5 text-sm font-extrabold shadow-glow disabled:opacity-60"
         >
           {pending ? "Creando cuenta…" : "Crear mi cuenta"}
         </button>
@@ -110,7 +110,7 @@ export function RegisterForm({
                 ? `/login?next=${encodeURIComponent(nextPath)}`
                 : "/login"
             }
-            className="font-bold text-violet-800 hover:underline"
+            className="font-bold text-[var(--ps-navy)] hover:underline"
           >
             Ingresar
           </Link>

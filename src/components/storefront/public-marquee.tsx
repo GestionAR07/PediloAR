@@ -7,7 +7,7 @@ function MarqueeSegment() {
     <span className="inline-flex items-center gap-2">
       <span
         aria-hidden
-        className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--ps-yellow)]"
+        className="public-marquee-dot inline-block rounded-full"
       />
       {MARQUEE_MESSAGE}
     </span>
@@ -16,8 +16,7 @@ function MarqueeSegment() {
 
 function MarqueeGroup() {
   return (
-    <div className="flex items-center gap-8">
-      <MarqueeSegment />
+    <div className="public-marquee-group flex items-center">
       <MarqueeSegment />
       <MarqueeSegment />
       <MarqueeSegment />
@@ -28,15 +27,9 @@ function MarqueeGroup() {
 
 export function PublicMarquee() {
   return (
-    <div
-      className="public-marquee min-w-0 w-full max-w-full overflow-x-clip overflow-y-hidden bg-gradient-to-r from-[var(--ps-blue)] via-[var(--ps-sky)] to-[var(--ps-sky-medium)] py-2.5 text-xs font-semibold tracking-wide text-white"
-      role="presentation"
-    >
+    <div className="public-marquee" role="presentation">
       <p className="sr-only">{MARQUEE_MESSAGE}</p>
-      <div
-        className="public-marquee-track flex items-center gap-8 whitespace-nowrap"
-        aria-hidden
-      >
+      <div className="public-marquee-track" aria-hidden>
         <MarqueeGroup />
         <MarqueeGroup />
       </div>

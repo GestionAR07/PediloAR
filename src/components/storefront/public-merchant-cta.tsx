@@ -28,17 +28,17 @@ export function PublicMerchantCta() {
   return (
     <section
       id="para-comercios"
-      className="w-full min-w-0 px-4 pb-16 sm:px-6 lg:px-8 lg:pb-20"
+      className="w-full min-w-0 px-4 pb-16 sm:px-6 lg:px-8 lg:pb-14"
       aria-labelledby="merchant-cta-heading"
     >
-      <div className="merchant-cta-panel merchant-cta-panel--light relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] border border-sky-100/80 bg-[var(--ps-sky-soft)] px-5 py-10 text-[var(--ps-deep)] sm:px-8 sm:py-12 lg:px-12 lg:py-16">
+      <div className="merchant-cta-panel merchant-cta-panel--institutional relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-[var(--ps-navy)] px-5 py-10 text-white sm:px-8 sm:py-12 lg:px-12 lg:py-16">
         <div className="merchant-cta-atmosphere" aria-hidden />
         <span className="merchant-cta-orb" aria-hidden />
 
         <div className="relative grid min-w-0 items-center gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-14">
           <div className="min-w-0 max-w-xl">
             <PublicBrandMark size="compact" surface="light" />
-            <p className="mt-5 text-xs font-extrabold tracking-[0.2em] text-[var(--ps-sky)]">
+            <p className="mt-5 text-xs font-extrabold tracking-[0.2em] text-[var(--ps-cyan)]">
               PARA COMERCIOS
             </p>
             <h2
@@ -47,17 +47,17 @@ export function PublicMerchantCta() {
             >
               Tu comercio también puede estar en Pedilo.
             </h2>
-            <p className="mt-4 text-sm leading-relaxed break-words text-[var(--color-muted)] sm:text-base">
+            <p className="mt-4 text-sm leading-relaxed break-words text-slate-200 sm:text-base">
               Mostrá tus productos, recibí pedidos y administrá tu operación
               desde un solo lugar.
             </p>
-            <p className="mt-3 text-sm leading-relaxed break-words text-[var(--color-muted)]">
+            <p className="mt-3 text-sm leading-relaxed break-words text-slate-300">
               ¿Querés sumar tu comercio? El alta es asistida: no hay registro
               público.
             </p>
             <Link
               href="/login"
-              className="grad-btn mt-8 inline-flex min-h-12 items-center rounded-full px-7 py-3 text-sm font-extrabold shadow-glow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-sky)]"
+              className="grad-btn mt-8 inline-flex min-h-12 items-center rounded-full px-7 py-3 text-sm font-extrabold shadow-glow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-cyan)]"
             >
               Acceso comercios
             </Link>
@@ -67,14 +67,12 @@ export function PublicMerchantCta() {
             {HIGHLIGHTS.map(({ title, body, Icon }) => (
               <li key={title} className="min-w-0">
                 <div className="glass merchant-cta-chip flex min-h-11 items-start gap-3 rounded-2xl px-4 py-3.5">
-                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--ps-blue)] text-white">
+                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--ps-cyan)] text-[var(--ps-navy)]">
                     <Icon className="h-4 w-4" />
                   </span>
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-[var(--ps-deep)]">
-                      {title}
-                    </p>
-                    <p className="mt-0.5 text-xs leading-relaxed break-words text-[var(--color-muted)]">
+                    <p className="text-sm font-bold text-white">{title}</p>
+                    <p className="mt-0.5 text-xs leading-relaxed break-words text-slate-300">
                       {body}
                     </p>
                   </div>

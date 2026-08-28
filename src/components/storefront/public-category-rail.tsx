@@ -86,7 +86,7 @@ export function PublicCategoryRail({
           EXPLORÁ
         </p>
         <h2 className="font-display text-2xl font-extrabold tracking-tight break-words text-[var(--ps-deep)] lg:text-4xl">
-          ¿Qué te apetece hoy?
+          ¿Qué necesitás hoy?
         </h2>
       </div>
 

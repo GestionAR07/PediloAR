@@ -9,7 +9,7 @@ export function PublicHero() {
     >
       <div className="public-hero-atmosphere" aria-hidden />
 
-      <div className="relative mx-auto grid w-full min-w-0 max-w-7xl items-center gap-10 px-4 pt-12 pb-16 sm:px-6 sm:pb-20 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:pt-20 lg:pb-28">
+      <div className="relative mx-auto grid w-full min-w-0 max-w-7xl items-center gap-10 px-4 pt-12 pb-14 sm:px-6 sm:pb-16 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:pt-11 lg:pb-20">
         <div className="min-w-0 max-w-full text-center lg:text-left">
           <p className="glass inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full px-4 py-2 text-xs font-bold tracking-wide uppercase lg:justify-start">
             <span className="h-2 w-2 shrink-0 rounded-full bg-green-400" />
@@ -45,7 +45,7 @@ export function PublicHero() {
 
       <div className="public-hero-wave" aria-hidden>
         <svg
-          className="block h-10 w-full text-[var(--ps-cream)] lg:h-14"
+          className="block h-6 w-full text-[var(--ps-surface)] lg:h-8"
           viewBox="0 0 1440 90"
           fill="currentColor"
           preserveAspectRatio="none"

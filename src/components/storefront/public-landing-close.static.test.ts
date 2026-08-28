@@ -64,7 +64,7 @@ function hrefsIn(source: string): string[] {
 }
 
 describe("public landing close sections", () => {
-  it("renders Cómo funciona after discovery on the home page", () => {
+  it("renders Cómo funciona immediately after the hero on the home page", () => {
     const page = read(PAGE);
     const how = read(HOW);
 
@@ -72,8 +72,14 @@ describe("public landing close sections", () => {
     expect(page).toContain("PublicMerchantCta");
     expect(page).toContain("PublicFooter");
     const jsx = page.slice(page.indexOf("return ("));
-    expect(jsx.indexOf("<PublicDiscoverySection")).toBeLessThan(
+    expect(jsx.indexOf("<PublicHero")).toBeLessThan(
       jsx.indexOf("<PublicHowItWorks"),
+    );
+    expect(jsx.indexOf("<PublicHowItWorks")).toBeLessThan(
+      jsx.indexOf("<ZonePicker"),
+    );
+    expect(jsx.indexOf("<ZonePicker")).toBeLessThan(
+      jsx.indexOf("<PublicDiscoverySection"),
     );
     expect(jsx.indexOf("<PublicHowItWorks")).toBeLessThan(
       jsx.indexOf("<PublicMerchantCta"),
@@ -82,6 +88,7 @@ describe("public landing close sections", () => {
       jsx.indexOf("<PublicFooter"),
     );
 
+    expect(how).toContain("how-it-works-section");
     expect(how).toContain('id="como-funciona"');
     expect(how).toContain("ASÍ DE SIMPLE");
     expect(how).toContain("Pedí cerca, sin vueltas.");
@@ -222,6 +229,7 @@ describe("public landing close sections", () => {
     expect(cta).toContain("lg:grid-cols-1");
     expect(footer).toContain("min-h-11");
     expect(footer).toContain("sm:grid-cols-2");
+    expect(css).toContain(".how-it-works-section");
     expect(css).toContain(".how-it-works-title");
     expect(css).toContain(".merchant-cta-title");
     expect(css).toContain("clamp(1.7rem");

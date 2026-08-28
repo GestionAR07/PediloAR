@@ -38,11 +38,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <Link href="/" className="mb-8 w-fit">
         <PublicBrandWordmark size="header" tone="plain" />
       </Link>
-      <section className="rounded-[1.75rem] border border-violet-100/80 bg-white p-6 shadow-soft sm:p-8">
-        <p className="text-xs font-bold tracking-wider text-violet-700 uppercase">
+      <section className="rounded-[1.75rem] border border-sky-100/80 bg-white p-6 shadow-soft sm:p-8">
+        <p className="text-xs font-bold tracking-wider text-[var(--ps-cyan)] uppercase">
           Cuenta
         </p>
-        <h1 className="font-display mt-1 text-3xl font-extrabold tracking-tight text-[var(--ps-night-900)]">
+        <h1 className="font-display mt-1 text-3xl font-extrabold tracking-tight text-[var(--ps-navy)]">
           Ingresá a Pedilo
         </h1>
         <p className="mt-2 text-sm text-muted">
@@ -51,7 +51,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </p>
         {banner ? (
           <p
-            className="mt-5 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm"
+            className="mt-5 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm"
             role="alert"
           >
             {banner}
@@ -71,7 +71,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 ? `/registro?next=${encodeURIComponent(nextPath)}`
                 : "/registro"
             }
-            className="font-bold text-violet-800 hover:underline"
+            className="font-bold text-[var(--ps-navy)] hover:underline"
           >
             Crear cuenta
           </Link>

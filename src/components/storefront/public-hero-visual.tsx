@@ -1,13 +1,17 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
 import {
+  PEDILO_BRAND_TILE_SRC,
+  PEDILO_HERO_GROCERY_BAG_SRC,
+} from "@/lib/pedilo-brand-assets";
+import {
   BikeIcon,
   ShoppingBagIcon,
   StoreIcon,
 } from "@/components/ui/public-icons";
 
-export const PUBLIC_HERO_MEDIA_SRC = "/brand/pedilo-symbol.svg";
-export const PUBLIC_BRAND_MARK_SRC = "/brand/pedilo-brand-tile.svg";
+export const PUBLIC_HERO_MEDIA_SRC = PEDILO_HERO_GROCERY_BAG_SRC;
+export const PUBLIC_BRAND_MARK_SRC = PEDILO_BRAND_TILE_SRC;
 
 type Props = {
   mediaSrc?: string;
@@ -50,22 +54,24 @@ function HeroCard({
 
 export function PublicHeroVisual({
   mediaSrc = PUBLIC_HERO_MEDIA_SRC,
-  mediaAlt = "",
+  mediaAlt = "Bolsa Pedilo con productos de compra",
 }: Props) {
   return (
     <div className="public-hero-visual">
       <div className="public-hero-visual-atmosphere" aria-hidden />
 
-      <div data-hero-media-slot className="public-hero-media-slot">
-        {/* Brand mark on the luminous hero surface. */}
-        <Image
-          src={mediaSrc}
-          alt={mediaAlt}
-          fill
-          sizes="(min-width: 1024px) 400px, (min-width: 640px) 330px, 72vw"
-          className="object-contain"
-          priority
-        />
+      <div className="public-hero-media-layer">
+        <div data-hero-media-slot className="public-hero-media-slot">
+          {/* Official grocery-bag hero illustration (transparent PNG/WebP). */}
+          <Image
+            src={mediaSrc}
+            alt={mediaAlt}
+            fill
+            sizes="(min-width: 1024px) 420px, (min-width: 640px) 340px, 75vw"
+            className="object-contain"
+            priority
+          />
+        </div>
       </div>
 
       <div className="public-hero-sat">
@@ -83,26 +89,26 @@ export function PublicHeroVisual({
           variant="a"
           tone="bg-gradient-to-br from-[var(--ps-blue)] to-[var(--ps-sky)]"
           icon={<StoreIcon className="h-5 w-5" />}
-          title="Comercios"
+          title="Comercios cerca"
           detail="de tu zona"
         />
       </div>
       <div className="public-hero-card-slot public-hero-card-slot--b">
         <HeroCard
           variant="b"
-          tone="bg-gradient-to-br from-[var(--ps-sky)] to-[var(--ps-sky-medium)]"
-          icon={<BikeIcon className="h-5 w-5" />}
-          title="Retiro o entrega"
-          detail="según el comercio"
+          tone="bg-gradient-to-br from-[var(--ps-yellow)] to-[var(--ps-yellow-hover)] text-[var(--ps-deep)]"
+          icon={<ShoppingBagIcon className="h-5 w-5" />}
+          title="Encontrá lo que buscás"
+          detail="productos para tu día"
         />
       </div>
       <div className="public-hero-card-slot public-hero-card-slot--c">
         <HeroCard
           variant="c"
-          tone="bg-gradient-to-br from-[var(--ps-yellow)] to-[var(--ps-yellow-hover)] text-[var(--ps-deep)]"
-          icon={<ShoppingBagIcon className="h-5 w-5" />}
-          title="Pedido simple"
-          detail="sin vueltas"
+          tone="bg-gradient-to-br from-[var(--ps-sky)] to-[var(--ps-sky-medium)]"
+          icon={<BikeIcon className="h-5 w-5" />}
+          title="Retiro o entrega"
+          detail="según el comercio"
         />
       </div>
 

@@ -23,11 +23,11 @@ export default async function RegisterPage({
       <Link href="/" className="mb-8 w-fit">
         <PublicBrandWordmark size="header" tone="plain" />
       </Link>
-      <section className="rounded-[1.75rem] border border-violet-100/80 bg-white p-6 shadow-soft sm:p-8">
-        <p className="text-xs font-bold tracking-wider text-violet-700 uppercase">
+      <section className="rounded-[1.75rem] border border-sky-100/80 bg-white p-6 shadow-soft sm:p-8">
+        <p className="text-xs font-bold tracking-wider text-[var(--ps-cyan)] uppercase">
           Cuenta de cliente
         </p>
-        <h1 className="font-display mt-1 text-3xl font-extrabold text-[var(--ps-night-900)]">
+        <h1 className="font-display mt-1 text-3xl font-extrabold text-[var(--ps-navy)]">
           Creá tu cuenta
         </h1>
         <p className="mt-2 text-sm text-muted">

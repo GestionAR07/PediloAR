@@ -1,42 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title description">
-  <title id="title">Pedilo</title>
-  <desc id="description">Ícono de aplicación de Pedilo.</desc>
-
-  <defs>
-    <linearGradient id="tile-gradient" x1="144" y1="92" x2="888" y2="946" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#171035"/>
-      <stop offset="0.58" stop-color="#0E0820"/>
-      <stop offset="1" stop-color="#0B0618"/>
-    </linearGradient>
-    <radialGradient id="tile-glow" cx="0" cy="0" r="1" gradientTransform="translate(296 206) rotate(42) scale(720)" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#7C3AED" stop-opacity="0.24"/>
-      <stop offset="0.48" stop-color="#D946EF" stop-opacity="0.08"/>
-      <stop offset="0.72" stop-color="#D946EF" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="path-gradient" x1="49.83" x2="107.3" y1="66.15" y2="37.21" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#D946EF"/>
-      <stop offset="0.48" stop-color="#F472B6"/>
-      <stop offset="1" stop-color="#FB923C"/>
-    </linearGradient>
-    <linearGradient id="handle-gradient" x1="54.07" x2="91.6" y1="52.17" y2="28.97" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#A78BFA"/>
-      <stop offset="1" stop-color="#7C3AED"/>
-    </linearGradient>
-    <linearGradient id="home-gradient" x1="55.23" x2="121.9" y1="132.3" y2="83.02" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#A78BFA"/>
-      <stop offset="0.5" stop-color="#D946EF"/>
-      <stop offset="1" stop-color="#F472B6"/>
-    </linearGradient>
-  </defs>
-
-  <!-- Full-bleed square: iOS, Android and PWA apply their own icon mask. -->
-  <rect width="1024" height="1024" fill="url(#tile-gradient)"/>
-  <rect width="1024" height="1024" fill="url(#tile-glow)"/>
-
-  <svg x="172" y="154" width="680" height="680" viewBox="20 13 118 118" aria-hidden="true">
-    <path fill="url(#path-gradient)" d="m47.9 126.2h-16.9c-5.5-0.3-8.3-4.7-7.5-9.4l12.3-77.5 0.5-0.5h14.7l0.3 0.3v5.4l-0.4 0.3h-9l-0.2 0.2-5.9 37c-1.5 8.2-2.5 17.6-4 25.5l-1.8 10.3c0 0.7 0.6 1.9 1.7 1.9l3-0.1 0.9-0.1c-0.7-3.9-1-7.5 1.1-12.7 2.7-6.8 6.5-11.1 12.7-15.3 4.9-3.2 10.5-4.9 16.7-6.8 12.5-3.9 20.3-7.1 27.9-14.8 4.6-4.7 5.9-7 8-11.9 1.5-3.5 2.6-8.3 2.5-13l-0.4-0.4-9.4 0.2-0.3-0.3v-5.8l0.3 0.1h15.3l0.3 0.3 1 5.9c1.3 7.4 2.2 15.5 3.6 23l1.5 10.9-3-3-4.1-3.5c-1.1-2.1-0.6-6.8-1.9-10.5-1.1-0.1-1.5 2.6-1.8 3.1-2 3.4-4.4 7.2-8.6 11.3s-11.4 8.3-19 11c-10.9 4.2-18.9 5.2-26.7 11.7-2.3 1.8-4.7 4-6.7 7.6-1.6 3-2.5 6-1.9 11.4 1 5.6 4 6.5 5.3 8l-0.1 0.2z"/>
-    <path fill="url(#handle-gradient)" d="m68.6 18.4c1.5-0.5 7.6-0.7 9.4 0.1 7.5 2.4 12.1 8 13.4 16.1l0.1 13.7 1.3 2c1.3 2.8-0.7 6.8-3.8 7.1-4.6 0.3-6.4-5.3-3.4-8.4l0.5-1c0-8.6 1.6-17.6-8.1-23.5-3-1.4-7.7-1.6-11.1 0.3-3.9 2.2-5.9 5.8-7.1 9.8-0.4 3-0.4 9.5-0.3 13.7 0 0.6 1 0.8 1.7 2.8 0.8 2.3-0.6 5.2-2.7 6.3-5.5 1.1-7.5-4.3-5.7-7.3l1.3-1.6 0.1-12.5c0.4-5.1 3.3-11.4 8.4-14.6 1.8-1.3 3.8-2.1 6-2.8v-0.2z"/>
-    <path fill="url(#home-gradient)" d="m134.8 104-7.9-0.3-1 0.3 0.3 22-0.3 0.2h-61.9c-1.7 0-5.1-0.3-6-1-2.5-0.7-5.4-3.6-6.1-5.7-2.3-3.7-1-9.6 3-13.4 2.8-2.6 9-5.4 13.2-7.1 4-1.3 10.9-3.6 15.6-6.4v0.3l-12.2 11.7c-6.4 2.3-13.9 4.1-13.8 10.6 0 2.9 2.9 4 5.2 4.4l25.6-0.1 0.5-0.3v-15.2l-0.3-0.3-8.2 0.1c7.1-6.9 15-13.3 21.5-19.8 2-1.6 3.7-3.8 5-4.9 0.4-0.1 0.6-0.5 1.1-0.1 1.8 1.1 3.9 3.7 5.8 5.3l20.9 19.7zm-15.6-6.3-11.3-10.4h-0.5l-11.3 10.1c-0.7 0.5-1 1.2-0.9 2.3v19.2l0.4 0.6 1.4 0.1 22-0.1 0.5-0.4v-20.2l-0.3-1.2z"/>
-  </svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="pedilo-app-icon-title">
+  <title id="pedilo-app-icon-title">Pedilo</title>
+  <rect width="160" height="160" rx="36" fill="#083f66"/>
+  <g transform="translate(5 5)">
+    <path fill="#20aee5" d="m99.9 36.7h-48.8c-1 0-2 0.7-2.1 1.9l-4.5 46.1c-0.2 2.7 2.1 5.2 5.2 5.2h50.6c3.1 0 5.3-2.5 4.9-5.6l-4.3-45.7c-0.1-1.2-1-2-2-2v0.1z"/>
+    <path fill="none" stroke="#ffffff" stroke-width="3.9" stroke-linecap="round" stroke-miterlimit="10" d="m63.1 44.8v-13.3c0-6.2 5.5-12.4 12.2-12.4s12.1 5 12.1 12.1v13.6"/>
+    <path fill="#ffc51b" d="m90.6 62.3-14.6-13.9c-0.5-0.5-1.3-0.6-1.9 0l-14.8 13.9c-0.9 0.8-0.2 2.2 0.9 2.2h2.3v13.6c0 0.8 0.6 1.6 1.6 1.6h21.6c0.9 0 1.7-0.7 1.7-1.6v-13.6h2.3c1.1 0 1.8-1.4 0.9-2.2z"/>
+    <path fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round" stroke-miterlimit="10" d="m69.7 68.7c1 1.8 2.9 3.3 5.3 3.3s4.4-1.5 5.1-3"/>
+  </g>
 </svg>

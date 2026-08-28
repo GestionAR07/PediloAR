@@ -44,7 +44,7 @@ export function GoogleOAuthSection({ nextPath }: { nextPath?: string }) {
         <button
           type="submit"
           disabled={pending}
-          className="flex min-h-12 w-full items-center justify-center gap-3 rounded-full border border-violet-100 bg-white px-5 text-sm font-extrabold text-[var(--ps-night-900)] shadow-sm transition hover:border-violet-200 hover:bg-violet-50/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600 disabled:opacity-60"
+          className="flex min-h-12 w-full items-center justify-center gap-3 rounded-full border border-sky-100 bg-white px-5 text-sm font-extrabold text-[var(--ps-navy)] shadow-sm transition hover:border-sky-200 hover:bg-sky-50/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-cyan)] disabled:opacity-60"
         >
           <GoogleMark />
           {pending ? "Conectando con Google…" : "Continuar con Google"}
@@ -59,11 +59,11 @@ export function GoogleOAuthSection({ nextPath }: { nextPath?: string }) {
         </p>
       ) : null}
       <div className="flex items-center gap-3" aria-hidden="true">
-        <span className="h-px flex-1 bg-violet-100" />
+        <span className="h-px flex-1 bg-sky-100" />
         <span className="text-xs font-medium text-muted">
           o continuá con email
         </span>
-        <span className="h-px flex-1 bg-violet-100" />
+        <span className="h-px flex-1 bg-sky-100" />
       </div>
     </div>
   );

@@ -109,9 +109,9 @@ describe("qwen public discovery v1 static checks", () => {
     expect(info).toContain('export const APP_NAME = "Pedilo"');
     expect(info).not.toMatch(/APP_NAME = "Marketplace Rawson"/);
     expect(wordmark).toContain("APP_NAME");
-    expect(wordmark).toContain("brand-wordmark-stem");
-    expect(wordmark).toContain("brand-wordmark-accent");
+    expect(wordmark).toContain("PEDILO_LOGOTYPE_SRC");
     expect(wordmark).toContain("PublicBrandMark");
+    expect(wordmark).toContain("pedilo-logo-master");
     expect(page).not.toContain("PublicBrandWordmark");
     expect(header).toContain("PublicBrandWordmark");
     expect(header).toContain('size="header"');
@@ -139,7 +139,7 @@ describe("qwen public discovery v1 static checks", () => {
     expect(shell).toContain("max-w-3xl");
     expect(shell).toContain("public-storefront");
     expect(css).toContain(".public-storefront");
-    expect(css).toContain("#f7fcff");
+    expect(css).toContain("#f6f8fa");
     expect(css).toContain("#20aee5");
     expect(css).toContain("#083f66");
     expect(css).toContain("#ffc51b");
@@ -204,7 +204,7 @@ describe("qwen public discovery v1 static checks", () => {
     expect(header).toContain("nav-blur");
     expect(header).toContain("sticky top-0 z-40");
     expect(header).toContain("border-b border-sky-100/80");
-    expect(navBlur).toContain("background-color: var(--ps-cream)");
+    expect(navBlur).toContain("background-color: var(--ps-white)");
     expect(navBlur).not.toContain("backdrop-filter");
     expect(navBlur).not.toContain("0.88");
     expect(navBlur).not.toContain("0.94");
@@ -246,7 +246,7 @@ describe("qwen public discovery v1 static checks", () => {
     const login = read("src/app/login/page.tsx");
 
     expect(css).toContain("@keyframes marquee");
-    expect(css).toContain("animation: marquee 26s linear infinite");
+    expect(css).toContain("animation: marquee 28s linear infinite");
     expect(css).toContain(".public-marquee-track");
     expect(css).toContain(".public-marquee-static");
     expect(css).toMatch(
@@ -353,8 +353,8 @@ describe("qwen public discovery v1 static checks", () => {
     expect(hero).not.toContain("image.qwenlm.ai");
 
     expect(visual).toContain("data-hero-media-slot");
-    expect(visual).toContain("/brand/pedilo-symbol.svg");
-    expect(visual).toContain("/brand/pedilo-brand-tile.svg");
+    expect(visual).toContain("PEDILO_HERO_GROCERY_BAG_SRC");
+    expect(visual).toContain("PEDILO_BRAND_TILE_SRC");
     expect(visual).toContain("PUBLIC_BRAND_MARK_SRC");
     expect(visual).toContain("Comercios");
     expect(visual).toContain("de tu zona");
@@ -370,8 +370,8 @@ describe("qwen public discovery v1 static checks", () => {
     expect(visual).not.toContain("h-[280px]");
 
     expect(mark).toContain('from "next/image"');
-    expect(mark).toContain('light: "/brand/pedilo-brand-tile.svg"');
-    expect(mark).toContain('dark: "/brand/pedilo-symbol.svg"');
+    expect(mark).toContain("light: PEDILO_SYMBOL_SRC");
+    expect(mark).toContain("dark: PEDILO_SYMBOL_SRC");
     expect(mark).toContain('surface = "light"');
     expect(mark).toContain("src={markSrc[surface]}");
     expect(mark).toContain("width={160}");
@@ -380,8 +380,8 @@ describe("qwen public discovery v1 static checks", () => {
     expect(mark).toContain("unoptimized");
     expect(visual).toContain('className="object-contain"');
     expect(mark).not.toContain("<svg");
-    expect(mark).toContain("h-10 w-10");
-    expect(mark).toContain("sm:h-11 sm:w-11");
+    expect(mark).toContain("h-[2.7rem]");
+    expect(mark).toContain("sm:h-12 sm:w-12");
     expect(mark).toContain("h-8 w-8");
     expect(mark).toContain("h-12 w-12");
     expect(wordmark).toContain("PublicBrandMark");
@@ -395,11 +395,20 @@ describe("qwen public discovery v1 static checks", () => {
     expect(header).not.toContain("Crear cuenta");
 
     expect(
+      fs.existsSync(path.join(root, "public/brand/pedilo-logo-master.svg")),
+    ).toBe(true);
+    expect(
       fs.existsSync(path.join(root, "public/brand/pedilo-symbol.svg")),
     ).toBe(true);
     expect(
       fs.statSync(path.join(root, "public/brand/pedilo-symbol.svg")).size,
-    ).toBeGreaterThan(1_000);
+    ).toBeGreaterThan(500);
+    expect(fs.existsSync(path.join(root, "public/brand/pedilo-logo.svg"))).toBe(
+      true,
+    );
+    expect(
+      fs.existsSync(path.join(root, "public/brand/pedilo-logotype.svg")),
+    ).toBe(true);
     expect(
       fs.existsSync(path.join(root, "public/brand/pedilo-brand-tile.svg")),
     ).toBe(true);
@@ -407,16 +416,30 @@ describe("qwen public discovery v1 static checks", () => {
       fs.existsSync(path.join(root, "public/brand/pedilo-app-icon.svg")),
     ).toBe(true);
     expect(
-      fs.existsSync(path.join(root, "public/brand/pedilo-symbol-original.png")),
+      fs.existsSync(
+        path.join(root, "public/brand/pedilo-hero-grocery-bag.png"),
+      ),
     ).toBe(true);
+    expect(
+      fs.existsSync(
+        path.join(root, "public/brand/pedilo-hero-grocery-bag.webp"),
+      ),
+    ).toBe(true);
+    expect(
+      fs.statSync(path.join(root, "public/brand/pedilo-hero-grocery-bag.webp"))
+        .size,
+    ).toBeLessThan(
+      fs.statSync(path.join(root, "public/brand/pedilo-hero-grocery-bag.png"))
+        .size,
+    );
     expect(fs.existsSync(path.join(root, "src/app/icon.png"))).toBe(true);
     expect(fs.existsSync(path.join(root, "src/app/apple-icon.png"))).toBe(true);
     expect(
       fs.statSync(path.join(root, "src/app/icon.png")).size,
-    ).toBeGreaterThan(100_000);
+    ).toBeGreaterThan(15_000);
     expect(
       fs.statSync(path.join(root, "src/app/apple-icon.png")).size,
-    ).toBeGreaterThan(10_000);
+    ).toBeGreaterThan(4_000);
 
     expect(css).toContain("@keyframes ps-hero-in");
     expect(css).toMatch(
@@ -571,7 +594,7 @@ describe("qwen public discovery v1 static checks", () => {
       ...pkg.devDependencies,
     };
 
-    expect(rail).toContain("¿Qué te apetece hoy?");
+    expect(rail).toContain("¿Qué necesitás hoy?");
     expect(rail).toContain("EXPLORÁ");
     expect(rail).toContain("aria-pressed");
     expect(rail).toContain("snap-x");
@@ -616,9 +639,10 @@ describe("qwen public discovery v1 static checks", () => {
     expect(globalsRoot).not.toMatch(/html\s*\{[^}]*overflow-x:\s*hidden/);
     expect(globalsRoot).not.toMatch(/body\s*\{[^}]*overflow-x:\s*hidden/);
 
-    expect(marquee).toContain("min-w-0");
-    expect(marquee).toContain("overflow-x-clip");
+    expect(marquee).toContain("public-marquee");
+    expect(marquee).toContain("public-marquee-track");
     expect(css).toContain(".public-marquee {");
+    expect(css).toContain("min-width: 0");
     expect(css).toContain("overflow-x: clip");
     expect(css).toContain("width: max-content");
 
@@ -637,7 +661,7 @@ describe("qwen public discovery v1 static checks", () => {
     expect(visual).not.toMatch(/(?:^|[\s"])w-\[300px\]/);
     expect(css).toContain(".public-hero-visual-atmosphere");
     expect(css).toContain("clamp(15.5rem, 78vw, 30rem)");
-    expect(css).toContain("aspect-ratio: 12 / 13");
+    expect(css).toContain("aspect-ratio: 12 / 14");
     expect(css).toMatch(
       /\.public-hero-visual-atmosphere[\s\S]*ellipse 46% 42%[\s\S]*transparent 100%/,
     );
@@ -702,7 +726,7 @@ describe("qwen public discovery v1 static checks", () => {
     expect(css).toContain(".public-hero-title");
     expect(css).toContain("clamp(1.9rem");
     expect(css).toContain("ellipse 46% 42%");
-    expect(css).toContain("left: 26%");
+    expect(css).toContain("left: 30%");
     const visualAtmosphere = css.slice(
       css.indexOf(".public-hero-visual-atmosphere"),
       css.indexOf(".public-hero-media-slot"),
@@ -718,7 +742,7 @@ describe("qwen public discovery v1 static checks", () => {
     expect(header).toContain("UserIcon");
     expect(header).toContain("min-h-11");
     expect(header).toContain("inline-flex min-h-11 min-w-0");
-    expect(wordmark).toContain("clamp(1.25rem");
+    expect(wordmark).toContain("h-[1.45rem]");
     expect(css).toMatch(
       /prefers-reduced-motion:\s*reduce[\s\S]*\.public-hero-visual[\s\S]*animation:\s*none/,
     );
@@ -733,11 +757,11 @@ describe("qwen public discovery v1 static checks", () => {
     );
 
     expect(hero).toContain("public-hero-wave");
-    expect(hero).toContain("text-[var(--ps-cream)]");
+    expect(hero).toContain("text-[var(--ps-surface)]");
     expect(hero).toContain('preserveAspectRatio="none"');
-    expect(css).toContain("--ps-cream: #f7fcff");
+    expect(css).toContain("--ps-surface: #f6f8fa");
     expect(css).toMatch(
-      /\.public-storefront \{[\s\S]*background-color:\s*var\(--ps-cream\)/,
+      /\.public-storefront \{[\s\S]*background-color:\s*var\(--ps-surface\)/,
     );
     expect(css).toMatch(/\.public-hero-wave \{[\s\S]*margin-bottom:\s*-1px/);
     expect(css).toMatch(

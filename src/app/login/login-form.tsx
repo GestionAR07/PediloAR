@@ -30,7 +30,7 @@ export function LoginForm({ nextPath, googleOAuthEnabled }: LoginFormProps) {
             name="email"
             autoComplete="email"
             required
-            className="min-h-12 rounded-2xl border border-violet-100 bg-white px-4 text-foreground outline-none ring-violet-500 focus:ring-2"
+            className="min-h-12 rounded-2xl border border-sky-100 bg-white px-4 text-foreground outline-none ring-[var(--ps-cyan)] focus:ring-2"
           />
         </label>
 
@@ -41,7 +41,7 @@ export function LoginForm({ nextPath, googleOAuthEnabled }: LoginFormProps) {
             name="password"
             autoComplete="current-password"
             required
-            className="min-h-12 rounded-2xl border border-violet-100 bg-white px-4 text-foreground outline-none ring-violet-500 focus:ring-2"
+            className="min-h-12 rounded-2xl border border-sky-100 bg-white px-4 text-foreground outline-none ring-[var(--ps-cyan)] focus:ring-2"
           />
         </label>
 
@@ -54,7 +54,7 @@ export function LoginForm({ nextPath, googleOAuthEnabled }: LoginFormProps) {
         <button
           type="submit"
           disabled={pending}
-          className="grad-btn min-h-12 rounded-full px-5 text-sm font-extrabold text-white shadow-glow transition disabled:opacity-60"
+          className="grad-btn min-h-12 rounded-full px-5 text-sm font-extrabold shadow-glow transition disabled:opacity-60"
         >
           {pending ? "Ingresando…" : "Ingresar"}
         </button>

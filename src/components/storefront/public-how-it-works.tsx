@@ -41,7 +41,7 @@ export function PublicHowItWorks() {
   return (
     <section
       id="como-funciona"
-      className="mx-auto w-full min-w-0 max-w-7xl px-4 pt-10 pb-12 sm:px-6 lg:px-8 lg:pt-14 lg:pb-16"
+      className="how-it-works-section mx-auto w-full min-w-0 max-w-7xl px-4 pt-6 pb-10 sm:px-6 lg:px-8 lg:pt-8 lg:pb-12"
       aria-labelledby="how-it-works-heading"
     >
       <div className="mx-auto max-w-2xl text-center">

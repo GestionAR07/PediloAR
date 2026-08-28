@@ -1,4 +1,8 @@
 import Image from "next/image";
+import {
+  PEDILO_BRAND_TILE_SRC,
+  PEDILO_SYMBOL_SRC,
+} from "@/lib/pedilo-brand-assets";
 
 type MarkSize = "header" | "hero" | "compact";
 type Surface = "light" | "dark";
@@ -10,20 +14,20 @@ type Props = {
 };
 
 const sizeClass: Record<MarkSize, string> = {
-  header: "h-10 w-10 sm:h-11 sm:w-11",
+  header: "h-[2.7rem] w-[2.7rem] sm:h-12 sm:w-12",
   hero: "h-12 w-12",
   compact: "h-8 w-8",
 };
 
 const imageSizes: Record<MarkSize, string> = {
-  header: "(min-width: 640px) 44px, 40px",
+  header: "(min-width: 640px) 48px, 43px",
   hero: "48px",
   compact: "32px",
 };
 
 const markSrc: Record<Surface, string> = {
-  light: "/brand/pedilo-brand-tile.svg",
-  dark: "/brand/pedilo-symbol.svg",
+  light: PEDILO_SYMBOL_SRC,
+  dark: PEDILO_SYMBOL_SRC,
 };
 
 function cx(...parts: Array<string | false | undefined>): string {
@@ -31,7 +35,7 @@ function cx(...parts: Array<string | false | undefined>): string {
 }
 
 /**
- * Surface-aware Pedilo mark: framed on light surfaces and transparent on dark.
+ * Official Pedilo isotipo extracted from pedilo-logo-master.svg.
  */
 export function PublicBrandMark({
   size = "header",
@@ -52,3 +56,5 @@ export function PublicBrandMark({
     />
   );
 }
+
+export { PEDILO_BRAND_TILE_SRC };
