@@ -2,7 +2,7 @@ import "server-only";
 
 import { and, asc, count, desc, eq } from "drizzle-orm";
 import type { MerchantStatus } from "@/domain/merchant/enums";
-import { getDb } from "../client";
+import { getDb, type Db } from "../client";
 import {
   cities,
   merchantUsers,
@@ -10,6 +10,8 @@ import {
   userProfiles,
   zones,
 } from "../schema";
+
+export type MerchantDbTx = Parameters<Parameters<Db["transaction"]>[0]>[0];
 
 export type MerchantListRow = {
   id: string;
@@ -117,9 +119,17 @@ export async function findMerchantBySlug(
 
 export async function findMerchantDetailById(
   merchantId: string,
+  tx?: MerchantDbTx,
 ): Promise<MerchantDetailRecord | null> {
-  const db = getDb();
-  const rows = await db
+  const executor = tx ?? getDb();
+  return selectMerchantDetailById(executor, merchantId);
+}
+
+async function selectMerchantDetailById(
+  executor: Pick<MerchantDbTx, "select">,
+  merchantId: string,
+): Promise<MerchantDetailRecord | null> {
+  const rows = await executor
     .select({
       id: merchants.id,
       name: merchants.name,
@@ -216,9 +226,10 @@ export async function listMerchantMembers(
 
 export async function insertMerchantDraft(
   input: InsertMerchantInput,
+  tx?: MerchantDbTx,
 ): Promise<MerchantDetailRecord> {
-  const db = getDb();
-  const inserted = await db
+  const executor = tx ?? getDb();
+  const inserted = await executor
     .insert(merchants)
     .values({
       name: input.name,
@@ -240,7 +251,7 @@ export async function insertMerchantDraft(
     throw new Error("Failed to insert merchant");
   }
 
-  const detail = await findMerchantDetailById(id);
+  const detail = await selectMerchantDetailById(executor, id);
   if (!detail) {
     throw new Error("Merchant inserted but not found");
   }
