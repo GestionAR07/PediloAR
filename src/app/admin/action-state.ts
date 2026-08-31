@@ -13,6 +13,10 @@ export type CreateMerchantActionState = ActionState & {
   merchantId?: string;
 };
 
+export type ApproveMerchantApplicationActionState = ActionState & {
+  merchantId?: string;
+};
+
 export const initialActionState: ActionState = {
   error: null,
   success: null,
