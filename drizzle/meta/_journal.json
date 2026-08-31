@@ -57,6 +57,13 @@
       "when": 1787697052546,
       "tag": "0007_customer_accounts",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1788177764689,
+      "tag": "0008_breezy_iron_man",
+      "breakpoints": true
     }
   ]
 }

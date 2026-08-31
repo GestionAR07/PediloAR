@@ -61,6 +61,11 @@ export const DELIVERY_STATUS_VALUES = [
   "FAILED",
   "CANCELED",
 ] as const;
+export const MERCHANT_APPLICATION_STATUS_VALUES = [
+  "PENDING",
+  "APPROVED",
+  "REJECTED",
+] as const;
 
 export function sqlInList(values: readonly string[]): string {
   return values.map((value) => `'${value}'`).join(", ");

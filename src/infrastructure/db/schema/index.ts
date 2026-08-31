@@ -10,6 +10,7 @@ export * from "./columns";
 export * from "./user-profile";
 export * from "./geo";
 export * from "./merchant";
+export * from "./merchant-application";
 export * from "./catalog";
 export * from "./order";
 export * from "./delivery";
