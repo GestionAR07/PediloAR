@@ -15,7 +15,11 @@ export function attachPageCrashGuard(page: Page): { errors: string[] } {
 }
 
 export async function expectNoNextCrashOverlay(page: Page): Promise<void> {
-  await expect(page.locator("nextjs-portal")).toHaveCount(0);
+  // nextjs-portal is always present in `next dev` (Dev Tools), not a crash.
+  await expect(
+    page.locator("[data-nextjs-dialog-overlay], [data-nextjs-dialog]"),
+  ).toHaveCount(0);
+  await expect(page.getByText(/Application error/i)).toHaveCount(0);
 }
 
 export async function expectSafeLocalUrl(
