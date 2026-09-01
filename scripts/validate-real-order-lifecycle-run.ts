@@ -37,6 +37,7 @@ import {
 import {
   findMerchantForCheckout,
   listDeliveryZonesForCheckout,
+  listOpeningIntervalsForCheckout,
   listOptionChoicesForGroupsCheckout,
   listOptionGroupsForProductsCheckout,
   listPaymentMethodsForCheckout,
@@ -110,6 +111,7 @@ function checkoutPlaceDeps() {
     listOptionChoicesForGroups: listOptionChoicesForGroupsCheckout,
     listPaymentMethodsForMerchant: listPaymentMethodsForCheckout,
     listDeliveryZonesForMerchant: listDeliveryZonesForCheckout,
+    listOpeningIntervals: listOpeningIntervalsForCheckout,
     findOrderByIdempotencyKey,
     persistPreparedOrder: (prepared: PreparedOrder) =>
       persistPreparedOrderInTransaction(prepared, new Date()),
