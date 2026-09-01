@@ -18,11 +18,11 @@ export default async function SumarComercioPage() {
   const [cities, zones] = await Promise.all([listCities(), listZones()]);
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10 sm:px-6">
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10 sm:px-6 md:max-w-4xl lg:max-w-5xl lg:py-14">
       <Link href="/" className="mb-8 w-fit">
         <PublicBrandWordmark size="header" tone="plain" />
       </Link>
-      <section className="rounded-[1.75rem] border border-sky-100/80 bg-white p-6 shadow-soft sm:p-8">
+      <section className="rounded-[1.75rem] border border-sky-100/80 bg-white p-6 shadow-soft sm:p-8 lg:p-10">
         <p className="text-xs font-bold tracking-wider text-[var(--ps-cyan)] uppercase">
           Para comercios
         </p>
