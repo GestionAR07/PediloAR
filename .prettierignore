@@ -5,6 +5,10 @@ build
 coverage
 package-lock.json
 marketplace-rawson-tmp
+playwright-report
+test-results
+blob-report
+playwright/.cache
 
 # Visual source of truth — do not let Prettier rewrite the Qwen reference.
 design-reference/qwen/**

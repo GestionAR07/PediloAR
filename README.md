@@ -18,7 +18,7 @@ Dominio puro validado en `src/domain`. Schema PostgreSQL/Drizzle y migraciones v
 | UI              | React + Tailwind CSS                      |
 | Lenguaje        | TypeScript (`strict`)                     |
 | Package manager | npm                                       |
-| Tests           | Vitest                                    |
+| Tests           | Vitest (unit) · Playwright (E2E smokes)   |
 | Calidad         | ESLint + Prettier                         |
 | Deploy previsto | Vercel (aún no conectado)                 |
 | Datos           | PostgreSQL / Supabase + Drizzle (Fase 2B) |
@@ -57,6 +57,20 @@ npm run db:migrate   # requiere DATABASE_URL de desarrollo
 ```
 
 Detalle: [`docs/PERSISTENCE.md`](docs/PERSISTENCE.md).
+
+## E2E (Playwright, Chromium only)
+
+Foundation smokes against a **local** app (never `pedilo.store`):
+
+```bash
+npx playwright install chromium
+npm run e2e
+```
+
+Headed / UI: `npm run e2e:headed` · `npm run e2e:ui`.
+
+By default Playwright auto-starts Next on `http://127.0.0.1:3100`. Details:
+[`docs/E2E.md`](docs/E2E.md).
 
 ## Validaciones
 
