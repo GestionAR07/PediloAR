@@ -136,8 +136,10 @@ describe("public landing close sections", () => {
     );
     expect(cta).toContain("¿Querés sumar tu comercio?");
     expect(cta.replace(/\s+/g, " ")).toContain(
-      "El alta es asistida: no hay registro público.",
+      "Enviá tus datos y revisaremos la solicitud antes de habilitarlo.",
     );
+    expect(cta).toContain("Quiero sumar mi comercio");
+    expect(cta).toContain('href="/sumar-comercio"');
     expect(cta).toContain("Acceso comercios");
     expect(cta).toContain('href="/login"');
     expect(cta).not.toContain("Registrarme");
@@ -146,7 +148,7 @@ describe("public landing close sections", () => {
     expect(cta).not.toContain("<form");
     expect(login).toContain("Crear cuenta");
     expect(login).toContain("/registro");
-    expect(hrefsIn(cta)).toEqual(["/login"]);
+    expect(hrefsIn(cta).sort()).toEqual(["/login", "/sumar-comercio"].sort());
   });
 
   it("footer only exposes valid public links and a hydration-safe year", () => {

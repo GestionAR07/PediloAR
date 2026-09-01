@@ -52,15 +52,23 @@ export function PublicMerchantCta() {
               desde un solo lugar.
             </p>
             <p className="mt-3 text-sm leading-relaxed break-words text-slate-300">
-              ¿Querés sumar tu comercio? El alta es asistida: no hay registro
-              público.
+              ¿Querés sumar tu comercio? Enviá tus datos y revisaremos la
+              solicitud antes de habilitarlo.
             </p>
-            <Link
-              href="/login"
-              className="grad-btn mt-8 inline-flex min-h-12 items-center rounded-full px-7 py-3 text-sm font-extrabold shadow-glow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-cyan)]"
-            >
-              Acceso comercios
-            </Link>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <Link
+                href="/sumar-comercio"
+                className="grad-btn inline-flex min-h-12 items-center justify-center rounded-full px-7 py-3 text-sm font-extrabold shadow-glow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-cyan)]"
+              >
+                Quiero sumar mi comercio
+              </Link>
+              <Link
+                href="/login"
+                className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/25 px-7 py-3 text-sm font-bold text-white transition hover:border-white/40 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-cyan)]"
+              >
+                Acceso comercios
+              </Link>
+            </div>
           </div>
 
           <ul className="grid min-w-0 gap-3 sm:grid-cols-3 lg:grid-cols-1">
