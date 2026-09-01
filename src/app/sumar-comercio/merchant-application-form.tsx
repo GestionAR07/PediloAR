@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
+import { MERCHANT_APPLICATION_LIMITS } from "@/lib/merchant-application-limits";
 import { submitMerchantApplicationInitialState } from "./action-state";
 import { submitMerchantApplicationAction } from "./actions";
 
@@ -80,12 +81,22 @@ export function MerchantApplicationForm({
       action={formAction}
       className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-x-5 md:gap-y-4"
     >
+      <div
+        className="absolute -left-[9999px] h-px w-px overflow-hidden"
+        aria-hidden="true"
+      >
+        <label>
+          <span>Sitio web</span>
+          <input type="text" name="website" tabIndex={-1} autoComplete="off" />
+        </label>
+      </div>
+
       <label className="block min-w-0 text-sm">
         <span className="mb-1.5 block font-bold">Nombre del comercio</span>
         <input
           name="businessName"
           required
-          maxLength={120}
+          maxLength={MERCHANT_APPLICATION_LIMITS.businessName}
           className={fieldClassName}
         />
       </label>
@@ -95,7 +106,7 @@ export function MerchantApplicationForm({
         <input
           name="contactName"
           required
-          maxLength={80}
+          maxLength={MERCHANT_APPLICATION_LIMITS.contactName}
           autoComplete="name"
           className={fieldClassName}
         />
@@ -107,6 +118,7 @@ export function MerchantApplicationForm({
           name="contactEmail"
           type="email"
           required
+          maxLength={MERCHANT_APPLICATION_LIMITS.contactEmail}
           autoComplete="email"
           className={fieldClassName}
         />
@@ -120,7 +132,7 @@ export function MerchantApplicationForm({
           inputMode="tel"
           required
           autoComplete="tel"
-          maxLength={32}
+          maxLength={MERCHANT_APPLICATION_LIMITS.contactPhone}
           className={fieldClassName}
         />
       </label>
@@ -171,7 +183,7 @@ export function MerchantApplicationForm({
         <textarea
           name="description"
           rows={3}
-          maxLength={2000}
+          maxLength={MERCHANT_APPLICATION_LIMITS.description}
           className="w-full min-w-0 rounded-2xl border border-sky-100 bg-white px-4 py-3 outline-none ring-[var(--ps-cyan)] focus:ring-2"
         />
       </label>
@@ -181,7 +193,7 @@ export function MerchantApplicationForm({
         <textarea
           name="message"
           rows={3}
-          maxLength={2000}
+          maxLength={MERCHANT_APPLICATION_LIMITS.message}
           className="w-full min-w-0 rounded-2xl border border-sky-100 bg-white px-4 py-3 outline-none ring-[var(--ps-cyan)] focus:ring-2"
         />
       </label>

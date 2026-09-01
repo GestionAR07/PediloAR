@@ -1,6 +1,11 @@
 import { err, ok, type Result } from "@/domain/shared/result";
 import { isValidEmailFormat, normalizeEmail } from "@/lib/email";
+import {
+  MAX_PENDING_APPLICATIONS_PER_EMAIL,
+  MERCHANT_APPLICATION_LIMITS,
+} from "@/lib/merchant-application-limits";
 import { isValidSlug, normalizeSlug } from "@/lib/slug";
+import { isValidUuid } from "@/lib/uuid";
 import type {
   MerchantApplicationDbTx,
   MerchantApplicationRecord,
@@ -70,6 +75,9 @@ export type SubmitMerchantApplicationDeps = {
     contactEmail: string,
     businessName: string,
   ) => Promise<MerchantApplicationRecord | null>;
+  countPendingMerchantApplicationsByEmail: (
+    contactEmail: string,
+  ) => Promise<number>;
   insertMerchantApplication: (input: {
     businessName: string;
     contactName: string;
@@ -162,10 +170,58 @@ export async function submitMerchantApplication(
       message: "El teléfono de contacto es obligatorio.",
     });
   }
+  if (businessName.length > MERCHANT_APPLICATION_LIMITS.businessName) {
+    return err({
+      code: "BUSINESS_NAME_TOO_LONG",
+      message: "El nombre del comercio es demasiado largo.",
+    });
+  }
+  if (contactName.length > MERCHANT_APPLICATION_LIMITS.contactName) {
+    return err({
+      code: "CONTACT_NAME_TOO_LONG",
+      message: "El nombre de contacto es demasiado largo.",
+    });
+  }
+  if (contactEmail.length > MERCHANT_APPLICATION_LIMITS.contactEmail) {
+    return err({
+      code: "EMAIL_TOO_LONG",
+      message: "El email de contacto es demasiado largo.",
+    });
+  }
+  if (contactPhone.length > MERCHANT_APPLICATION_LIMITS.contactPhone) {
+    return err({
+      code: "PHONE_TOO_LONG",
+      message: "El teléfono de contacto es demasiado largo.",
+    });
+  }
+  if (description.length > MERCHANT_APPLICATION_LIMITS.description) {
+    return err({
+      code: "DESCRIPTION_TOO_LONG",
+      message: "La descripción es demasiado larga.",
+    });
+  }
+  if (message.length > MERCHANT_APPLICATION_LIMITS.message) {
+    return err({
+      code: "MESSAGE_TOO_LONG",
+      message: "El mensaje es demasiado largo.",
+    });
+  }
   if (!cityId || !zoneId) {
     return err({
       code: "INVALID_GEOGRAPHY",
       message: "Seleccioná ciudad y zona.",
+    });
+  }
+  if (!isValidUuid(cityId)) {
+    return err({
+      code: "INVALID_CITY_ID",
+      message: "La ciudad seleccionada no es válida.",
+    });
+  }
+  if (!isValidUuid(zoneId)) {
+    return err({
+      code: "INVALID_ZONE_ID",
+      message: "La zona seleccionada no es válida.",
     });
   }
 
@@ -200,6 +256,16 @@ export async function submitMerchantApplication(
     return err({
       code: "PENDING_DUPLICATE",
       message: "Ya existe una solicitud pendiente con ese email y comercio.",
+    });
+  }
+
+  const pendingCount =
+    await deps.countPendingMerchantApplicationsByEmail(contactEmail);
+  if (pendingCount >= MAX_PENDING_APPLICATIONS_PER_EMAIL) {
+    return err({
+      code: "TOO_MANY_PENDING_FOR_EMAIL",
+      message:
+        "Ya hay varias solicitudes pendientes asociadas a ese email. Esperá a que sean revisadas antes de enviar otra.",
     });
   }
 

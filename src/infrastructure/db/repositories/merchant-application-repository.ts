@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, count, desc, eq, sql } from "drizzle-orm";
 import { getDb, type Db } from "../client";
 import { cities, merchantApplications, zones } from "../schema";
 
@@ -235,6 +235,26 @@ export async function findPendingDuplicate(
 
   const row = rows[0];
   return row ? mapApplicationRow(row) : null;
+}
+
+export async function countPendingMerchantApplicationsByEmail(
+  contactEmail: string,
+  tx?: MerchantApplicationDbTx,
+): Promise<number> {
+  const executor = tx ?? getDb();
+  const normalizedEmail = normalizeApplicationEmail(contactEmail);
+
+  const rows = await executor
+    .select({ count: count() })
+    .from(merchantApplications)
+    .where(
+      and(
+        eq(merchantApplications.status, "PENDING"),
+        sql`lower(btrim(${merchantApplications.contactEmail})) = ${normalizedEmail}`,
+      ),
+    );
+
+  return Number(rows[0]?.count ?? 0);
 }
 
 export async function markApproved(

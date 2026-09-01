@@ -14,6 +14,11 @@ export async function submitMerchantApplicationAction(
   _prev: SubmitMerchantApplicationActionState,
   formData: FormData,
 ): Promise<SubmitMerchantApplicationActionState> {
+  const website = String(formData.get("website") ?? "").trim();
+  if (website !== "") {
+    return { error: null, success: true };
+  }
+
   const result = await submitMerchantApplicationApp({
     businessName: String(formData.get("businessName") ?? ""),
     contactName: String(formData.get("contactName") ?? ""),

@@ -13,6 +13,7 @@ import {
 } from "@/application/merchant/merchant-applications";
 import { getDb, type Db } from "@/infrastructure/db/client";
 import {
+  countPendingMerchantApplicationsByEmail,
   findMerchantApplicationById,
   findPendingDuplicate,
   insertMerchantApplication,
@@ -37,6 +38,7 @@ function submitDeps(): SubmitMerchantApplicationDeps {
     findCityById,
     findZoneById,
     findPendingDuplicate,
+    countPendingMerchantApplicationsByEmail,
     insertMerchantApplication,
   };
 }

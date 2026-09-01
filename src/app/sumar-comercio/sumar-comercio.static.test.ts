@@ -53,6 +53,52 @@ describe("public merchant application form (static)", () => {
     expect(actions).toContain('"use server"');
   });
 
+  it("reads only domain fields from form data for the use case", () => {
+    expect(actions).toMatch(/formData\.get\(["']businessName["']\)/);
+    expect(actions).toMatch(/formData\.get\(["']contactName["']\)/);
+    expect(actions).toMatch(/formData\.get\(["']contactEmail["']\)/);
+    expect(actions).toMatch(/formData\.get\(["']contactPhone["']\)/);
+    expect(actions).toMatch(/formData\.get\(["']cityId["']\)/);
+    expect(actions).toMatch(/formData\.get\(["']zoneId["']\)/);
+    expect(actions).toMatch(/formData\.get\(["']description["']\)/);
+    expect(actions).toMatch(/formData\.get\(["']message["']\)/);
+    expect(actions).not.toMatch(
+      /submitMerchantApplicationApp\(\{[\s\S]*website/,
+    );
+  });
+
+  it("filters honeypot submissions without calling the use case", () => {
+    expect(actions).toMatch(/formData\.get\(["']website["']\)/);
+    expect(actions).toContain('if (website !== "")');
+    expect(actions).toMatch(
+      /if \(website !== ""\)[\s\S]*return \{ error: null, success: true \}/,
+    );
+    const beforeSubmit = actions.slice(
+      0,
+      actions.indexOf("const result = await submitMerchantApplicationApp"),
+    );
+    expect(beforeSubmit).toContain('if (website !== "")');
+    expect(beforeSubmit).toContain("return { error: null, success: true }");
+    expect(beforeSubmit).not.toContain("await submitMerchantApplicationApp");
+  });
+
+  it("keeps the honeypot field hidden and out of tab order", () => {
+    expect(form).toContain('name="website"');
+    expect(form).toContain("tabIndex={-1}");
+    expect(form).toContain('autoComplete="off"');
+    expect(form).toContain('aria-hidden="true"');
+    expect(form).toContain("-left-[9999px]");
+  });
+
+  it("shares input limits with the application layer", () => {
+    const limits = read("src/lib/merchant-application-limits.ts");
+    expect(form).toContain("MERCHANT_APPLICATION_LIMITS");
+    expect(form).toContain("MERCHANT_APPLICATION_LIMITS.contactEmail");
+    expect(limits).toContain("businessName: 120");
+    expect(limits).toContain("contactEmail: 254");
+    expect(limits).toContain("MAX_PENDING_APPLICATIONS_PER_EMAIL = 3");
+  });
+
   it("does not accept status, merchantId, or reviewedByUserId from form data", () => {
     expect(actions).not.toMatch(/formData\.get\(["']status["']\)/);
     expect(actions).not.toMatch(/formData\.get\(["']merchantId["']\)/);
@@ -127,6 +173,10 @@ describe("public merchant application form (static)", () => {
     expect(migrations).toHaveLength(9);
     expect(migrations.at(-1)).toBe("0008_breezy_iron_man.sql");
     expect(migrations).not.toContain("0009_");
+
+    const pkg = read("package.json");
+    expect(pkg).not.toContain('"upstash');
+    expect(pkg).not.toContain('"ioredis"');
 
     const schema = read("src/infrastructure/db/schema/merchant-application.ts");
     expect(schema).not.toMatch(/CREATE POLICY/i);

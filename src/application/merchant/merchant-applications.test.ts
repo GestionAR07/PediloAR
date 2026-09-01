@@ -11,6 +11,9 @@ import {
   type SubmitMerchantApplicationDeps,
 } from "./merchant-applications";
 
+const CITY_ID = "11111111-1111-4111-8111-111111111111";
+const ZONE_ID = "22222222-2222-4222-8222-222222222222";
+
 const pendingApplication = (): MerchantApplicationRecord => ({
   id: "app-1",
   status: "PENDING",
@@ -18,8 +21,8 @@ const pendingApplication = (): MerchantApplicationRecord => ({
   contactName: "Ana",
   contactEmail: "ana@example.com",
   contactPhone: "2804123456",
-  cityId: "city-1",
-  zoneId: "zone-1",
+  cityId: CITY_ID,
+  zoneId: ZONE_ID,
   cityName: "Rawson",
   zoneName: "Centro",
   description: "Pan artesanal",
@@ -38,8 +41,8 @@ const draftMerchant = (): MerchantDetailRecord => ({
   slug: "panaderia-norte",
   description: "Pan artesanal",
   status: "DRAFT",
-  cityId: "city-1",
-  zoneId: "zone-1",
+  cityId: CITY_ID,
+  zoneId: ZONE_ID,
   cityName: "Rawson",
   zoneName: "Centro",
   pickupEnabled: true,
@@ -57,9 +60,10 @@ function submitDeps(
   overrides: Partial<SubmitMerchantApplicationDeps> = {},
 ): SubmitMerchantApplicationDeps {
   return {
-    findCityById: vi.fn(async () => ({ id: "city-1" })),
-    findZoneById: vi.fn(async () => ({ id: "zone-1", cityId: "city-1" })),
+    findCityById: vi.fn(async () => ({ id: CITY_ID })),
+    findZoneById: vi.fn(async () => ({ id: ZONE_ID, cityId: CITY_ID })),
     findPendingDuplicate: vi.fn(async () => null),
+    countPendingMerchantApplicationsByEmail: vi.fn(async () => 0),
     insertMerchantApplication: vi.fn(async () => pendingApplication()),
     ...overrides,
   };
@@ -126,11 +130,15 @@ const validSubmitInput = {
   contactName: "Ana",
   contactEmail: "ana@example.com",
   contactPhone: "2804123456",
-  cityId: "city-1",
-  zoneId: "zone-1",
+  cityId: CITY_ID,
+  zoneId: ZONE_ID,
   description: "Pan artesanal",
   message: "Quiero sumarme",
 };
+
+function repeatChar(length: number, char = "a"): string {
+  return char.repeat(length);
+}
 
 const validApproveInput = {
   applicationId: "app-1",
@@ -149,10 +157,68 @@ describe("submitMerchantApplication", () => {
       expect.objectContaining({
         businessName: "Panadería Norte",
         contactEmail: "ana@example.com",
-        cityId: "city-1",
-        zoneId: "zone-1",
+        cityId: CITY_ID,
+        zoneId: ZONE_ID,
       }),
     );
+  });
+
+  it.each([
+    ["businessName", "BUSINESS_NAME_TOO_LONG", 121],
+    ["contactName", "CONTACT_NAME_TOO_LONG", 81],
+    ["contactEmail", "EMAIL_TOO_LONG", 255],
+    ["contactPhone", "PHONE_TOO_LONG", 33],
+    ["description", "DESCRIPTION_TOO_LONG", 2001],
+    ["message", "MESSAGE_TOO_LONG", 2001],
+  ] as const)(
+    "rejects %s longer than the limit",
+    async (field, code, length) => {
+      const deps = submitDeps();
+      const value =
+        field === "contactEmail"
+          ? `${repeatChar(length - "@example.com".length)}@example.com`
+          : repeatChar(length);
+      const result = await submitMerchantApplication(
+        { ...validSubmitInput, [field]: value },
+        deps,
+      );
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe(code);
+      }
+      expect(deps.findCityById).not.toHaveBeenCalled();
+      expect(deps.insertMerchantApplication).not.toHaveBeenCalled();
+    },
+  );
+
+  it("rejects malformed cityId without calling findCityById", async () => {
+    const deps = submitDeps();
+    const result = await submitMerchantApplication(
+      { ...validSubmitInput, cityId: "abc" },
+      deps,
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("INVALID_CITY_ID");
+    }
+    expect(deps.findCityById).not.toHaveBeenCalled();
+    expect(deps.findZoneById).not.toHaveBeenCalled();
+    expect(deps.insertMerchantApplication).not.toHaveBeenCalled();
+  });
+
+  it("rejects malformed zoneId without calling findZoneById", async () => {
+    const deps = submitDeps();
+    const result = await submitMerchantApplication(
+      { ...validSubmitInput, zoneId: "not-a-uuid" },
+      deps,
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("INVALID_ZONE_ID");
+    }
+    expect(deps.findCityById).not.toHaveBeenCalled();
+    expect(deps.findZoneById).not.toHaveBeenCalled();
+    expect(deps.insertMerchantApplication).not.toHaveBeenCalled();
   });
 
   it("rejects invalid email and geography", async () => {
@@ -167,7 +233,10 @@ describe("submitMerchantApplication", () => {
     }
 
     const geoDeps = submitDeps({
-      findZoneById: vi.fn(async () => ({ id: "zone-1", cityId: "other" })),
+      findZoneById: vi.fn(async () => ({
+        id: ZONE_ID,
+        cityId: "33333333-3333-4333-8333-333333333333",
+      })),
     });
     const geoResult = await submitMerchantApplication(
       validSubmitInput,
@@ -190,6 +259,30 @@ describe("submitMerchantApplication", () => {
       expect(result.error.code).toBe("PENDING_DUPLICATE");
     }
     expect(deps.insertMerchantApplication).not.toHaveBeenCalled();
+  });
+
+  it("blocks the fourth pending application for the same email", async () => {
+    const deps = submitDeps({
+      countPendingMerchantApplicationsByEmail: vi.fn(async () => 3),
+    });
+    const result = await submitMerchantApplication(validSubmitInput, deps);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("TOO_MANY_PENDING_FOR_EMAIL");
+    }
+    expect(deps.insertMerchantApplication).not.toHaveBeenCalled();
+  });
+
+  it("allows submit when only two pending applications exist for the email", async () => {
+    const deps = submitDeps({
+      countPendingMerchantApplicationsByEmail: vi.fn(async () => 2),
+    });
+    const result = await submitMerchantApplication(validSubmitInput, deps);
+    expect(result.ok).toBe(true);
+    expect(deps.countPendingMerchantApplicationsByEmail).toHaveBeenCalledWith(
+      "ana@example.com",
+    );
+    expect(deps.insertMerchantApplication).toHaveBeenCalled();
   });
 });
 
@@ -214,8 +307,8 @@ describe("approveMerchantApplication", () => {
         name: "Panadería Norte",
         slug: "panaderia-norte",
         description: "Pan artesanal",
-        cityId: "city-1",
-        zoneId: "zone-1",
+        cityId: CITY_ID,
+        zoneId: ZONE_ID,
         pickupEnabled: true,
         merchantDeliveryEnabled: false,
         preparationMinutes: 20,

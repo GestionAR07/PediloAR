@@ -139,6 +139,7 @@ describe("merchant application repository (static)", () => {
     expect(source).toContain("listMerchantApplicationsForAdmin");
     expect(source).toContain("findMerchantApplicationById");
     expect(source).toContain("findPendingDuplicate");
+    expect(source).toContain("countPendingMerchantApplicationsByEmail");
     expect(source).toContain("markApproved");
     expect(source).toContain("markRejected");
     expect(source).toContain("normalizeApplicationEmail");
@@ -152,6 +153,20 @@ describe("merchant application repository (static)", () => {
     expect(source).toContain('status: "PENDING"');
     expect(source).toContain(
       "contactEmail: normalizeApplicationEmail(input.contactEmail)",
+    );
+  });
+
+  it("counts only pending applications by normalized email", () => {
+    expect(source).toContain("countPendingMerchantApplicationsByEmail");
+    expect(source).toContain("select({ count: count() })");
+    expect(source).toMatch(
+      /countPendingMerchantApplicationsByEmail[\s\S]*eq\(merchantApplications\.status, "PENDING"\)/,
+    );
+    expect(source).toMatch(
+      /countPendingMerchantApplicationsByEmail[\s\S]*normalizeApplicationEmail\(contactEmail\)/,
+    );
+    expect(source).toMatch(
+      /countPendingMerchantApplicationsByEmail[\s\S]*lower\(btrim\(\$\{merchantApplications\.contactEmail\}\)\)/,
     );
   });
 
