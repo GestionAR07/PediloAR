@@ -69,7 +69,8 @@ npm run e2e
 
 Headed / UI: `npm run e2e:headed` · `npm run e2e:ui`.
 
-By default Playwright auto-starts Next on `http://127.0.0.1:3100`. Details:
+By default Playwright **always** auto-starts Next on `http://127.0.0.1:3100`
+(`reuseExistingServer` is false). Suite mode: **READ_ONLY**. Details:
 [`docs/E2E.md`](docs/E2E.md).
 
 ## Validaciones

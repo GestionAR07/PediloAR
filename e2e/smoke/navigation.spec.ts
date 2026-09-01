@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../fixtures";
 import { attachPageCrashGuard } from "../lib/no-page-crash";
 
 test.describe("C — basic public navigation (no writes)", () => {

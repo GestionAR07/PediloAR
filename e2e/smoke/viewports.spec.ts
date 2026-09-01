@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../fixtures";
 import { E2E_VIEWPORTS } from "../lib/viewports";
 
 test.describe("viewport foundation (non-destructive open only)", () => {

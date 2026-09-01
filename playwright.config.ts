@@ -6,17 +6,20 @@ import {
   isLoopbackHostname,
 } from "./e2e/lib/assert-safe-e2e-target";
 import { E2E_VIEWPORTS } from "./e2e/lib/viewports";
+import { E2E_REUSE_EXISTING_SERVER } from "./e2e/lib/web-server-policy";
 
 const baseURL = process.env.E2E_BASE_URL?.trim() || E2E_DEFAULT_ORIGIN;
 const target = assertSafeE2eTarget(baseURL, process.env);
 const isLocalLoopback = isLoopbackHostname(target.hostname);
 const ci = Boolean(process.env.CI);
-const e2ePort = target.port || (target.protocol === "https:" ? "443" : "80");
+const e2ePort = Number(
+  target.port || (target.protocol === "https:" ? "443" : "80"),
+);
 
 /**
  * Chromium-only Playwright foundation.
- * Local Next is auto-started on loopback (default http://127.0.0.1:3100).
- * Firefox / WebKit are intentionally not configured.
+ * Always auto-starts Next on loopback (default http://127.0.0.1:3100).
+ * Never reuses an existing server. Firefox / WebKit are not configured.
  */
 export default defineConfig({
   testDir: "./e2e",
@@ -47,9 +50,9 @@ export default defineConfig({
   ],
   webServer: isLocalLoopback
     ? {
-        command: `npx next dev --hostname 127.0.0.1 --port ${e2ePort}`,
+        command: `node e2e/lib/start-e2e-next.cjs ${e2ePort}`,
         url: target.origin,
-        reuseExistingServer: ci ? false : true,
+        reuseExistingServer: E2E_REUSE_EXISTING_SERVER,
         timeout: 180_000,
         stdout: "pipe",
         stderr: "pipe",
