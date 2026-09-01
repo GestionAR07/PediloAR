@@ -72,6 +72,8 @@ export type CheckoutMerchantRecord = {
   platformDeliveryEnabled: boolean;
   acceptingOrders: boolean;
   pausedUntil: Date | null;
+  /** City IANA timezone used to evaluate opening hours. */
+  cityTimezone: string;
   /** Present when loaded from persistence; omitted in some test doubles. */
   preparationMinutes?: number;
 };
@@ -125,6 +127,12 @@ export type CheckoutDeliveryZoneRecord = {
   minimumOrderCents: number;
   estimatedMinutes: number;
   active: boolean;
+};
+
+export type CheckoutOpeningIntervalRecord = {
+  weekday: number;
+  openMinute: number;
+  closeMinute: number;
 };
 
 export type PreparedPaymentSnapshot = {
@@ -284,4 +292,7 @@ export type PrepareOrderDeps = {
   listDeliveryZonesForMerchant: (
     merchantId: string,
   ) => Promise<CheckoutDeliveryZoneRecord[]>;
+  listOpeningIntervals: (
+    merchantId: string,
+  ) => Promise<CheckoutOpeningIntervalRecord[]>;
 };

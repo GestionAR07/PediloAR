@@ -34,6 +34,7 @@ import type {
   CancelOrderPersistResult,
   CheckoutDeliveryZoneRecord,
   CheckoutMerchantRecord,
+  CheckoutOpeningIntervalRecord,
   CheckoutOptionChoiceRecord,
   CheckoutOptionGroupRecord,
   CheckoutPaymentMethodRecord,
@@ -45,6 +46,7 @@ import type {
 } from "./types";
 
 const NOW = new Date("2026-08-13T12:00:00.000Z");
+const CITY_TIMEZONE = "America/Argentina/Catamarca";
 const MERCHANT_ID = "11111111-1111-4111-8111-111111111111";
 const CITY_ID = "33333333-3333-4333-8333-333333333333";
 const ZONE_HOME_ID = "44444444-4444-4444-8444-444444444444";
@@ -121,6 +123,7 @@ function merchant(
     platformDeliveryEnabled: false,
     acceptingOrders: true,
     pausedUntil: null,
+    cityTimezone: CITY_TIMEZONE,
     ...overrides,
   };
 }
@@ -300,6 +303,7 @@ class MemoryCheckout {
   choices: CheckoutOptionChoiceRecord[];
   payments: CheckoutPaymentMethodRecord[];
   zones: CheckoutDeliveryZoneRecord[];
+  openings: CheckoutOpeningIntervalRecord[];
   orders = new Map<string, StoredOrder>();
   failNext:
     | "item"
@@ -322,6 +326,7 @@ class MemoryCheckout {
     this.choices = [...saboresChoices];
     this.payments = [cashPayment(), transferPayment()];
     this.zones = [deliveryZone()];
+    this.openings = [];
   }
 
   productStock(id: string): number | null {
@@ -350,6 +355,7 @@ class MemoryCheckout {
       ),
       listPaymentMethodsForMerchant: vi.fn(async () => this.payments),
       listDeliveryZonesForMerchant: vi.fn(async () => this.zones),
+      listOpeningIntervals: vi.fn(async () => this.openings),
       findOrderByIdempotencyKey: vi.fn(async (key) => this.findByKey(key)),
       persistPreparedOrder: vi.fn(async (prepared) =>
         this.enqueue(() => this.persist(prepared)),
@@ -1382,6 +1388,38 @@ describe("placeOrder merchant/product write races", () => {
     if (result.ok) return;
     expect(result.error.code).toBe(CHECKOUT_ERROR_CODES.PRODUCT_NOT_SELLABLE);
     expect(world.orders.size).toBe(0);
+  });
+});
+
+describe("placeOrder merchant hours", () => {
+  it("cannot skip hours validation when the merchant is closed", async () => {
+    const world = new MemoryCheckout();
+    world.openings = [
+      { weekday: 4, openMinute: 17 * 60, closeMinute: 21 * 60 },
+    ];
+    const persist = vi.fn(async () => {
+      throw new Error("persist must not run while closed by hours");
+    });
+    const result = await placeOrder(
+      pickupInput(),
+      world.deps({ persistPreparedOrder: persist }),
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe(CHECKOUT_ERROR_CODES.MERCHANT_CLOSED);
+    expect(result.error.message).toBe(
+      "Este comercio está cerrado en este momento.",
+    );
+    expect(world.orders.size).toBe(0);
+    expect(persist).not.toHaveBeenCalled();
+  });
+
+  it("allows placeOrder when configured hours are open", async () => {
+    const world = new MemoryCheckout();
+    world.openings = [{ weekday: 4, openMinute: 9 * 60, closeMinute: 18 * 60 }];
+    const result = await placeOrder(pickupInput(), world.deps());
+    expect(result.ok).toBe(true);
+    expect(world.orders.size).toBe(1);
   });
 });
 

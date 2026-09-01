@@ -161,6 +161,7 @@ function checkoutMerchant(
     acceptingOrders: true,
     pausedUntil: null,
     preparationMinutes: 25,
+    cityTimezone: "America/Argentina/Catamarca",
   };
 }
 

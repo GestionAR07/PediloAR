@@ -30,6 +30,7 @@ function merchant(
     acceptingOrders: true,
     pausedUntil: null,
     preparationMinutes: 25,
+    cityTimezone: "America/Argentina/Catamarca",
     ...overrides,
   };
 }
