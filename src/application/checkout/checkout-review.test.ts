@@ -44,6 +44,7 @@ function merchant(): CheckoutMerchantRecord {
     platformDeliveryEnabled: false,
     acceptingOrders: true,
     pausedUntil: null,
+    cityTimezone: "America/Argentina/Catamarca",
   };
 }
 
@@ -161,6 +162,7 @@ function baseDeps(overrides: Partial<PrepareOrderDeps> = {}): PrepareOrderDeps {
     ),
     listPaymentMethodsForMerchant: vi.fn(async () => [cashPayment()]),
     listDeliveryZonesForMerchant: vi.fn(async () => [deliveryZone()]),
+    listOpeningIntervals: vi.fn(async () => []),
     ...overrides,
   };
 }

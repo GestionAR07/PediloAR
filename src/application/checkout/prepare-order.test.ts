@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
+import { getPublicHoursPresentation } from "@/lib/public-hours";
 import { CHECKOUT_ERROR_CODES } from "./errors";
 import { prepareOrder } from "./prepare-order";
 import type {
   CheckoutDeliveryZoneRecord,
   CheckoutMerchantRecord,
+  CheckoutOpeningIntervalRecord,
   CheckoutOptionChoiceRecord,
   CheckoutOptionGroupRecord,
   CheckoutPaymentMethodRecord,
@@ -13,6 +15,7 @@ import type {
 } from "./types";
 
 const NOW = new Date("2026-08-13T12:00:00.000Z");
+const CITY_TIMEZONE = "America/Argentina/Catamarca";
 const MERCHANT_ID = "11111111-1111-4111-8111-111111111111";
 const OTHER_MERCHANT_ID = "22222222-2222-4222-8222-222222222222";
 const CITY_ID = "33333333-3333-4333-8333-333333333333";
@@ -56,6 +59,7 @@ function merchant(
     platformDeliveryEnabled: false,
     acceptingOrders: true,
     pausedUntil: null,
+    cityTimezone: CITY_TIMEZONE,
     ...overrides,
   };
 }
@@ -257,6 +261,7 @@ function baseDeps(overrides: Partial<PrepareOrderDeps> = {}): PrepareOrderDeps {
     listDeliveryZonesForMerchant: vi.fn(async (merchantId) =>
       merchantId === MERCHANT_ID ? zones : [],
     ),
+    listOpeningIntervals: vi.fn(async () => []),
     ...overrides,
   };
 }
@@ -268,6 +273,7 @@ function withCatalog(options: {
   choices?: CheckoutOptionChoiceRecord[];
   payments?: CheckoutPaymentMethodRecord[];
   zones?: CheckoutDeliveryZoneRecord[];
+  openings?: CheckoutOpeningIntervalRecord[];
 }): PrepareOrderDeps {
   const merchantRow =
     options.merchant === undefined ? merchant() : options.merchant;
@@ -294,6 +300,7 @@ function withCatalog(options: {
     listDeliveryZonesForMerchant: vi.fn(
       async () => options.zones ?? [deliveryZone()],
     ),
+    listOpeningIntervals: vi.fn(async () => options.openings ?? []),
   });
 }
 
@@ -393,6 +400,179 @@ describe("prepareOrder merchant", () => {
       }),
     );
     expect(result.ok).toBe(true);
+  });
+});
+
+const THURSDAY = 4 as const;
+
+function thursdayHours(
+  openMinute: number,
+  closeMinute: number,
+): CheckoutOpeningIntervalRecord {
+  return { weekday: THURSDAY, openMinute, closeMinute };
+}
+
+describe("prepareOrder merchant hours", () => {
+  it("allows prepareOrder when the merchant is open by hours", async () => {
+    const result = await prepareOrder(
+      pickupInput(),
+      withCatalog({
+        openings: [thursdayHours(9 * 60, 18 * 60)],
+      }),
+    );
+    expect(result.ok).toBe(true);
+  });
+
+  it("rejects prepareOrder when the merchant is closed by hours", async () => {
+    const result = await prepareOrder(
+      pickupInput(),
+      withCatalog({
+        openings: [thursdayHours(10 * 60, 18 * 60)],
+      }),
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe(CHECKOUT_ERROR_CODES.MERCHANT_CLOSED);
+    expect(result.error.message).toBe(
+      "Este comercio está cerrado en este momento.",
+    );
+  });
+
+  it("rejects PICKUP while the merchant is closed by hours", async () => {
+    await expectCode(
+      pickupInput(),
+      withCatalog({ openings: [thursdayHours(17 * 60, 21 * 60)] }),
+      CHECKOUT_ERROR_CODES.MERCHANT_CLOSED,
+    );
+  });
+
+  it("rejects MERCHANT_DELIVERY while the merchant is closed by hours", async () => {
+    await expectCode(
+      deliveryInput(),
+      withCatalog({ openings: [thursdayHours(17 * 60, 21 * 60)] }),
+      CHECKOUT_ERROR_CODES.MERCHANT_CLOSED,
+    );
+  });
+
+  it("still rejects a paused merchant with MERCHANT_NOT_ACCEPTING", async () => {
+    await expectCode(
+      pickupInput(),
+      withCatalog({
+        merchant: merchant({
+          pausedUntil: new Date("2026-08-13T13:00:00.000Z"),
+        }),
+        openings: [thursdayHours(9 * 60, 18 * 60)],
+      }),
+      CHECKOUT_ERROR_CODES.MERCHANT_NOT_ACCEPTING,
+    );
+  });
+
+  it("still rejects acceptingOrders=false with MERCHANT_NOT_ACCEPTING", async () => {
+    await expectCode(
+      pickupInput(),
+      withCatalog({
+        merchant: merchant({ acceptingOrders: false }),
+        openings: [thursdayHours(9 * 60, 18 * 60)],
+      }),
+      CHECKOUT_ERROR_CODES.MERCHANT_NOT_ACCEPTING,
+    );
+  });
+
+  it("opens at the local open minute and closes at the local close minute", async () => {
+    const openAtOpenMinute = await prepareOrder(
+      pickupInput(),
+      withCatalog({ openings: [thursdayHours(9 * 60, 18 * 60)] }),
+    );
+    expect(openAtOpenMinute.ok).toBe(true);
+
+    const closedAtCloseMinute = await prepareOrder(
+      pickupInput(),
+      withCatalog({ openings: [thursdayHours(8 * 60, 9 * 60)] }),
+    );
+    expect(closedAtCloseMinute.ok).toBe(false);
+    if (!closedAtCloseMinute.ok) {
+      expect(closedAtCloseMinute.error.code).toBe(
+        CHECKOUT_ERROR_CODES.MERCHANT_CLOSED,
+      );
+    }
+  });
+
+  it("evaluates hours in the merchant city timezone, not UTC", async () => {
+    const openInCatamarca = await prepareOrder(
+      pickupInput(),
+      withCatalog({
+        merchant: merchant({ cityTimezone: CITY_TIMEZONE }),
+        openings: [thursdayHours(9 * 60, 18 * 60)],
+      }),
+    );
+    expect(openInCatamarca.ok).toBe(true);
+
+    const closedInLosAngeles = await prepareOrder(
+      pickupInput(),
+      withCatalog({
+        merchant: merchant({ cityTimezone: "America/Los_Angeles" }),
+        openings: [thursdayHours(9 * 60, 18 * 60)],
+      }),
+    );
+    expect(closedInLosAngeles.ok).toBe(false);
+    if (!closedInLosAngeles.ok) {
+      expect(closedInLosAngeles.error.code).toBe(
+        CHECKOUT_ERROR_CODES.MERCHANT_CLOSED,
+      );
+    }
+  });
+
+  it("keeps existing behavior when no hours are configured", async () => {
+    const result = await prepareOrder(
+      pickupInput(),
+      withCatalog({ openings: [] }),
+    );
+    expect(result.ok).toBe(true);
+  });
+
+  it("does not invent closed when timezone cannot be resolved", async () => {
+    const result = await prepareOrder(
+      pickupInput(),
+      withCatalog({
+        merchant: merchant({ cityTimezone: "Not/AZone" }),
+        openings: [thursdayHours(10 * 60, 18 * 60)],
+      }),
+    );
+    expect(result.ok).toBe(true);
+  });
+
+  it("rejects checkout when public hours present Cerrado", async () => {
+    const intervals = [
+      {
+        merchantId: MERCHANT_ID,
+        weekday: THURSDAY,
+        openMinute: 17 * 60,
+        closeMinute: 21 * 60,
+      },
+    ];
+    const presentation = getPublicHoursPresentation({
+      intervals,
+      timezone: CITY_TIMEZONE,
+      now: NOW,
+    });
+    expect(presentation?.label).toBe("Cerrado");
+
+    const result = await prepareOrder(
+      pickupInput(),
+      withCatalog({
+        openings: intervals.map((interval) => ({
+          weekday: interval.weekday,
+          openMinute: interval.openMinute,
+          closeMinute: interval.closeMinute,
+        })),
+      }),
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe(CHECKOUT_ERROR_CODES.MERCHANT_CLOSED);
+    expect(result.error.message).toBe(
+      "Este comercio está cerrado en este momento.",
+    );
   });
 });
 

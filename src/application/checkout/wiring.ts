@@ -17,6 +17,7 @@ import {
 import {
   findMerchantForCheckout,
   listDeliveryZonesForCheckout,
+  listOpeningIntervalsForCheckout,
   listOptionChoicesForGroupsCheckout,
   listOptionGroupsForProductsCheckout,
   listPaymentMethodsForCheckout,
@@ -32,6 +33,7 @@ function prepareDeps() {
     listOptionChoicesForGroups: listOptionChoicesForGroupsCheckout,
     listPaymentMethodsForMerchant: listPaymentMethodsForCheckout,
     listDeliveryZonesForMerchant: listDeliveryZonesForCheckout,
+    listOpeningIntervals: listOpeningIntervalsForCheckout,
   };
 }
 

@@ -8,6 +8,8 @@ const MESSAGES: Record<string, string> = {
   [CHECKOUT_ERROR_CODES.MERCHANT_NOT_FOUND]: "El comercio no existe.",
   [CHECKOUT_ERROR_CODES.MERCHANT_NOT_ACCEPTING]:
     "Este comercio no está tomando pedidos en este momento.",
+  [CHECKOUT_ERROR_CODES.MERCHANT_CLOSED]:
+    "Este comercio está cerrado en este momento.",
   [CHECKOUT_ERROR_CODES.EMPTY_CART]: "El carrito está vacío.",
   [CHECKOUT_ERROR_CODES.INVALID_LINE]: "Hay un producto con datos inválidos.",
   [CHECKOUT_ERROR_CODES.PRODUCT_NOT_FOUND]:

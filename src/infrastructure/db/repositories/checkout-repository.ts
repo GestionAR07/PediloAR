@@ -4,6 +4,7 @@ import { asc, eq, inArray } from "drizzle-orm";
 import type {
   CheckoutDeliveryZoneRecord,
   CheckoutMerchantRecord,
+  CheckoutOpeningIntervalRecord,
   CheckoutOptionChoiceRecord,
   CheckoutOptionGroupRecord,
   CheckoutPaymentMethodRecord,
@@ -13,6 +14,7 @@ import { getDb } from "../client";
 import {
   cities,
   merchantDeliveryZones,
+  merchantOpeningIntervals,
   merchantPaymentMethods,
   merchants,
   productOptionChoices,
@@ -43,6 +45,7 @@ export async function findMerchantForCheckout(
       platformDeliveryEnabled: merchants.platformDeliveryEnabled,
       acceptingOrders: merchants.acceptingOrders,
       pausedUntil: merchants.pausedUntil,
+      cityTimezone: cities.timezone,
       preparationMinutes: merchants.preparationMinutes,
     })
     .from(merchants)
@@ -180,4 +183,22 @@ export async function listDeliveryZonesForCheckout(
     deliveryFeeCents: Number(row.deliveryFeeCents),
     minimumOrderCents: Number(row.minimumOrderCents),
   }));
+}
+
+export async function listOpeningIntervalsForCheckout(
+  merchantId: string,
+): Promise<CheckoutOpeningIntervalRecord[]> {
+  const db = getDb();
+  return db
+    .select({
+      weekday: merchantOpeningIntervals.weekday,
+      openMinute: merchantOpeningIntervals.openMinute,
+      closeMinute: merchantOpeningIntervals.closeMinute,
+    })
+    .from(merchantOpeningIntervals)
+    .where(eq(merchantOpeningIntervals.merchantId, merchantId))
+    .orderBy(
+      asc(merchantOpeningIntervals.weekday),
+      asc(merchantOpeningIntervals.openMinute),
+    );
 }

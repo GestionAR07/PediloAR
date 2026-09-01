@@ -12,7 +12,10 @@ import { moneyCents, type MoneyCents } from "@/domain/money/money-cents";
 import { PAYMENT_METHOD_CODES } from "@/domain/merchant/enums";
 import { resolveMerchantDeliveryForZone } from "@/domain/merchant/delivery-zone";
 import { isMerchantOperationallyAcceptingOrders } from "@/domain/merchant/operational-availability";
-import type { MerchantDeliveryZone } from "@/domain/merchant/types";
+import type {
+  MerchantDeliveryZone,
+  MerchantOpeningInterval,
+} from "@/domain/merchant/types";
 import {
   parseCustomerNameSnapshot,
   parseCustomerPhoneSnapshot,
@@ -27,6 +30,7 @@ import {
 import { parseIdempotencyKey } from "@/domain/order/idempotency";
 import { isDomainError } from "@/domain/shared/errors";
 import { err, ok, type Result } from "@/domain/shared/result";
+import { getMerchantHoursOpenState } from "@/lib/public-hours";
 import { isValidUuid } from "@/lib/uuid";
 import {
   checkoutError,
@@ -37,6 +41,7 @@ import { buildOrderIntentFingerprint } from "./intent-fingerprint";
 import type {
   CheckoutOptionChoiceRecord,
   CheckoutOptionGroupRecord,
+  CheckoutOpeningIntervalRecord,
   CheckoutProductRecord,
   PrepareOrderDeps,
   PrepareOrderGroupInput,
@@ -181,6 +186,18 @@ function prepareLineOptions(
   return ok(snapshots);
 }
 
+function toDomainOpeningIntervals(
+  merchantId: string,
+  rows: readonly CheckoutOpeningIntervalRecord[],
+): MerchantOpeningInterval[] {
+  return rows.map((row) => ({
+    merchantId,
+    weekday: row.weekday as MerchantOpeningInterval["weekday"],
+    openMinute: row.openMinute,
+    closeMinute: row.closeMinute,
+  }));
+}
+
 /**
  * Builds an authoritative order draft from untrusted checkout input.
  * Does not persist, decrement stock, or create Delivery / OrderEvent.
@@ -269,14 +286,16 @@ export async function prepareOrder(
   const uniqueProductIds = [
     ...new Set(input.lines.map((line) => line.productId)),
   ];
-  const [merchant, payments, products, zoneRows] = await Promise.all([
-    deps.findMerchantById(input.merchantId),
-    deps.listPaymentMethodsForMerchant(input.merchantId),
-    deps.listProductsByIds(uniqueProductIds),
-    fulfillmentMethod === "MERCHANT_DELIVERY"
-      ? deps.listDeliveryZonesForMerchant(input.merchantId)
-      : Promise.resolve([]),
-  ]);
+  const [merchant, payments, products, zoneRows, openingRows] =
+    await Promise.all([
+      deps.findMerchantById(input.merchantId),
+      deps.listPaymentMethodsForMerchant(input.merchantId),
+      deps.listProductsByIds(uniqueProductIds),
+      fulfillmentMethod === "MERCHANT_DELIVERY"
+        ? deps.listDeliveryZonesForMerchant(input.merchantId)
+        : Promise.resolve([]),
+      deps.listOpeningIntervals(input.merchantId),
+    ]);
 
   if (!merchant) {
     return fail(
@@ -285,6 +304,7 @@ export async function prepareOrder(
     );
   }
 
+  const now = deps.now();
   if (
     !isMerchantOperationallyAcceptingOrders(
       {
@@ -292,12 +312,25 @@ export async function prepareOrder(
         acceptingOrders: merchant.acceptingOrders,
         pausedUntil: merchant.pausedUntil,
       },
-      deps.now(),
+      now,
     )
   ) {
     return fail(
       CHECKOUT_ERROR_CODES.MERCHANT_NOT_ACCEPTING,
       "El comercio no está tomando pedidos.",
+    );
+  }
+
+  if (
+    getMerchantHoursOpenState({
+      intervals: toDomainOpeningIntervals(merchant.id, openingRows),
+      timezone: merchant.cityTimezone,
+      now,
+    }) === "closed"
+  ) {
+    return fail(
+      CHECKOUT_ERROR_CODES.MERCHANT_CLOSED,
+      "Este comercio está cerrado en este momento.",
     );
   }
 

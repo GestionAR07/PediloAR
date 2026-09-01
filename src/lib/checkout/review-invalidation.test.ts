@@ -134,6 +134,19 @@ describe("stale checkout review invalidation", () => {
     expect(next.clearFrozen).toBe(true);
   });
 
+  it("clears review when the merchant is closed by hours", () => {
+    const next = applyCheckoutActionFailure(
+      { review: review(), attempt: attempt() },
+      {
+        code: CHECKOUT_ERROR_CODES.MERCHANT_CLOSED,
+        message: "Este comercio está cerrado en este momento.",
+      },
+    );
+    expect(next.review).toBeNull();
+    expect(next.attempt.quoteFingerprint).toBeNull();
+    expect(confirmVisible(next)).toBe(false);
+  });
+
   it("clears review when the merchant is paused", () => {
     const next = applyCheckoutActionFailure(
       { review: review(), attempt: attempt() },

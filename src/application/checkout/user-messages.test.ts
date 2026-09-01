@@ -12,6 +12,9 @@ describe("checkout user messages", () => {
     expect(
       checkoutUserMessage(CHECKOUT_ERROR_CODES.MERCHANT_NOT_ACCEPTING),
     ).toBe("Este comercio no está tomando pedidos en este momento.");
+    expect(checkoutUserMessage(CHECKOUT_ERROR_CODES.MERCHANT_CLOSED)).toBe(
+      "Este comercio está cerrado en este momento.",
+    );
     expect(
       checkoutUserMessage(
         CHECKOUT_ERROR_CODES.DELIVERY_MINIMUM_NOT_MET,
