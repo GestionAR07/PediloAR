@@ -19,6 +19,8 @@ export const E2E_DEV_WRITE_ABORT = {
     "E2E WRITE_DEV guard: DATABASE_URL cannot be proven to belong to the authorized DEV Supabase project.",
 } as const;
 
+const SUPABASE_POOLER_HOST_PATTERN = /(^|\.)pooler\.supabase\.com$/i;
+
 function assertLoopbackAppBase(appBaseUrl: string): void {
   let parsed: URL;
   try {
@@ -43,6 +45,10 @@ function deriveDatabaseProjectRef(databaseUrl: string): string | null {
     return null;
   }
 
+  if (parsed.protocol !== "postgres:" && parsed.protocol !== "postgresql:") {
+    return null;
+  }
+
   const hostnameIdentity = extractSupabaseProjectRefFromDatabaseHostname(
     parsed.hostname,
   );
@@ -51,9 +57,9 @@ function deriveDatabaseProjectRef(databaseUrl: string): string | null {
   }
 
   // Supabase transaction/session poolers identify the project in the username
-  // (`postgres.<project-ref>`). A generic/unknown pooler URL is not enough for
-  // WRITE_DEV: fail closed rather than guessing which project owns the DB.
-  if (parsed.hostname.toLowerCase().endsWith("pooler.supabase.com")) {
+  // (`postgres.<project-ref>`). Only an actual *.pooler.supabase.com host is
+  // accepted; lookalike or generic hosts fail closed.
+  if (SUPABASE_POOLER_HOST_PATTERN.test(parsed.hostname)) {
     const username = decodeURIComponent(parsed.username);
     const match = /^postgres\.([a-z0-9]{8,64})$/i.exec(username);
     return match?.[1]?.toLowerCase() ?? null;
