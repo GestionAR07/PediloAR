@@ -129,7 +129,7 @@ test.describe("WRITE_DEV buyer adversarial checkout", () => {
       );
       await expect(confirmButton(page)).toHaveCount(0);
       await expect(
-        page.getByRole("link", { name: "Volver al carrito" }),
+        page.getByRole("link", { name: "Volver al carrito", exact: true }),
       ).toBeVisible();
       await expect
         .poll(async () => (await ordersForBuyer(fixture)).length)
