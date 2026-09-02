@@ -46,7 +46,11 @@ export class E2eCreatedResourceRegistry {
     if (!id) {
       throw new Error("E2E resource scope: resource id is required.");
     }
-    if (this.#resources.some((current) => current.kind === resource.kind && current.id === id)) {
+    if (
+      this.#resources.some(
+        (current) => current.kind === resource.kind && current.id === id,
+      )
+    ) {
       return;
     }
     this.#resources.push({ ...resource, id });
