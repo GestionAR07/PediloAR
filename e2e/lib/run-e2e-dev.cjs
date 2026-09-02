@@ -45,7 +45,9 @@ const result = spawnSync(command, args, {
 });
 
 if (result.error) {
-  console.error(`E2E WRITE_DEV runner failed to start: ${result.error.message}`);
+  console.error(
+    `E2E WRITE_DEV runner failed to start: ${result.error.message}`,
+  );
   process.exit(1);
 }
 
