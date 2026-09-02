@@ -43,7 +43,9 @@ async function loginAndReviewPickupOrder(
       .getByRole("button", { name: `Aumentar ${fixture.product.name}` })
       .click();
   }
-  await expect(cartLine.locator(".cart-qty-value")).toHaveText(String(quantity));
+  await expect(cartLine.locator(".cart-qty-value")).toHaveText(
+    String(quantity),
+  );
   await page.getByRole("link", { name: "Continuar" }).click();
 
   await expect(
@@ -71,7 +73,9 @@ async function loginAndReviewPickupOrder(
   const reviewButton = page.getByRole("button", { name: "Revisar pedido" });
   await expect(reviewButton).toBeEnabled();
   await reviewButton.click();
-  await expect(page.getByText("Pedido revisado", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Pedido revisado", { exact: true }),
+  ).toBeVisible();
 }
 
 function confirmButton(page: Page) {
@@ -120,8 +124,12 @@ test.describe("WRITE_DEV buyer adversarial checkout", () => {
         INSUFFICIENT_STOCK_MESSAGE,
       );
       await expect(confirmButton(page)).toHaveCount(0);
-      await expect(page.getByRole("link", { name: "Volver al carrito" })).toBeVisible();
-      await expect.poll(async () => (await ordersForBuyer(fixture)).length).toBe(0);
+      await expect(
+        page.getByRole("link", { name: "Volver al carrito" }),
+      ).toBeVisible();
+      await expect
+        .poll(async () => (await ordersForBuyer(fixture)).length)
+        .toBe(0);
 
       const [product] = await fixture.sql<{ stock_quantity: number | null }[]>`
         select stock_quantity
@@ -168,7 +176,9 @@ test.describe("WRITE_DEV buyer adversarial checkout", () => {
       await firstConfirm.click();
 
       await expect(page.getByRole("alert")).toContainText(REQUOTE_MESSAGE);
-      await expect.poll(async () => (await ordersForBuyer(fixture)).length).toBe(0);
+      await expect
+        .poll(async () => (await ordersForBuyer(fixture)).length)
+        .toBe(0);
 
       const secondConfirm = confirmButton(page);
       await expect(secondConfirm).toBeEnabled();
@@ -180,7 +190,10 @@ test.describe("WRITE_DEV buyer adversarial checkout", () => {
       const trackingLink = page.getByRole("link", { name: "Seguir mi pedido" });
       const href = await trackingLink.getAttribute("href");
       const match = href?.match(/^\/cuenta\/pedidos\/([0-9a-f-]{36})$/i);
-      expect(match, "success screen must expose the exact created order id").toBeTruthy();
+      expect(
+        match,
+        "success screen must expose the exact created order id",
+      ).toBeTruthy();
       const orderId = match![1]!;
       fixture.registerOrder(orderId);
 
