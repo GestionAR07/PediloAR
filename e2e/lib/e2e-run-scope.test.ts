@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  E2eCreatedResourceRegistry,
-  e2eRunMarker,
-} from "./e2e-run-scope";
+import { E2eCreatedResourceRegistry, e2eRunMarker } from "./e2e-run-scope";
 
 describe("E2eCreatedResourceRegistry", () => {
   it("uses an explicit E2E marker and tracks exact created resource IDs", () => {
