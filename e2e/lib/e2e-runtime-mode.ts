@@ -1,6 +1,4 @@
-import type {
-  EnvLike,
-} from "../../src/application/checkout/real-order-lifecycle-guards";
+import type { EnvLike } from "../../src/application/checkout/real-order-lifecycle-guards";
 import { e2eWebServerEnv } from "./assert-safe-e2e-target";
 import {
   assertE2eDevWriteAllowed,
