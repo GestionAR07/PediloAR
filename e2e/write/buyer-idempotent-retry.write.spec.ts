@@ -110,9 +110,10 @@ test.describe("WRITE_DEV buyer idempotent retry", () => {
       }
 
       const upstream = await route.fetch();
-      expect(upstream.ok(), "the swallowed place-order request must reach the app").toBe(
-        true,
-      );
+      expect(
+        upstream.ok(),
+        "the swallowed place-order request must reach the app",
+      ).toBe(true);
       swallowedPlaceResponse = true;
       await route.abort("failed");
     };
@@ -187,7 +188,9 @@ test.describe("WRITE_DEV buyer idempotent retry", () => {
       `;
       expect(events).toHaveLength(1);
     } finally {
-      await page.unroute("**/checkout", lostResponseHandler).catch(() => undefined);
+      await page
+        .unroute("**/checkout", lostResponseHandler)
+        .catch(() => undefined);
       await fixture.cleanup();
     }
   });
