@@ -243,7 +243,7 @@ test.describe("WRITE_DEV merchant Realtime and pickup lifecycle", () => {
       ]);
       expect(events[0]?.actor_type).toBe("CUSTOMER");
       for (const event of events.slice(1)) {
-        expect(event.actor_type).toBe("MERCHANT");
+        expect(event.actor_type).toBe("MERCHANT_USER");
         expect(event.actor_id).toBe(operator.userId);
       }
 
