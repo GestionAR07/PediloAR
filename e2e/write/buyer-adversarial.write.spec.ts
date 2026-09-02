@@ -84,6 +84,10 @@ function confirmButton(page: Page) {
     .getByRole("button", { name: "Confirmar pedido" });
 }
 
+function checkoutErrorAlert(page: Page) {
+  return page.locator('p.checkout-alert[role="alert"]');
+}
+
 async function ordersForBuyer(fixture: DevBuyerFixture) {
   return fixture.sql<{ id: string }[]>`
     select id
@@ -120,7 +124,7 @@ test.describe("WRITE_DEV buyer adversarial checkout", () => {
       await expect(confirm).toBeEnabled();
       await confirm.click();
 
-      await expect(page.getByRole("alert")).toContainText(
+      await expect(checkoutErrorAlert(page)).toContainText(
         INSUFFICIENT_STOCK_MESSAGE,
       );
       await expect(confirmButton(page)).toHaveCount(0);
@@ -175,7 +179,7 @@ test.describe("WRITE_DEV buyer adversarial checkout", () => {
       await expect(firstConfirm).toBeEnabled();
       await firstConfirm.click();
 
-      await expect(page.getByRole("alert")).toContainText(REQUOTE_MESSAGE);
+      await expect(checkoutErrorAlert(page)).toContainText(REQUOTE_MESSAGE);
       await expect
         .poll(async () => (await ordersForBuyer(fixture)).length)
         .toBe(0);
