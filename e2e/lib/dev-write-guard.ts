@@ -1,5 +1,7 @@
 import {
   assertDevEnvironmentIdentity,
+  extractSupabaseProjectRefFromApiUrl,
+  extractSupabaseProjectRefFromDatabaseHostname,
   type EnvLike,
 } from "../../src/application/checkout/real-order-lifecycle-guards";
 import { isLoopbackHostname } from "./assert-safe-e2e-target";
@@ -13,6 +15,8 @@ export const E2E_DEV_WRITE_ABORT = {
     "E2E WRITE_DEV guard: missing explicit E2E_ALLOW_WRITES confirmation.",
   appBase:
     "E2E WRITE_DEV guard: write-capable browser tests require a loopback app target.",
+  databaseIdentity:
+    "E2E WRITE_DEV guard: DATABASE_URL cannot be proven to belong to the authorized DEV Supabase project.",
 } as const;
 
 function assertLoopbackAppBase(appBaseUrl: string): void {
@@ -31,6 +35,44 @@ function assertLoopbackAppBase(appBaseUrl: string): void {
   }
 }
 
+function deriveDatabaseProjectRef(databaseUrl: string): string | null {
+  let parsed: URL;
+  try {
+    parsed = new URL(databaseUrl);
+  } catch {
+    return null;
+  }
+
+  const hostnameIdentity = extractSupabaseProjectRefFromDatabaseHostname(
+    parsed.hostname,
+  );
+  if (hostnameIdentity.kind === "ref") {
+    return hostnameIdentity.ref;
+  }
+
+  // Supabase transaction/session poolers identify the project in the username
+  // (`postgres.<project-ref>`). A generic/unknown pooler URL is not enough for
+  // WRITE_DEV: fail closed rather than guessing which project owns the DB.
+  if (parsed.hostname.toLowerCase().endsWith("pooler.supabase.com")) {
+    const username = decodeURIComponent(parsed.username);
+    const match = /^postgres\.([a-z0-9]{8,64})$/i.exec(username);
+    return match?.[1]?.toLowerCase() ?? null;
+  }
+
+  return null;
+}
+
+function assertDatabaseMatchesAuthorizedDev(env: EnvLike): void {
+  const apiRef = extractSupabaseProjectRefFromApiUrl(
+    env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+  );
+  const databaseRef = deriveDatabaseProjectRef(env.DATABASE_URL ?? "");
+
+  if (!apiRef || !databaseRef || apiRef !== databaseRef) {
+    throw new Error(E2E_DEV_WRITE_ABORT.databaseIdentity);
+  }
+}
+
 /**
  * Explicit authorization gate for browser E2E that may mutate DEV data.
  *
@@ -38,8 +80,10 @@ function assertLoopbackAppBase(appBaseUrl: string): void {
  * - E2E_MODE must explicitly be WRITE_DEV;
  * - a second write sentinel must match exactly;
  * - the browser app must run on loopback (remote WRITE_DEV is forbidden);
- * - the shared DEV identity proof must verify APP_BASE_URL, Supabase project
- *   ref, DATABASE_URL identity where derivable, and non-production env.
+ * - the shared DEV identity proof verifies APP_BASE_URL, the authorized
+ *   Supabase project ref, DATABASE_URL basics, and non-production env;
+ * - WRITE_DEV additionally requires DATABASE_URL's project identity to be
+ *   derivable and to exactly match the authorized Supabase API project.
  *
  * It never logs credentials or project refs.
  */
@@ -66,4 +110,6 @@ export function assertE2eDevWriteAllowed(input: {
   if (!identity.ok) {
     throw new Error(`E2E WRITE_DEV guard: ${identity.message}`);
   }
+
+  assertDatabaseMatchesAuthorizedDev(env);
 }
