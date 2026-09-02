@@ -7,8 +7,7 @@ import {
 
 export const E2E_READ_ONLY_MODE = "READ_ONLY";
 export type E2eRuntimeMode =
-  | typeof E2E_READ_ONLY_MODE
-  | typeof E2E_WRITE_DEV_MODE;
+  typeof E2E_READ_ONLY_MODE | typeof E2E_WRITE_DEV_MODE;
 
 export function resolveE2eRuntimeMode(env: EnvLike): E2eRuntimeMode {
   const raw = env.E2E_MODE?.trim();
