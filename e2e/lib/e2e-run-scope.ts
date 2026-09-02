@@ -62,7 +62,8 @@ export class E2eCreatedResourceRegistry {
 
   clearRegistered(resource: E2eCreatedResource): void {
     const index = this.#resources.findIndex(
-      (current) => current.kind === resource.kind && current.id === resource.id,
+      (current) =>
+        current.kind === resource.kind && current.id === resource.id,
     );
     if (index >= 0) {
       this.#resources.splice(index, 1);
