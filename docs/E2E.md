@@ -29,18 +29,34 @@ The Playwright-started Next server:
 
 ### `WRITE_DEV` — manual/local only
 
-```bash
+The DEV runner loads ordinary development identity/credentials from
+`.env.local` **before** Playwright evaluates its safety preflight. The write
+confirmation itself is deliberately different: it must come from the current
+operator shell and cannot be persistently enabled by `.env.local`.
+
+PowerShell:
+
+```powershell
+$env:E2E_ALLOW_WRITES="I_ACCEPT_E2E_DEV_WRITES"
 npm run e2e:dev
+Remove-Item Env:E2E_ALLOW_WRITES
 ```
 
-`npm run e2e:dev` only sets `E2E_MODE=WRITE_DEV`; that is **not** enough to
+Bash:
+
+```bash
+E2E_ALLOW_WRITES=I_ACCEPT_E2E_DEV_WRITES npm run e2e:dev
+```
+
+`npm run e2e:dev` sets `E2E_MODE=WRITE_DEV`, but that is **not** enough to
 start. The Playwright config executes a fail-closed preflight before its Next
 `webServer` process can be created.
 
 Required conditions:
 
 1. `E2E_MODE=WRITE_DEV` (set by the command above).
-2. `E2E_ALLOW_WRITES=I_ACCEPT_E2E_DEV_WRITES` exactly.
+2. `E2E_ALLOW_WRITES=I_ACCEPT_E2E_DEV_WRITES` exactly, supplied by the current
+   shell invocation/session rather than `.env.local`.
 3. App target is loopback (`localhost`, `127.0.0.1`, or `::1`). Remote
    WRITE_DEV is forbidden.
 4. `NODE_ENV`, `VERCEL_ENV`, and `MARKETPLACE_ENV` are not production.
