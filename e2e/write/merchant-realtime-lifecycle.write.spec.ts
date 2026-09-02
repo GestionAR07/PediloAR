@@ -189,9 +189,7 @@ test.describe("WRITE_DEV merchant Realtime and pickup lifecycle", () => {
         .filter({ hasText: `Pedido #${shortRef}` });
       await expect(toast).toBeVisible({ timeout: 15_000 });
       await expect(toast).toContainText("NUEVO PEDIDO");
-      await expect(toast).toContainText(
-        "Tenés un nuevo pedido para revisar.",
-      );
+      await expect(toast).toContainText("Tenés un nuevo pedido para revisar.");
 
       await toast.getByRole("link", { name: "Ver pedido" }).click();
       await expect(page).toHaveURL(
