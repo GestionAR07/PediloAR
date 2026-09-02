@@ -2,14 +2,21 @@ import { defineConfig } from "@playwright/test";
 import {
   E2E_DEFAULT_ORIGIN,
   assertSafeE2eTarget,
-  e2eWebServerEnv,
   isLoopbackHostname,
 } from "./e2e/lib/assert-safe-e2e-target";
+import {
+  E2E_READ_ONLY_MODE,
+  resolveE2eWebServerRuntime,
+} from "./e2e/lib/e2e-runtime-mode";
 import { E2E_VIEWPORTS } from "./e2e/lib/viewports";
 import { E2E_REUSE_EXISTING_SERVER } from "./e2e/lib/web-server-policy";
 
 const baseURL = process.env.E2E_BASE_URL?.trim() || E2E_DEFAULT_ORIGIN;
 const target = assertSafeE2eTarget(baseURL, process.env);
+const runtime = resolveE2eWebServerRuntime({
+  source: process.env,
+  appBaseUrl: target.origin,
+});
 const isLocalLoopback = isLoopbackHostname(target.hostname);
 const ci = Boolean(process.env.CI);
 const e2ePort = Number(
@@ -20,11 +27,17 @@ const e2ePort = Number(
  * Chromium-only Playwright foundation.
  * Always auto-starts Next on loopback (default http://127.0.0.1:3100).
  * Never reuses an existing server. Firefox / WebKit are not configured.
+ *
+ * WRITE_DEV preflight is evaluated above, before Playwright can start the
+ * write-capable Next webServer. READ_ONLY remains the default.
  */
 export default defineConfig({
   testDir: "./e2e",
   testMatch: "**/*.spec.ts",
-  fullyParallel: true,
+  testIgnore:
+    runtime.mode === E2E_READ_ONLY_MODE ? "**/*.write.spec.ts" : undefined,
+  fullyParallel: runtime.mode === E2E_READ_ONLY_MODE,
+  workers: runtime.mode === E2E_READ_ONLY_MODE ? undefined : 1,
   forbidOnly: ci,
   retries: ci ? 2 : 0,
   reporter: [
@@ -56,7 +69,7 @@ export default defineConfig({
         timeout: 180_000,
         stdout: "pipe",
         stderr: "pipe",
-        env: e2eWebServerEnv(process.env, target.origin),
+        env: runtime.env,
       }
     : undefined,
 });
