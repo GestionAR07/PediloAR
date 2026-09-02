@@ -48,7 +48,9 @@ export type DevBuyerFixture = {
 function requiredEnv(name: string): string {
   const value = process.env[name]?.trim();
   if (!value) {
-    throw new Error(`E2E buyer fixture: missing ${name} after WRITE_DEV preflight.`);
+    throw new Error(
+      `E2E buyer fixture: missing ${name} after WRITE_DEV preflight.`,
+    );
   }
   return value;
 }
@@ -69,7 +71,9 @@ function weekdayInTimezone(now: Date, timezone: string): number {
   };
   const value = weekdays[label];
   if (value == null) {
-    throw new Error("E2E buyer fixture: could not resolve merchant-local weekday.");
+    throw new Error(
+      "E2E buyer fixture: could not resolve merchant-local weekday.",
+    );
   }
   return value;
 }
@@ -83,7 +87,9 @@ async function waitForProfile(sql: Sql, userId: string): Promise<void> {
     if (rows.length === 1) return;
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
-  throw new Error("E2E buyer fixture: user profile trigger did not materialize in time.");
+  throw new Error(
+    "E2E buyer fixture: user profile trigger did not materialize in time.",
+  );
 }
 
 async function deleteOrderByExactId(sql: Sql, orderId: string): Promise<void> {
@@ -122,10 +128,15 @@ async function recoverExactRunOrders(
   return rows.map((row) => row.id);
 }
 
-async function deleteAuthUser(admin: SupabaseClient, userId: string): Promise<void> {
+async function deleteAuthUser(
+  admin: SupabaseClient,
+  userId: string,
+): Promise<void> {
   const { error } = await admin.auth.admin.deleteUser(userId);
   if (error) {
-    throw new Error(`E2E buyer fixture: auth cleanup failed (${error.message}).`);
+    throw new Error(
+      `E2E buyer fixture: auth cleanup failed (${error.message}).`,
+    );
   }
 }
 
@@ -188,7 +199,9 @@ export async function createDevBuyerFixture(options?: {
           select id from products where id = ${productId}
         `;
         if (rows.length !== 0) {
-          throw new Error("E2E buyer fixture: product cleanup verification failed.");
+          throw new Error(
+            "E2E buyer fixture: product cleanup verification failed.",
+          );
         }
         registry.clearRegistered({ kind: "product", id: productId });
       }
@@ -207,7 +220,9 @@ export async function createDevBuyerFixture(options?: {
           select id from user_profiles where id = ${authUserId}
         `;
         if (profiles.length !== 0) {
-          throw new Error("E2E buyer fixture: profile cleanup verification failed.");
+          throw new Error(
+            "E2E buyer fixture: profile cleanup verification failed.",
+          );
         }
         registry.clearRegistered({ kind: "auth_user", id: authUserId });
       }
@@ -247,7 +262,9 @@ export async function createDevBuyerFixture(options?: {
       limit 1
     `;
     if (!categories[0]) {
-      throw new Error("E2E buyer fixture: active merchant category is required.");
+      throw new Error(
+        "E2E buyer fixture: active merchant category is required.",
+      );
     }
 
     const payments = await sql<PaymentRow[]>`
