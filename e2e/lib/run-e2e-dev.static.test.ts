@@ -11,7 +11,7 @@ describe("WRITE_DEV launcher", () => {
     expect(source).toContain('"test",');
     expect(source).toContain('"cli.js",');
     expect(source).toContain("spawnSync(process.execPath, args");
-    expect(source).not.toContain("npx.cmd");
+    expect(source).not.toContain("spawnSync(command, args");
     expect(source).not.toContain("shell: true");
   });
 });
