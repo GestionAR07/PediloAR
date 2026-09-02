@@ -71,8 +71,16 @@ function hostLooksLikeProduction(hostname: string): boolean {
     .some((label) => label === "prod" || label === "production");
 }
 
+function normalizeLocalHostname(hostname: string): string {
+  return hostname
+    .trim()
+    .toLowerCase()
+    .replace(/^\[|\]$/g, "");
+}
+
 function isLocalHostname(hostname: string): boolean {
-  return hostname === "localhost" || hostname === "127.0.0.1";
+  const host = normalizeLocalHostname(hostname);
+  return host === "localhost" || host === "127.0.0.1" || host === "::1";
 }
 
 function normalizeProjectRef(raw: string): string | null {
