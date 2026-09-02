@@ -30,7 +30,9 @@ describe("real order lifecycle harness guards", () => {
     );
 
     const vitest = read("vitest.config.ts");
-    expect(vitest).toContain('include: ["src/**/*.{test,spec}.{ts,tsx}"]');
+    expect(vitest).toContain('"src/**/*.{test,spec}.{ts,tsx}"');
+    expect(vitest).toContain('"e2e/lib/**/*.test.ts"');
+    expect(vitest).not.toContain("scripts/validate-real-order-lifecycle");
 
     const entry = read("scripts/validate-real-order-lifecycle.ts");
     const run = read("scripts/validate-real-order-lifecycle-run.ts");

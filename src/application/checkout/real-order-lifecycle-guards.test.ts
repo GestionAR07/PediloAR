@@ -129,6 +129,14 @@ describe("assertLifecycleHarnessGuards", () => {
     expect(result).toEqual({ ok: true });
   });
 
+  it("accepts IPv6 loopback APP_BASE_URL", () => {
+    const result = assertLifecycleHarnessGuards({
+      argv: confirmArgv,
+      env: allowedEnv({ APP_BASE_URL: "http://[::1]:3001" }),
+    });
+    expect(result).toEqual({ ok: true });
+  });
+
   it("aborts production env even when the project ref matches", () => {
     const result = assertLifecycleHarnessGuards({
       argv: confirmArgv,
