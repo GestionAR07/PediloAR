@@ -1,12 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 export type E2eResourceKind =
-  | "auth_user"
-  | "merchant"
-  | "product"
-  | "order"
-  | "delivery"
-  | "other";
+  "auth_user" | "merchant" | "product" | "order" | "delivery" | "other";
 
 export type E2eCreatedResource = {
   kind: E2eResourceKind;
@@ -62,8 +57,7 @@ export class E2eCreatedResourceRegistry {
 
   clearRegistered(resource: E2eCreatedResource): void {
     const index = this.#resources.findIndex(
-      (current) =>
-        current.kind === resource.kind && current.id === resource.id,
+      (current) => current.kind === resource.kind && current.id === resource.id,
     );
     if (index >= 0) {
       this.#resources.splice(index, 1);
