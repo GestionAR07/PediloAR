@@ -380,8 +380,15 @@ export async function createDevBuyerFixture(options?: {
       },
       cleanup,
     };
-  } catch (error) {
-    await cleanup().catch(() => undefined);
-    throw error;
+  } catch (setupError) {
+    try {
+      await cleanup();
+    } catch (cleanupError) {
+      throw new AggregateError(
+        [setupError, cleanupError],
+        "E2E buyer fixture: setup failed and cleanup also failed.",
+      );
+    }
+    throw setupError;
   }
 }
