@@ -14,7 +14,7 @@
     "e2e:headed": "playwright test --headed",
     "e2e:ui": "playwright test --ui",
     "format": "prettier --write .",
-    "format:check": "prettier --write e2e/lib/dev-buyer-fixture.ts e2e/write/buyer-adversarial.write.spec.ts && git diff -- e2e/lib/dev-buyer-fixture.ts e2e/write/buyer-adversarial.write.spec.ts && prettier --check .",
+    "format:check": "prettier --check .",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:check": "drizzle-kit check",
