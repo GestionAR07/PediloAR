@@ -1,5 +1,7 @@
 "use strict";
 
+/* eslint-disable @typescript-eslint/no-require-imports -- CJS E2E launcher */
+
 const { spawnSync } = require("node:child_process");
 
 const command = process.platform === "win32" ? "npx.cmd" : "npx";
