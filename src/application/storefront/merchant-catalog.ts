@@ -6,7 +6,10 @@ import type { MerchantStatus } from "@/domain/merchant/enums";
 import type { MerchantOpeningInterval } from "@/domain/merchant/types";
 import { moneyCents } from "@/domain/money/money-cents";
 import { formatMoneyCentsArs } from "@/lib/format-money";
-import { getPublicHoursPresentation } from "@/lib/public-hours";
+import {
+  getMerchantHoursOpenState,
+  getPublicHoursPresentation,
+} from "@/lib/public-hours";
 import { getPublicMerchantAvailabilityPresentation } from "@/lib/public-merchant-availability";
 import {
   getPublicOptionGroupHint,
@@ -194,6 +197,11 @@ export async function getPublicMerchantCatalog(
     openMinute: row.openMinute,
     closeMinute: row.closeMinute,
   }));
+  const hoursOpenState = getMerchantHoursOpenState({
+    intervals,
+    timezone: merchant.cityTimezone,
+    now,
+  });
   const hours = getPublicHoursPresentation({
     intervals,
     timezone: merchant.cityTimezone,
@@ -236,7 +244,14 @@ export async function getPublicMerchantCatalog(
     groupsByProduct.set(group.productId, list);
   }
 
-  const merchantAcceptingOrders = availability.tone === "available";
+  const merchantAcceptingOrders =
+    availability.tone === "available" && hoursOpenState !== "closed";
+  const merchantUnavailableLabel =
+    availability.tone !== "available"
+      ? availability.label
+      : hoursOpenState === "closed"
+        ? "Cerrado"
+        : null;
 
   const productCards: PublicProductCard[] = visibleProducts.map((product) => {
     const purchase = getPublicProductPurchasePresentation(product);
@@ -253,7 +268,7 @@ export async function getPublicMerchantCatalog(
       canAddToCart: purchase.sellable && merchantAcceptingOrders,
       statusLabel:
         purchase.statusLabel ??
-        (!merchantAcceptingOrders ? availability.label : null),
+        (!merchantAcceptingOrders ? merchantUnavailableLabel : null),
       stockMode: product.stockMode,
       stockQuantity: product.stockQuantity,
       imageUrl: product.imagePath
