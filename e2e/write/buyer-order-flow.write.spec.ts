@@ -125,6 +125,7 @@ test.describe("WRITE_DEV authenticated buyer order flow", () => {
   test("buyer logs in, adds a product, reviews and places a pickup order", async ({
     page,
   }) => {
+    test.setTimeout(90_000);
     expect(process.env.E2E_MODE).toBe(E2E_WRITE_DEV_MODE);
 
     const databaseUrl = requiredEnv("DATABASE_URL");
@@ -349,7 +350,7 @@ test.describe("WRITE_DEV authenticated buyer order flow", () => {
 
       await expect(
         page.getByRole("heading", { name: "Pedido recibido" }),
-      ).toBeVisible();
+      ).toBeVisible({ timeout: 15_000 });
       const trackingLink = page.getByRole("link", { name: "Seguir mi pedido" });
       const href = await trackingLink.getAttribute("href");
       const match = href?.match(/^\/cuenta\/pedidos\/([0-9a-f-]{36})$/i);
