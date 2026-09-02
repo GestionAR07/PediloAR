@@ -32,14 +32,32 @@ if (explicitWriteConfirmation === undefined) {
   process.env.E2E_ALLOW_WRITES = explicitWriteConfirmation;
 }
 
-const command = process.platform === "win32" ? "npx.cmd" : "npx";
-const args = ["playwright", "test", ...process.argv.slice(2)];
+// Invoke Playwright through Node instead of spawning `npx.cmd` directly.
+// Node 24 on Windows can reject direct .cmd execution with spawnSync EINVAL.
+// The CLI path is fixed inside this project's direct @playwright/test dependency,
+// so no shell is involved and forwarded Playwright args are not shell-expanded.
+const playwrightCli = path.resolve(
+  process.cwd(),
+  "node_modules",
+  "@playwright",
+  "test",
+  "cli.js",
+);
+
+if (!existsSync(playwrightCli)) {
+  console.error(
+    "E2E WRITE_DEV runner: Playwright CLI is missing. Run npm ci first.",
+  );
+  process.exit(1);
+}
+
+const args = [playwrightCli, "test", ...process.argv.slice(2)];
 const env = {
   ...process.env,
   E2E_MODE: "WRITE_DEV",
 };
 
-const result = spawnSync(command, args, {
+const result = spawnSync(process.execPath, args, {
   stdio: "inherit",
   env,
 });
