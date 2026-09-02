@@ -1,4 +1,9 @@
-import { test as base, expect, type BrowserContext } from "@playwright/test";
+import {
+  test as base,
+  expect,
+  type Browser,
+  type BrowserContext,
+} from "@playwright/test";
 import { assertSafeNavigatedUrl } from "./lib/assert-safe-e2e-target";
 
 const navigationGuardErrors = new WeakMap<BrowserContext, Error>();
@@ -27,6 +32,19 @@ async function installContextNavigationGuard(
     }
     await route.continue();
   });
+}
+
+/**
+ * Secondary contexts created manually do not inherit Playwright's context
+ * fixture. This helper keeps the same navigation guard in multi-user E2E flows.
+ */
+export async function createGuardedBrowserContext(input: {
+  browser: Browser;
+  baseURL: string;
+}): Promise<BrowserContext> {
+  const context = await input.browser.newContext({ baseURL: input.baseURL });
+  await installContextNavigationGuard(context);
+  return context;
 }
 
 /**
