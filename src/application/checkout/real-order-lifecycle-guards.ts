@@ -1,5 +1,5 @@
 /**
- * Pre-write safety gates for the real Postgres order-lifecycle harness.
+ * Pre-write safety gates for real DEV-only mutation harnesses.
  * Pure: no database I/O, no secret logging, no project-ref echo.
  */
 
@@ -128,16 +128,14 @@ export function extractSupabaseProjectRefFromDatabaseHostname(
   return { kind: "unknown" };
 }
 
-export function assertLifecycleHarnessGuards(input: {
-  argv: readonly string[];
-  env: EnvLike;
-}): LifecycleHarnessGuardResult {
-  const { argv, env } = input;
-
-  if (!hasLifecycleConfirmToken(argv, env)) {
-    return abort(LIFECYCLE_HARNESS_ABORT.confirm);
-  }
-
+/**
+ * Shared DEV-environment identity proof for any mutation harness.
+ * It deliberately does not authorize writes by itself: each caller must
+ * require its own explicit confirmation token before calling this function.
+ */
+export function assertDevEnvironmentIdentity(
+  env: EnvLike,
+): LifecycleHarnessGuardResult {
   if (
     env.NODE_ENV === "production" ||
     env.VERCEL_ENV === "production" ||
@@ -196,4 +194,17 @@ export function assertLifecycleHarnessGuards(input: {
   }
 
   return { ok: true };
+}
+
+export function assertLifecycleHarnessGuards(input: {
+  argv: readonly string[];
+  env: EnvLike;
+}): LifecycleHarnessGuardResult {
+  const { argv, env } = input;
+
+  if (!hasLifecycleConfirmToken(argv, env)) {
+    return abort(LIFECYCLE_HARNESS_ABORT.confirm);
+  }
+
+  return assertDevEnvironmentIdentity(env);
 }
