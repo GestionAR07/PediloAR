@@ -1,9 +1,5 @@
-import type { Page, WebSocket } from "@playwright/test";
-import {
-  createGuardedBrowserContext,
-  expect,
-  test,
-} from "../fixtures";
+import type { BrowserContext, Page, WebSocket } from "@playwright/test";
+import { createGuardedBrowserContext, expect, test } from "../fixtures";
 import { E2E_WRITE_DEV_MODE } from "../lib/dev-write-guard";
 import {
   createDevBuyerFixture,
@@ -173,9 +169,7 @@ test.describe("WRITE_DEV merchant Realtime and pickup lifecycle", () => {
       stock: 5,
     });
     let operator: DevMerchantOperatorFixture | null = null;
-    let buyerContext: Awaited<
-      ReturnType<typeof createGuardedBrowserContext>
-    > | null = null;
+    let buyerContext: BrowserContext | null = null;
 
     try {
       operator = await createDevMerchantOperatorFixture({
@@ -195,7 +189,9 @@ test.describe("WRITE_DEV merchant Realtime and pickup lifecycle", () => {
         .filter({ hasText: `Pedido #${shortRef}` });
       await expect(toast).toBeVisible({ timeout: 15_000 });
       await expect(toast).toContainText("NUEVO PEDIDO");
-      await expect(toast).toContainText("Tenés un nuevo pedido para revisar.");
+      await expect(toast).toContainText(
+        "Tenés un nuevo pedido para revisar.",
+      );
 
       await toast.getByRole("link", { name: "Ver pedido" }).click();
       await expect(page).toHaveURL(
