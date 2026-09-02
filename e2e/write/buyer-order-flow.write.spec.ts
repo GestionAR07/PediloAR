@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import postgres from "postgres";
+import postgres, { type Sql } from "postgres";
 import { expect, test } from "../fixtures";
 import { E2E_WRITE_DEV_MODE } from "../lib/dev-write-guard";
 import { E2eCreatedResourceRegistry } from "../lib/e2e-run-scope";
@@ -66,13 +66,15 @@ function weekdayInTimezone(now: Date, timezone: string): number {
 function requiredEnv(name: string): string {
   const value = process.env[name]?.trim();
   if (!value) {
-    throw new Error(`E2E buyer flow: missing ${name} after WRITE_DEV preflight.`);
+    throw new Error(
+      `E2E buyer flow: missing ${name} after WRITE_DEV preflight.`,
+    );
   }
   return value;
 }
 
 async function deleteOrderByExactId(
-  sql: postgres.Sql,
+  sql: Sql,
   orderId: string,
 ): Promise<void> {
   const items = await sql<{ id: string }[]>`
@@ -86,7 +88,7 @@ async function deleteOrderByExactId(
   if (itemIds.length > 0) {
     await sql`
       delete from order_item_options
-      where order_item_id in ${sql(itemIds)}
+      where order_item_id = any(${itemIds}::uuid[])
     `;
   }
   await sql`delete from order_items where order_id = ${orderId}`;
@@ -95,7 +97,7 @@ async function deleteOrderByExactId(
 }
 
 async function recoverExactRunOrders(
-  sql: postgres.Sql,
+  sql: Sql,
   customerUserId: string,
   merchantId: string,
   startedAt: Date,
@@ -116,7 +118,9 @@ async function deleteAuthUser(
 ): Promise<void> {
   const { error } = await admin.auth.admin.deleteUser(userId);
   if (error) {
-    throw new Error(`E2E buyer flow: auth cleanup failed (${error.message}).`);
+    throw new Error(
+      `E2E buyer flow: auth cleanup failed (${error.message}).`,
+    );
   }
 }
 
@@ -180,7 +184,10 @@ test.describe("WRITE_DEV authenticated buyer order flow", () => {
         order by sort_order, id
         limit 1
       `;
-      expect(categories[0], "DEV fixture requires one active merchant category").toBeTruthy();
+      expect(
+        categories[0],
+        "DEV fixture requires one active merchant category",
+      ).toBeTruthy();
 
       const payments = await sql<PaymentFixture[]>`
         select code
@@ -190,7 +197,10 @@ test.describe("WRITE_DEV authenticated buyer order flow", () => {
         order by sort_order, id
         limit 1
       `;
-      expect(payments[0], "DEV fixture requires one active payment method").toBeTruthy();
+      expect(
+        payments[0],
+        "DEV fixture requires one active payment method",
+      ).toBeTruthy();
 
       const weekday = weekdayInTimezone(new Date(), merchant.timezone);
       const [openingInterval] = await sql<CreatedId[]>`
@@ -278,26 +288,46 @@ test.describe("WRITE_DEV authenticated buyer order flow", () => {
       await page.getByLabel("Email").fill(email);
       await page.getByLabel("Contraseña").fill(password);
       await page.getByRole("button", { name: "Ingresar" }).click();
-      await expect(page).toHaveURL(new RegExp(`/comercios/${merchant.id}(?:\\?.*)?$`));
+      await expect(page).toHaveURL(
+        new RegExp(`/comercios/${merchant.id}(?:\\?.*)?$`),
+      );
 
       await page.getByLabel("Buscar en este comercio").fill(productName);
-      const productCard = page.locator("article").filter({ hasText: productName });
+      const productCard = page
+        .locator("article")
+        .filter({ hasText: productName });
       await expect(productCard).toHaveCount(1);
       await productCard.getByRole("button", { name: "Agregar" }).click();
-      await expect(page.getByRole("status")).toContainText("Agregado al carrito");
+      await expect(page.getByRole("status")).toContainText(
+        "Agregado al carrito",
+      );
 
       await page.goto("/carrito");
-      const cartLine = page.locator(".cart-line-card").filter({ hasText: productName });
+      const cartLine = page
+        .locator(".cart-line-card")
+        .filter({ hasText: productName });
       await expect(cartLine).toHaveCount(1);
-      await cartLine.getByRole("button", { name: `Aumentar ${productName}` }).click();
-      await expect(cartLine.locator(".cart-qty-value")).toHaveText(String(ORDER_QUANTITY));
+      await cartLine
+        .getByRole("button", { name: `Aumentar ${productName}` })
+        .click();
+      await expect(cartLine.locator(".cart-qty-value")).toHaveText(
+        String(ORDER_QUANTITY),
+      );
       await page.getByRole("link", { name: "Continuar" }).click();
 
-      await expect(page.getByRole("heading", { name: "Finalizá tu pedido" })).toBeVisible();
-      await expect(page.locator('input[name="customerName"]')).toHaveValue(displayName);
-      await expect(page.locator('input[name="customerPhone"]')).toHaveValue(phone);
+      await expect(
+        page.getByRole("heading", { name: "Finalizá tu pedido" }),
+      ).toBeVisible();
+      await expect(page.locator('input[name="customerName"]')).toHaveValue(
+        displayName,
+      );
+      await expect(page.locator('input[name="customerPhone"]')).toHaveValue(
+        phone,
+      );
 
-      const pickup = page.locator('input[name="fulfillmentMethod"][value="PICKUP"]');
+      const pickup = page.locator(
+        'input[name="fulfillmentMethod"][value="PICKUP"]',
+      );
       await expect(pickup).toBeVisible();
       await pickup.check();
 
@@ -305,22 +335,31 @@ test.describe("WRITE_DEV authenticated buyer order flow", () => {
       await expect(payment).toBeVisible();
       await payment.check();
 
-      const reviewButton = page.getByRole("button", { name: "Revisar pedido" });
+      const reviewButton = page.getByRole("button", {
+        name: "Revisar pedido",
+      });
       await expect(reviewButton).toBeEnabled();
       await reviewButton.click();
-      await expect(page.getByText("Pedido revisado", { exact: true })).toBeVisible();
+      await expect(
+        page.getByText("Pedido revisado", { exact: true }),
+      ).toBeVisible();
 
       const confirmButton = page
-        .getByRole("button", { name: "Confirmar pedido" })
-        .filter({ visible: true });
+        .locator(".checkout-review-panel")
+        .getByRole("button", { name: "Confirmar pedido" });
       await expect(confirmButton).toBeEnabled();
       await confirmButton.click();
 
-      await expect(page.getByRole("heading", { name: "Pedido recibido" })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Pedido recibido" }),
+      ).toBeVisible();
       const trackingLink = page.getByRole("link", { name: "Seguir mi pedido" });
       const href = await trackingLink.getAttribute("href");
       const match = href?.match(/^\/cuenta\/pedidos\/([0-9a-f-]{36})$/i);
-      expect(match, "success screen must expose the exact created order id").toBeTruthy();
+      expect(
+        match,
+        "success screen must expose the exact created order id",
+      ).toBeTruthy();
       orderId = match![1]!;
       registry.register({ kind: "order", id: orderId });
 
