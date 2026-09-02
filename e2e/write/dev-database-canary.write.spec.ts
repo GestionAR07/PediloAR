@@ -21,7 +21,10 @@ test.describe("WRITE_DEV reversible database canary", () => {
     expect(process.env.E2E_MODE).toBe(E2E_WRITE_DEV_MODE);
 
     const databaseUrl = process.env.DATABASE_URL?.trim();
-    expect(databaseUrl, "WRITE_DEV must provide DATABASE_URL after preflight").toBeTruthy();
+    expect(
+      databaseUrl,
+      "WRITE_DEV must provide DATABASE_URL after preflight",
+    ).toBeTruthy();
 
     const registry = new E2eCreatedResourceRegistry();
     const marker = registry.marker;
@@ -40,7 +43,10 @@ test.describe("WRITE_DEV reversible database canary", () => {
         limit 1
       `;
 
-      expect(target, "DEV canary requires at least one existing zone").toBeTruthy();
+      expect(
+        target,
+        "DEV canary requires at least one existing zone",
+      ).toBeTruthy();
 
       try {
         await sql.begin(async (tx) => {
@@ -92,7 +98,10 @@ test.describe("WRITE_DEV reversible database canary", () => {
         }
       }
 
-      expect(createdId, "canary must capture the exact inserted id").toBeTruthy();
+      expect(
+        createdId,
+        "canary must capture the exact inserted id",
+      ).toBeTruthy();
 
       const rowsAfterRollback = await sql<{ id: string }[]>`
         select id
