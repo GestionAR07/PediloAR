@@ -6,6 +6,9 @@ import {
   type DevBuyerFixture,
 } from "../lib/dev-buyer-fixture";
 
+const UNKNOWN_OUTCOME_MESSAGE =
+  "No pudimos confirmar la respuesta del servidor.";
+
 async function loginAndReviewPickupOrder(
   page: Page,
   fixture: DevBuyerFixture,
@@ -70,6 +73,12 @@ function confirmButton(page: Page) {
     .getByRole("button", { name: "Confirmar pedido" });
 }
 
+function unknownOutcomeAlert(page: Page) {
+  return page
+    .locator('p.checkout-alert[role="alert"]')
+    .filter({ hasText: UNKNOWN_OUTCOME_MESSAGE });
+}
+
 async function ordersForBuyer(fixture: DevBuyerFixture) {
   return fixture.sql<{ id: string; status: string }[]>`
     select id, status
@@ -117,11 +126,10 @@ test.describe("WRITE_DEV buyer idempotent retry", () => {
       await expect(confirm).toBeEnabled();
       await confirm.click();
 
-      await expect(
-        page.getByText("No pudimos confirmar la respuesta del servidor.", {
-          exact: true,
-        }),
-      ).toBeVisible({ timeout: 15_000 });
+      await expect(unknownOutcomeAlert(page)).toHaveText(
+        UNKNOWN_OUTCOME_MESSAGE,
+        { timeout: 15_000 },
+      );
       const retry = page.getByRole("button", {
         name: "Reintentar confirmación",
       });
