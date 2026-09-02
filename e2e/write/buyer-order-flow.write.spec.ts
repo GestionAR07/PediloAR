@@ -58,7 +58,9 @@ function weekdayInTimezone(now: Date, timezone: string): number {
   };
   const value = weekdays[label];
   if (value == null) {
-    throw new Error("E2E buyer flow: could not resolve merchant-local weekday.");
+    throw new Error(
+      "E2E buyer flow: could not resolve merchant-local weekday.",
+    );
   }
   return value;
 }
@@ -73,10 +75,7 @@ function requiredEnv(name: string): string {
   return value;
 }
 
-async function deleteOrderByExactId(
-  sql: Sql,
-  orderId: string,
-): Promise<void> {
+async function deleteOrderByExactId(sql: Sql, orderId: string): Promise<void> {
   const items = await sql<{ id: string }[]>`
     select id
     from order_items
@@ -118,9 +117,7 @@ async function deleteAuthUser(
 ): Promise<void> {
   const { error } = await admin.auth.admin.deleteUser(userId);
   if (error) {
-    throw new Error(
-      `E2E buyer flow: auth cleanup failed (${error.message}).`,
-    );
+    throw new Error(`E2E buyer flow: auth cleanup failed (${error.message}).`);
   }
 }
 
