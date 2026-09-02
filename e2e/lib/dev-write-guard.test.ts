@@ -38,6 +38,17 @@ describe("assertE2eDevWriteAllowed", () => {
     ).not.toThrow();
   });
 
+  it("accepts a direct Supabase DATABASE_URL for the same DEV project", () => {
+    expect(() =>
+      assertE2eDevWriteAllowed({
+        env: allowedEnv({
+          DATABASE_URL: `postgresql://postgres:secret@db.${DEV_REF}.supabase.co:5432/postgres`,
+        }),
+        appBaseUrl: APP_BASE_URL,
+      }),
+    ).not.toThrow();
+  });
+
   it("aborts when WRITE_DEV mode is not explicit", () => {
     expect(() =>
       assertE2eDevWriteAllowed({
@@ -113,6 +124,28 @@ describe("assertE2eDevWriteAllowed", () => {
       assertE2eDevWriteAllowed({
         env: allowedEnv({
           DATABASE_URL: `postgresql://postgres.${OTHER_REF}:secret@aws-0-sa-east-1.pooler.supabase.com:6543/postgres`,
+        }),
+        appBaseUrl: APP_BASE_URL,
+      }),
+    ).toThrow(E2E_DEV_WRITE_ABORT.databaseIdentity);
+  });
+
+  it("rejects lookalike pooler hostnames even with the correct DEV username", () => {
+    expect(() =>
+      assertE2eDevWriteAllowed({
+        env: allowedEnv({
+          DATABASE_URL: `postgresql://postgres.${DEV_REF}:secret@evilpooler.supabase.com:6543/postgres`,
+        }),
+        appBaseUrl: APP_BASE_URL,
+      }),
+    ).toThrow(E2E_DEV_WRITE_ABORT.databaseIdentity);
+  });
+
+  it("rejects non-Postgres URLs even on an actual Supabase pooler host", () => {
+    expect(() =>
+      assertE2eDevWriteAllowed({
+        env: allowedEnv({
+          DATABASE_URL: `https://postgres.${DEV_REF}:secret@aws-0-sa-east-1.pooler.supabase.com/postgres`,
         }),
         appBaseUrl: APP_BASE_URL,
       }),
