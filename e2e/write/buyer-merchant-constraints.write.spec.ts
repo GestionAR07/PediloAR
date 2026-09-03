@@ -27,6 +27,7 @@ async function loginBuyerAndAddProduct(
 async function addFixtureProduct(
   page: Page,
   fixture: DevIsolatedBuyerMerchantFixture,
+  expectedStatus = "Agregado al carrito",
 ): Promise<void> {
   const search = page.getByLabel("Buscar en este comercio");
   await search.fill(fixture.product.name);
@@ -35,7 +36,7 @@ async function addFixtureProduct(
     .filter({ hasText: fixture.product.name });
   await expect(productCard).toHaveCount(1);
   await productCard.getByRole("button", { name: "Agregar" }).click();
-  await expect(page.getByRole("status")).toContainText("Agregado al carrito");
+  await expect(page.getByRole("status")).toContainText(expectedStatus);
 }
 
 async function openCheckout(page: Page): Promise<void> {
@@ -176,7 +177,11 @@ test.describe("WRITE_DEV buyer merchant constraints", () => {
       await expect(page).toHaveURL(
         new RegExp(`/comercios/${fixture.merchant.id}(?:\\?.*)?$`),
       );
-      await addFixtureProduct(page, fixture);
+      await addFixtureProduct(
+        page,
+        fixture,
+        "Cantidad actualizada en el carrito",
+      );
 
       await page.goto("/carrito");
       const cartLine = page
@@ -223,7 +228,7 @@ test.describe("WRITE_DEV buyer merchant constraints", () => {
       `;
 
       await confirmReviewedCheckout(page);
-      await expect(page.getByRole("alert")).toContainText(
+      await expect(page.locator('p.checkout-alert[role="alert"]')).toContainText(
         "Este comercio no está tomando pedidos en este momento.",
       );
       await expectNoOrders(fixture);
@@ -262,7 +267,7 @@ test.describe("WRITE_DEV buyer merchant constraints", () => {
       `;
 
       await confirmReviewedCheckout(page);
-      await expect(page.getByRole("alert")).toContainText(
+      await expect(page.locator('p.checkout-alert[role="alert"]')).toContainText(
         "Este comercio está cerrado en este momento.",
       );
       await expectNoOrders(fixture);
