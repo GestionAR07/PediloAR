@@ -13,7 +13,9 @@ import {
 } from "../schema";
 import type { MerchantActivationReadiness } from "@/application/merchant/activate-merchant";
 
-function numericCount(value: number | string | bigint | null | undefined): number {
+function numericCount(
+  value: number | string | bigint | null | undefined,
+): number {
   return Number(value ?? 0);
 }
 
@@ -34,54 +36,59 @@ export async function findMerchantActivationReadiness(
   const merchant = merchantRows[0];
   if (!merchant) return null;
 
-  const [ownerRows, deliveryRows, paymentRows, productRows] = await Promise.all([
-    db
-      .select({ value: count() })
-      .from(merchantUsers)
-      .innerJoin(userProfiles, eq(userProfiles.id, merchantUsers.userId))
-      .where(
-        and(
-          eq(merchantUsers.merchantId, merchantId),
-          eq(merchantUsers.role, "OWNER"),
-          eq(merchantUsers.active, true),
-          eq(userProfiles.status, "ACTIVE"),
+  const [ownerRows, deliveryRows, paymentRows, productRows] = await Promise.all(
+    [
+      db
+        .select({ value: count() })
+        .from(merchantUsers)
+        .innerJoin(userProfiles, eq(userProfiles.id, merchantUsers.userId))
+        .where(
+          and(
+            eq(merchantUsers.merchantId, merchantId),
+            eq(merchantUsers.role, "OWNER"),
+            eq(merchantUsers.active, true),
+            eq(userProfiles.status, "ACTIVE"),
+          ),
         ),
-      ),
-    db
-      .select({ value: count() })
-      .from(merchantDeliveryZones)
-      .where(
-        and(
-          eq(merchantDeliveryZones.merchantId, merchantId),
-          eq(merchantDeliveryZones.active, true),
+      db
+        .select({ value: count() })
+        .from(merchantDeliveryZones)
+        .where(
+          and(
+            eq(merchantDeliveryZones.merchantId, merchantId),
+            eq(merchantDeliveryZones.active, true),
+          ),
         ),
-      ),
-    db
-      .select({ value: count() })
-      .from(merchantPaymentMethods)
-      .where(
-        and(
-          eq(merchantPaymentMethods.merchantId, merchantId),
-          eq(merchantPaymentMethods.active, true),
+      db
+        .select({ value: count() })
+        .from(merchantPaymentMethods)
+        .where(
+          and(
+            eq(merchantPaymentMethods.merchantId, merchantId),
+            eq(merchantPaymentMethods.active, true),
+          ),
         ),
-      ),
-    db
-      .select({ value: count() })
-      .from(products)
-      .innerJoin(
-        merchantCategories,
-        eq(merchantCategories.id, products.merchantCategoryId),
-      )
-      .where(
-        and(
-          eq(products.merchantId, merchantId),
-          eq(products.active, true),
-          eq(products.available, true),
-          eq(merchantCategories.active, true),
-          or(ne(products.stockMode, "TRACKED"), gt(products.stockQuantity, 0)),
+      db
+        .select({ value: count() })
+        .from(products)
+        .innerJoin(
+          merchantCategories,
+          eq(merchantCategories.id, products.merchantCategoryId),
+        )
+        .where(
+          and(
+            eq(products.merchantId, merchantId),
+            eq(products.active, true),
+            eq(products.available, true),
+            eq(merchantCategories.active, true),
+            or(
+              ne(products.stockMode, "TRACKED"),
+              gt(products.stockQuantity, 0),
+            ),
+          ),
         ),
-      ),
-  ]);
+    ],
+  );
 
   return {
     merchantId: merchant.id,
