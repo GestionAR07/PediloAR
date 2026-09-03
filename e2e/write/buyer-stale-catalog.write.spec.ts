@@ -128,7 +128,9 @@ test.describe("WRITE_DEV buyer stale catalog guards", () => {
       await expectNoOrders(fixture);
       await expectInitialStock(fixture);
 
-      await page.getByRole("link", { name: "Volver al carrito", exact: true }).click();
+      await page
+        .getByRole("link", { name: "Volver al carrito", exact: true })
+        .click();
       const cartLine = page
         .locator(".cart-line-card")
         .filter({ hasText: fixture.product.name });
