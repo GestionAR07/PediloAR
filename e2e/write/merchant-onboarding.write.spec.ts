@@ -65,7 +65,9 @@ test.describe("WRITE_DEV merchant onboarding activation", () => {
     test.setTimeout(150_000);
     expect(process.env.E2E_MODE).toBe(E2E_WRITE_DEV_MODE);
     if (!baseURL) {
-      throw new Error("Merchant onboarding E2E: Playwright baseURL is required.");
+      throw new Error(
+        "Merchant onboarding E2E: Playwright baseURL is required.",
+      );
     }
 
     const fixture = await createDevOnboardingFixture();
@@ -91,7 +93,9 @@ test.describe("WRITE_DEV merchant onboarding activation", () => {
 
       await page.goto("/sumar-comercio");
       await page.getByLabel("Nombre del comercio").fill(fixture.businessName);
-      await page.getByLabel("Nombre de contacto").fill(fixture.owner.displayName);
+      await page
+        .getByLabel("Nombre de contacto")
+        .fill(fixture.owner.displayName);
       await page.getByLabel("Email de contacto").fill(fixture.owner.email);
       await page.getByLabel("Teléfono de contacto").fill("2804000000");
       await page.getByLabel("Ciudad").selectOption(geo.city_id);
@@ -142,13 +146,16 @@ test.describe("WRITE_DEV merchant onboarding activation", () => {
       await page.getByLabel("Slug").fill(fixture.businessSlug);
       await page.getByLabel("Retiro habilitado").check();
       await page.getByLabel("Delivery propio habilitado").uncheck();
-      await page
-        .getByRole("button", { name: "Aprobar solicitud" })
-        .click();
+      await page.getByRole("button", { name: "Aprobar solicitud" }).click();
       await expect(page).toHaveURL(/\/admin\/merchants\/[0-9a-f-]{36}$/i);
 
-      const merchantId = page.url().match(/\/admin\/merchants\/([0-9a-f-]{36})$/i)?.[1];
-      expect(merchantId, "approval must navigate to the exact merchant id").toBeTruthy();
+      const merchantId = page
+        .url()
+        .match(/\/admin\/merchants\/([0-9a-f-]{36})$/i)?.[1];
+      expect(
+        merchantId,
+        "approval must navigate to the exact merchant id",
+      ).toBeTruthy();
       fixture.registerMerchant(merchantId!);
 
       const [approved] = await fixture.sql<ApplicationRow[]>`
@@ -304,7 +311,9 @@ test.describe("WRITE_DEV merchant onboarding activation", () => {
         ownerPage.getByRole("heading", { name: fixture.businessName }),
       ).toBeVisible();
       await expect(ownerPage.getByText(fixture.productName)).toBeVisible();
-      await expect(ownerPage.getByText("Efectivo", { exact: true })).toBeVisible();
+      await expect(
+        ownerPage.getByText("Efectivo", { exact: true }),
+      ).toBeVisible();
     } finally {
       await ownerContext?.close();
       await fixture.cleanup();
