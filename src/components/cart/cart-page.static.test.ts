@@ -51,9 +51,13 @@ describe("qwen cart v3 static checks", () => {
     expect(client).toContain("calculateCartLineTotalCents");
     expect(client).toContain("Subtotal de productos");
     expect(client).toContain("getCartAvailabilityAction");
-    expect(client).toContain("availability.statusLabel ?? \"No disponible\"");
-    expect(client).toContain("Quitá los productos no disponibles para continuar.");
-    expect(client).toContain("La disponibilidad se vuelve a validar al continuar.");
+    expect(client).toContain('availability.statusLabel ?? "No disponible"');
+    expect(client).toContain(
+      "Quitá los productos no disponibles para continuar.",
+    );
+    expect(client).toContain(
+      "La disponibilidad se vuelve a validar al continuar.",
+    );
     expect(client).toContain("disabled={lineUnavailable}");
     expect(actions).toContain('"use server"');
     expect(actions).toContain("getPublicMerchantCatalogApp");
