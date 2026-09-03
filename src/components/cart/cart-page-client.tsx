@@ -27,33 +27,40 @@ export function CartPageClient() {
     removeLine,
     clear,
   } = useCart();
-  const [availabilityByProductId, setAvailabilityByProductId] = useState<
-    Record<string, CartProductAvailability> | null
-  >(null);
+  const [availabilitySnapshot, setAvailabilitySnapshot] = useState<{
+    key: string;
+    products: Record<string, CartProductAvailability>;
+  } | null>(null);
   const cartProductIdsKey = useMemo(
-    () => [...new Set(cart.lines.map((line) => line.productId))].sort().join("|"),
+    () =>
+      [...new Set(cart.lines.map((line) => line.productId))]
+        .sort()
+        .join("|"),
     [cart.lines],
   );
+  const availabilityKey =
+    cart.merchantId && cartProductIdsKey
+      ? `${cart.merchantId}:${cartProductIdsKey}`
+      : "";
 
   useEffect(() => {
-    const merchantId = cart.merchantId;
-    const productIds = cartProductIdsKey ? cartProductIdsKey.split("|") : [];
-    if (!hydrated || !merchantId || productIds.length === 0) {
-      setAvailabilityByProductId(null);
-      return;
-    }
+    if (!hydrated || !availabilityKey) return;
 
+    const merchantId = cart.merchantId;
+    const productIds = cartProductIdsKey.split("|");
     let cancelled = false;
-    setAvailabilityByProductId(null);
     void getCartAvailabilityAction(merchantId, productIds).then((result) => {
       if (cancelled || !result.ok) return;
-      setAvailabilityByProductId(result.products);
+      setAvailabilitySnapshot({
+        key: availabilityKey,
+        products: result.products,
+      });
     });
 
     return () => {
       cancelled = true;
     };
-  }, [hydrated, cart.merchantId, cartProductIdsKey]);
+  }, [hydrated, cart.merchantId, cartProductIdsKey, availabilityKey]);
 
   if (!hydrated) {
     return (
@@ -92,6 +99,10 @@ export function CartPageClient() {
   const backHref = `/comercios/${encodeURIComponent(cart.merchantId)}`;
   const itemLabel = badgeCount === 1 ? "producto" : "productos";
   const estimatedTotal = formatMoneyCentsArs(moneyCents(totalCents));
+  const availabilityByProductId =
+    availabilitySnapshot?.key === availabilityKey
+      ? availabilitySnapshot.products
+      : null;
   const hasUnavailableLine = cart.lines.some(
     (line) => availabilityByProductId?.[line.productId]?.sellable === false,
   );
