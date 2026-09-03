@@ -3,12 +3,15 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Sql } from "postgres";
 import { E2eCreatedResourceRegistry } from "./e2e-run-scope";
 
+type DevMerchantOperatorRole = "OWNER" | "STAFF";
+
 export type DevMerchantOperatorFixture = {
   userId: string;
   membershipId: string;
   email: string;
   password: string;
   displayName: string;
+  role: DevMerchantOperatorRole;
   cleanup(): Promise<void>;
 };
 
@@ -51,6 +54,7 @@ async function deleteAuthUser(
 export async function createDevMerchantOperatorFixture(input: {
   sql: Sql;
   merchantId: string;
+  role?: DevMerchantOperatorRole;
 }): Promise<DevMerchantOperatorFixture> {
   const supabaseUrl = requiredEnv("NEXT_PUBLIC_SUPABASE_URL");
   const supabaseSecretKey = requiredEnv("SUPABASE_SECRET_KEY");
@@ -62,9 +66,10 @@ export async function createDevMerchantOperatorFixture(input: {
     },
   });
   const registry = new E2eCreatedResourceRegistry();
+  const role = input.role ?? "OWNER";
   const email = `e2e-merchant-${registry.runId}@example.invalid`;
   const password = `Pedilo-${randomUUID()}-Aa1!`;
-  const displayName = `${registry.marker} Merchant operator`;
+  const displayName = `${registry.marker} Merchant ${role.toLowerCase()}`;
 
   let userId: string | null = null;
   let membershipId: string | null = null;
@@ -158,7 +163,7 @@ export async function createDevMerchantOperatorFixture(input: {
       ) values (
         ${input.merchantId},
         ${userId},
-        'OWNER',
+        ${role},
         true
       )
       returning id
@@ -177,6 +182,7 @@ export async function createDevMerchantOperatorFixture(input: {
       email,
       password,
       displayName,
+      role,
       cleanup,
     };
   } catch (setupError) {
