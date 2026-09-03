@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, count, eq } from "drizzle-orm";
+import { and, count, eq, gt, ne, or } from "drizzle-orm";
 import { getDb } from "../client";
 import {
   merchantCategories,
@@ -9,6 +9,7 @@ import {
   merchants,
   merchantUsers,
   products,
+  userProfiles,
 } from "../schema";
 import type { MerchantActivationReadiness } from "@/application/merchant/activate-merchant";
 
@@ -37,11 +38,13 @@ export async function findMerchantActivationReadiness(
     db
       .select({ value: count() })
       .from(merchantUsers)
+      .innerJoin(userProfiles, eq(userProfiles.id, merchantUsers.userId))
       .where(
         and(
           eq(merchantUsers.merchantId, merchantId),
           eq(merchantUsers.role, "OWNER"),
           eq(merchantUsers.active, true),
+          eq(userProfiles.status, "ACTIVE"),
         ),
       ),
     db
@@ -75,6 +78,7 @@ export async function findMerchantActivationReadiness(
           eq(products.active, true),
           eq(products.available, true),
           eq(merchantCategories.active, true),
+          or(ne(products.stockMode, "TRACKED"), gt(products.stockQuantity, 0)),
         ),
       ),
   ]);
