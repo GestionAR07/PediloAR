@@ -25,7 +25,9 @@ describe("merchant multitenancy security boundaries", () => {
     const cover = read("src/application/merchant/cover-image-wiring.ts");
     const operational = read("src/application/merchant/operational-wiring.ts");
     const orderInbox = read("src/application/merchant/order-inbox-wiring.ts");
-    const orderActions = read("src/application/merchant/order-actions-wiring.ts");
+    const orderActions = read(
+      "src/application/merchant/order-actions-wiring.ts",
+    );
 
     for (const wiring of [
       catalog,
@@ -40,7 +42,9 @@ describe("merchant multitenancy security boundaries", () => {
       expect(wiring).not.toContain("requirePlatformAdmin");
     }
 
-    expect(catalog).toContain("requireMerchantRole(merchantId, CATALOG_ALLOWED_ROLES)");
+    expect(catalog).toContain(
+      "requireMerchantRole(merchantId, CATALOG_ALLOWED_ROLES)",
+    );
     expect(delivery).toContain(
       "requireMerchantRole(merchantId, DELIVERY_SETTINGS_ALLOWED_ROLES)",
     );
@@ -72,7 +76,9 @@ describe("merchant multitenancy security boundaries", () => {
     ];
 
     for (const source of roleSources) {
-      expect(source).toMatch(/ALLOWED_ROLES\s*=\s*\["OWNER",\s*"STAFF"\]\s*as const/);
+      expect(source).toMatch(
+        /ALLOWED_ROLES\s*=\s*\["OWNER",\s*"STAFF"\]\s*as const/,
+      );
     }
   });
 
@@ -89,7 +95,9 @@ describe("merchant multitenancy security boundaries", () => {
     expect(authorization).toContain("eq(merchantUsers.active, true)");
 
     expect(merchantRepo).toContain("findMerchantDetailForMember");
-    expect(merchantRepo).toContain("eq(merchantUsers.merchantId, merchants.id)");
+    expect(merchantRepo).toContain(
+      "eq(merchantUsers.merchantId, merchants.id)",
+    );
     expect(merchantRepo).toContain("eq(merchantUsers.userId, userId)");
     expect(merchantRepo).toContain("eq(merchantUsers.active, true)");
     expect(merchantRepo).toContain(".where(eq(merchants.id, merchantId))");
