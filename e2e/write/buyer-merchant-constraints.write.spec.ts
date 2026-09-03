@@ -47,9 +47,7 @@ async function openCheckout(page: Page): Promise<void> {
 }
 
 async function chooseCash(page: Page): Promise<void> {
-  const payment = page.locator(
-    'input[name="paymentMethodCode"][value="CASH"]',
-  );
+  const payment = page.locator('input[name="paymentMethodCode"][value="CASH"]');
   await expect(payment).toBeVisible();
   await payment.check();
 }
@@ -189,7 +187,9 @@ test.describe("WRITE_DEV buyer merchant constraints", () => {
       await configureDeliveryCheckout(page, fixture);
 
       await expect(
-        page.getByRole("status").filter({ hasText: "Pedido mínimo de esta zona" }),
+        page
+          .getByRole("status")
+          .filter({ hasText: "Pedido mínimo de esta zona" }),
       ).toHaveCount(0);
       await reviewCheckout(page);
       await expectNoOrders(fixture);
