@@ -14,7 +14,7 @@
     "e2e:headed": "playwright test --headed",
     "e2e:ui": "playwright test --ui",
     "format": "prettier --write .",
-    "format:check": "prettier --write \"src/app/admin/merchants/[merchantId]/page.tsx\" src/infrastructure/db/repositories/merchant-activation-repository.ts src/app/admin/actions.ts && git diff -- \"src/app/admin/merchants/[merchantId]/page.tsx\" src/infrastructure/db/repositories/merchant-activation-repository.ts src/app/admin/actions.ts && prettier --check .",
+    "format:check": "prettier --check .",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:check": "drizzle-kit check",
