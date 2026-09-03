@@ -147,7 +147,9 @@ export async function createDevOnboardingFixture(): Promise<DevOnboardingFixture
 
   async function recoverCreatedIds(): Promise<void> {
     if (!applicationId) {
-      const applications = await sql<{ id: string; merchant_id: string | null }[]>`
+      const applications = await sql<
+        { id: string; merchant_id: string | null }[]
+      >`
         select id, merchant_id
         from merchant_applications
         where business_name = ${businessName}
@@ -183,7 +185,9 @@ export async function createDevOnboardingFixture(): Promise<DevOnboardingFixture
           and name = ${productName}
       `;
       if (products.length > 1) {
-        throw new Error("E2E onboarding fixture: product recovery was not unique.");
+        throw new Error(
+          "E2E onboarding fixture: product recovery was not unique.",
+        );
       }
       if (products[0]) registerProduct(products[0].id);
     }
@@ -221,7 +225,9 @@ export async function createDevOnboardingFixture(): Promise<DevOnboardingFixture
           select id from merchant_applications where id = ${applicationId}
         `;
         if (rows.length !== 0) {
-          throw new Error("E2E onboarding fixture: application cleanup failed.");
+          throw new Error(
+            "E2E onboarding fixture: application cleanup failed.",
+          );
         }
         registry.clearRegistered({ kind: "other", id: applicationId });
       } catch (error) {
