@@ -1,6 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import {
+  getCartAvailabilityAction,
+  type CartProductAvailability,
+} from "@/app/carrito/actions";
 import { formatConfigurationSummary } from "@/domain/cart/validate-configuration";
 import { calculateCartLineTotalCents } from "@/domain/cart/pricing";
 import { isCartEmpty } from "@/domain/cart/types";
@@ -22,6 +27,38 @@ export function CartPageClient() {
     removeLine,
     clear,
   } = useCart();
+  const [availabilitySnapshot, setAvailabilitySnapshot] = useState<{
+    key: string;
+    products: Record<string, CartProductAvailability>;
+  } | null>(null);
+  const cartProductIdsKey = useMemo(
+    () =>
+      [...new Set(cart.lines.map((line) => line.productId))].sort().join("|"),
+    [cart.lines],
+  );
+  const availabilityKey =
+    cart.merchantId && cartProductIdsKey
+      ? `${cart.merchantId}:${cartProductIdsKey}`
+      : "";
+
+  useEffect(() => {
+    if (!hydrated || !availabilityKey) return;
+
+    const merchantId = cart.merchantId;
+    const productIds = cartProductIdsKey.split("|");
+    let cancelled = false;
+    void getCartAvailabilityAction(merchantId, productIds).then((result) => {
+      if (cancelled || !result.ok) return;
+      setAvailabilitySnapshot({
+        key: availabilityKey,
+        products: result.products,
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated, cart.merchantId, cartProductIdsKey, availabilityKey]);
 
   if (!hydrated) {
     return (
@@ -60,6 +97,13 @@ export function CartPageClient() {
   const backHref = `/comercios/${encodeURIComponent(cart.merchantId)}`;
   const itemLabel = badgeCount === 1 ? "producto" : "productos";
   const estimatedTotal = formatMoneyCentsArs(moneyCents(totalCents));
+  const availabilityByProductId =
+    availabilitySnapshot?.key === availabilityKey
+      ? availabilitySnapshot.products
+      : null;
+  const hasUnavailableLine = cart.lines.some(
+    (line) => availabilityByProductId?.[line.productId]?.sellable === false,
+  );
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 pt-6 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] sm:px-6 lg:px-8 lg:pt-8 lg:pb-12">
@@ -85,6 +129,8 @@ export function CartPageClient() {
             const summary = formatConfigurationSummary(line.configuration);
             const lineTotal = calculateCartLineTotalCents(line);
             const initial = line.productNameSnapshot.slice(0, 1).toUpperCase();
+            const availability = availabilityByProductId?.[line.productId];
+            const lineUnavailable = availability?.sellable === false;
             return (
               <li
                 key={line.id}
@@ -122,6 +168,14 @@ export function CartPageClient() {
                     <p className="text-xs font-semibold text-slate-400">
                       Subtotal: {formatMoneyCentsArs(lineTotal)}
                     </p>
+                    {lineUnavailable ? (
+                      <p
+                        className="text-xs font-extrabold text-rose-700"
+                        role="status"
+                      >
+                        {availability.statusLabel ?? "No disponible"}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
 
@@ -146,10 +200,11 @@ export function CartPageClient() {
                     <button
                       type="button"
                       aria-label={`Aumentar ${line.productNameSnapshot}`}
+                      disabled={lineUnavailable}
                       onClick={() =>
                         setLineQuantity(line.id, line.quantity + 1)
                       }
-                      className={`flex h-11 w-11 items-center justify-center rounded-full text-lg font-bold text-violet-800 hover:bg-white ${focusRing}`}
+                      className={`flex h-11 w-11 items-center justify-center rounded-full text-lg font-bold text-violet-800 hover:bg-white disabled:cursor-not-allowed disabled:opacity-40 ${focusRing}`}
                     >
                       +
                     </button>
@@ -188,15 +243,33 @@ export function CartPageClient() {
               {estimatedTotal}
             </span>
           </div>
-          <p className="text-xs leading-relaxed text-muted">
-            La disponibilidad se valida al continuar.
-          </p>
-          <Link
-            href="/checkout"
-            className={`grad-btn hidden min-h-12 w-full items-center justify-center rounded-full px-4 text-sm font-extrabold text-white shadow-glow lg:flex ${focusRing}`}
-          >
-            Continuar
-          </Link>
+          {hasUnavailableLine ? (
+            <p
+              className="rounded-2xl bg-rose-50 px-3 py-2 text-xs font-bold leading-relaxed text-rose-700"
+              role="alert"
+            >
+              Quitá los productos no disponibles para continuar.
+            </p>
+          ) : (
+            <p className="text-xs leading-relaxed text-muted">
+              La disponibilidad se vuelve a validar al continuar.
+            </p>
+          )}
+          {hasUnavailableLine ? (
+            <span
+              aria-disabled="true"
+              className="hidden min-h-12 w-full cursor-not-allowed items-center justify-center rounded-full bg-slate-200 px-4 text-sm font-extrabold text-slate-500 lg:flex"
+            >
+              Continuar
+            </span>
+          ) : (
+            <Link
+              href="/checkout"
+              className={`grad-btn hidden min-h-12 w-full items-center justify-center rounded-full px-4 text-sm font-extrabold text-white shadow-glow lg:flex ${focusRing}`}
+            >
+              Continuar
+            </Link>
+          )}
           <Link
             href={backHref}
             className={`inline-flex min-h-11 w-full items-center justify-center rounded-full border border-violet-100 px-4 text-sm font-bold text-violet-800 hover:bg-violet-50 ${focusRing}`}
@@ -215,13 +288,22 @@ export function CartPageClient() {
 
       <div className="cart-sticky-bar pointer-events-none fixed inset-x-0 bottom-0 z-20 lg:hidden">
         <div className="pointer-events-auto mx-auto max-w-6xl px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:px-6">
-          <Link
-            href="/checkout"
-            className={`grad-btn flex min-h-12 items-center justify-between gap-3 rounded-full px-5 text-sm font-extrabold whitespace-nowrap text-white shadow-glow ${focusRing}`}
-          >
-            <span>Continuar</span>
-            <span className="shrink-0 tabular-nums">{estimatedTotal}</span>
-          </Link>
+          {hasUnavailableLine ? (
+            <span
+              aria-disabled="true"
+              className="flex min-h-12 items-center justify-center rounded-full bg-slate-200 px-5 text-sm font-extrabold text-slate-500"
+            >
+              Revisá el carrito
+            </span>
+          ) : (
+            <Link
+              href="/checkout"
+              className={`grad-btn flex min-h-12 items-center justify-between gap-3 rounded-full px-5 text-sm font-extrabold whitespace-nowrap text-white shadow-glow ${focusRing}`}
+            >
+              <span>Continuar</span>
+              <span className="shrink-0 tabular-nums">{estimatedTotal}</span>
+            </Link>
+          )}
         </div>
       </div>
     </div>
