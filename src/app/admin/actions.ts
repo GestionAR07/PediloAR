@@ -1,5 +1,6 @@
 "use server";
 
+import { activateMerchantApp } from "@/application/merchant/merchant-activation-wiring";
 import {
   createCityApp,
   createMerchantApp,
@@ -142,6 +143,31 @@ export async function inviteOwnerAction(
     }
 
     return { error: null, success: result.value.message };
+  } catch (error) {
+    return mapAuthzFailure(error);
+  }
+}
+
+export async function activateMerchantAction(
+  merchantId: string,
+  _prev: ActionState,
+  _formData: FormData,
+): Promise<ActionState> {
+  void _prev;
+  void _formData;
+
+  try {
+    const result = await activateMerchantApp(merchantId);
+    if (!result.ok) {
+      return { error: result.error.message, success: null };
+    }
+
+    return {
+      error: null,
+      success: result.value.alreadyActive
+        ? "El comercio ya estaba activo."
+        : "Comercio activado. Ya puede aparecer en Pedilo.",
+    };
   } catch (error) {
     return mapAuthzFailure(error);
   }

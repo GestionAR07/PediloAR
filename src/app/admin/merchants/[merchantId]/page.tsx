@@ -1,10 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { loadAdminContext } from "../../_lib/load-admin";
+import {
+  getMerchantActivationBlockers,
+  MERCHANT_ACTIVATION_BLOCKER_LABELS,
+} from "@/application/merchant/activate-merchant";
+import { findMerchantActivationReadiness } from "@/infrastructure/db/repositories/merchant-activation-repository";
 import {
   findMerchantDetailById,
   listMerchantMembers,
 } from "@/infrastructure/db/repositories/merchant-repository";
+import { loadAdminContext } from "../../_lib/load-admin";
+import { ActivateMerchantForm } from "../activate-merchant-form";
 import { InviteOwnerForm } from "../invite-owner-form";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +28,14 @@ export default async function AdminMerchantDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const members = await listMerchantMembers(merchantId);
+  const [members, readiness] = await Promise.all([
+    listMerchantMembers(merchantId),
+    findMerchantActivationReadiness(merchantId),
+  ]);
+  const blockers = readiness ? getMerchantActivationBlockers(readiness) : [];
+  const activationReady = Boolean(
+    readiness && merchant.status === "DRAFT" && blockers.length === 0,
+  );
 
   return (
     <main className="space-y-8">
@@ -108,6 +121,70 @@ export default async function AdminMerchantDetailPage({ params }: PageProps) {
           de metadata.
         </p>
         <InviteOwnerForm merchantId={merchant.id} />
+      </section>
+
+      <section className="space-y-4 border-t border-border pt-6">
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold">Salida a Pedilo</h2>
+          <p className="text-sm text-muted">
+            La activación es manual. Un borrador solo puede publicarse cuando
+            tiene lo mínimo necesario para recibir un pedido real.
+          </p>
+        </div>
+
+        {readiness ? (
+          <ul
+            className="space-y-2 text-sm"
+            aria-label="Requisitos de activación"
+          >
+            <li>
+              {readiness.activeOwnerCount > 0 ? "✓" : "○"} Propietario activo
+            </li>
+            <li>
+              {readiness.pickupEnabled || readiness.merchantDeliveryEnabled
+                ? "✓"
+                : "○"}{" "}
+              Retiro o delivery propio habilitado
+            </li>
+            {readiness.merchantDeliveryEnabled ? (
+              <li>
+                {readiness.activeDeliveryZoneCount > 0 ? "✓" : "○"} Zona de
+                delivery activa
+              </li>
+            ) : null}
+            <li>
+              {readiness.activePaymentMethodCount > 0 ? "✓" : "○"} Medio de pago
+              activo
+            </li>
+            <li>
+              {readiness.activeCatalogProductCount > 0 ? "✓" : "○"} Producto
+              publicado y disponible
+            </li>
+          </ul>
+        ) : (
+          <p className="text-sm text-red-800" role="alert">
+            No se pudo calcular el estado de preparación del comercio.
+          </p>
+        )}
+
+        {blockers.length > 0 && merchant.status === "DRAFT" ? (
+          <div className="rounded-md border border-border p-3 text-sm">
+            <p className="font-medium">Pendiente antes de activar</p>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-muted">
+              {blockers.map((blocker) => (
+                <li key={blocker}>
+                  {MERCHANT_ACTIVATION_BLOCKER_LABELS[blocker]}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+        <ActivateMerchantForm
+          merchantId={merchant.id}
+          status={merchant.status}
+          ready={activationReady}
+        />
       </section>
     </main>
   );
