@@ -24,17 +24,20 @@ export async function getCartAvailabilityAction(
   merchantId: string,
   productIds: string[],
 ): Promise<CartAvailabilityActionResult> {
-  if (!hasDatabaseConfig() || !isValidUuid(merchantId)) {
-    return { ok: false };
-  }
-
-  const uniqueProductIds = [...new Set(productIds)].filter(isValidUuid);
   if (
-    uniqueProductIds.length !== new Set(productIds).size ||
-    uniqueProductIds.length > MAX_CART_PRODUCT_IDS
+    !hasDatabaseConfig() ||
+    typeof merchantId !== "string" ||
+    !isValidUuid(merchantId) ||
+    !Array.isArray(productIds) ||
+    productIds.length > MAX_CART_PRODUCT_IDS ||
+    productIds.some(
+      (productId) => typeof productId !== "string" || !isValidUuid(productId),
+    )
   ) {
     return { ok: false };
   }
+
+  const uniqueProductIds = [...new Set(productIds)];
 
   try {
     const catalog = await getPublicMerchantCatalogApp(merchantId);
