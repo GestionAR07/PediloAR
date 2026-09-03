@@ -58,7 +58,9 @@ async function expectOwnWorkspaceAccessible(
 
   await page.goto(`/merchant/${merchantId}/catalog`);
   await expect(page.getByRole("heading", { name: "Catálogo" })).toBeVisible();
-  await expect(page.getByText(fixture.product.name, { exact: true })).toBeVisible();
+  await expect(
+    page.getByText(fixture.product.name, { exact: true }),
+  ).toBeVisible();
 
   await page.goto(`/merchant/${merchantId}/delivery`);
   await expect(page.getByRole("heading", { name: "Envíos" })).toBeVisible();
@@ -96,9 +98,9 @@ async function expectForeignWorkspaceForbidden(
   for (const path of foreignPaths) {
     await page.goto(path);
     await expect(page).toHaveURL(/\/login\?next=\/merchant&error=forbidden$/);
-    await expect(page.getByText(target.product.name, { exact: true })).toHaveCount(
-      0,
-    );
+    await expect(
+      page.getByText(target.product.name, { exact: true }),
+    ).toHaveCount(0);
   }
 }
 
