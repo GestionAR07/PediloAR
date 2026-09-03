@@ -599,7 +599,7 @@ test.describe("WRITE_DEV merchant delivery, rejection and isolation", () => {
         `/merchant/${fixture.merchant.id}/orders/${orderId}`,
       );
       await expect(attackerPage).toHaveURL(
-        /\/login\?next=%2Fmerchant&error=forbidden$/,
+        /\/login\?next=\/merchant&error=forbidden$/,
       );
       await expectOrderStatus(fixture, orderId, "PENDING");
       await expectProductStock(fixture, 4);
