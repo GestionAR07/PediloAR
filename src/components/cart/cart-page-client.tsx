@@ -30,30 +30,30 @@ export function CartPageClient() {
   const [availabilityByProductId, setAvailabilityByProductId] = useState<
     Record<string, CartProductAvailability> | null
   >(null);
-  const cartProductIds = useMemo(
-    () => [...new Set(cart.lines.map((line) => line.productId))],
+  const cartProductIdsKey = useMemo(
+    () => [...new Set(cart.lines.map((line) => line.productId))].sort().join("|"),
     [cart.lines],
   );
 
   useEffect(() => {
-    if (!hydrated || isCartEmpty(cart)) {
+    const merchantId = cart.merchantId;
+    const productIds = cartProductIdsKey ? cartProductIdsKey.split("|") : [];
+    if (!hydrated || !merchantId || productIds.length === 0) {
       setAvailabilityByProductId(null);
       return;
     }
 
     let cancelled = false;
     setAvailabilityByProductId(null);
-    void getCartAvailabilityAction(cart.merchantId, cartProductIds).then(
-      (result) => {
-        if (cancelled || !result.ok) return;
-        setAvailabilityByProductId(result.products);
-      },
-    );
+    void getCartAvailabilityAction(merchantId, productIds).then((result) => {
+      if (cancelled || !result.ok) return;
+      setAvailabilityByProductId(result.products);
+    });
 
     return () => {
       cancelled = true;
     };
-  }, [hydrated, cart, cartProductIds]);
+  }, [hydrated, cart.merchantId, cartProductIdsKey]);
 
   if (!hydrated) {
     return (
