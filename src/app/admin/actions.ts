@@ -153,6 +153,9 @@ export async function activateMerchantAction(
   _prev: ActionState,
   _formData: FormData,
 ): Promise<ActionState> {
+  void _prev;
+  void _formData;
+
   try {
     const result = await activateMerchantApp(merchantId);
     if (!result.ok) {
