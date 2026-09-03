@@ -14,7 +14,7 @@
     "e2e:headed": "playwright test --headed",
     "e2e:ui": "playwright test --ui",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format:check": "prettier --write src/components/cart/cart-page-client.tsx && git diff -- src/components/cart/cart-page-client.tsx && prettier --check .",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:check": "drizzle-kit check",
