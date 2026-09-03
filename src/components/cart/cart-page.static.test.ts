@@ -26,8 +26,9 @@ describe("qwen cart v3 static checks", () => {
     expect(adminLayout).not.toContain("public-storefront");
   });
 
-  it("keeps cart navigation, hydrate gate, and honest totals", () => {
+  it("keeps cart navigation, hydrate gate, honest totals, and live availability feedback", () => {
     const client = read("src/components/cart/cart-page-client.tsx");
+    const actions = read("src/app/carrito/actions.ts");
 
     expect(client).toContain("if (!hydrated)");
     expect(client).toContain("isCartEmpty(cart)");
@@ -49,7 +50,14 @@ describe("qwen cart v3 static checks", () => {
     expect(client).toContain("formatConfigurationSummary");
     expect(client).toContain("calculateCartLineTotalCents");
     expect(client).toContain("Subtotal de productos");
-    expect(client).toContain("La disponibilidad se valida al continuar.");
+    expect(client).toContain("getCartAvailabilityAction");
+    expect(client).toContain("availability.statusLabel ?? \"No disponible\"");
+    expect(client).toContain("Quitá los productos no disponibles para continuar.");
+    expect(client).toContain("La disponibilidad se vuelve a validar al continuar.");
+    expect(client).toContain("disabled={lineUnavailable}");
+    expect(actions).toContain('"use server"');
+    expect(actions).toContain("getPublicMerchantCatalogApp");
+    expect(actions).toContain('statusLabel: "No disponible"');
     expect(client).not.toContain("Total estimado");
     expect(client).not.toContain(
       "El total y la disponibilidad se validan al continuar.",
