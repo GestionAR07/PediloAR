@@ -228,9 +228,9 @@ test.describe("WRITE_DEV buyer merchant constraints", () => {
       `;
 
       await confirmReviewedCheckout(page);
-      await expect(page.locator('p.checkout-alert[role="alert"]')).toContainText(
-        "Este comercio no está tomando pedidos en este momento.",
-      );
+      await expect(
+        page.locator('p.checkout-alert[role="alert"]'),
+      ).toContainText("Este comercio no está tomando pedidos en este momento.");
       await expectNoOrders(fixture);
       await expectInitialStock(fixture);
     } finally {
@@ -267,9 +267,9 @@ test.describe("WRITE_DEV buyer merchant constraints", () => {
       `;
 
       await confirmReviewedCheckout(page);
-      await expect(page.locator('p.checkout-alert[role="alert"]')).toContainText(
-        "Este comercio está cerrado en este momento.",
-      );
+      await expect(
+        page.locator('p.checkout-alert[role="alert"]'),
+      ).toContainText("Este comercio está cerrado en este momento.");
       await expectNoOrders(fixture);
       await expectInitialStock(fixture);
     } finally {
