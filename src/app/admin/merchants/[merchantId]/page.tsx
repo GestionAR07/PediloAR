@@ -133,7 +133,10 @@ export default async function AdminMerchantDetailPage({ params }: PageProps) {
         </div>
 
         {readiness ? (
-          <ul className="space-y-2 text-sm" aria-label="Requisitos de activación">
+          <ul
+            className="space-y-2 text-sm"
+            aria-label="Requisitos de activación"
+          >
             <li>
               {readiness.activeOwnerCount > 0 ? "✓" : "○"} Propietario activo
             </li>
@@ -150,8 +153,8 @@ export default async function AdminMerchantDetailPage({ params }: PageProps) {
               </li>
             ) : null}
             <li>
-              {readiness.activePaymentMethodCount > 0 ? "✓" : "○"} Medio de
-              pago activo
+              {readiness.activePaymentMethodCount > 0 ? "✓" : "○"} Medio de pago
+              activo
             </li>
             <li>
               {readiness.activeCatalogProductCount > 0 ? "✓" : "○"} Producto
