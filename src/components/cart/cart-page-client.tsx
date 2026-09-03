@@ -32,10 +32,7 @@ export function CartPageClient() {
     products: Record<string, CartProductAvailability>;
   } | null>(null);
   const cartProductIdsKey = useMemo(
-    () =>
-      [...new Set(cart.lines.map((line) => line.productId))]
-        .sort()
-        .join("|"),
+    () => [...new Set(cart.lines.map((line) => line.productId))].sort().join("|"),
     [cart.lines],
   );
   const availabilityKey =
