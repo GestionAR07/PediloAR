@@ -33,7 +33,9 @@ function shortOrderReference(orderId: string): string {
 function centsFromPg(value: string | number | bigint): number {
   const parsed = typeof value === "number" ? value : Number(value);
   if (!Number.isSafeInteger(parsed) || parsed < 0) {
-    throw new Error("Merchant E2E: invalid money cents returned from PostgreSQL.");
+    throw new Error(
+      "Merchant E2E: invalid money cents returned from PostgreSQL.",
+    );
   }
   return parsed;
 }
@@ -153,7 +155,9 @@ async function login(
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Contraseña").fill(password);
   await page.getByRole("button", { name: "Ingresar" }).click();
-  await expect(page).toHaveURL(new RegExp(`${nextHref.replaceAll("/", "\\/")}(?:\\?.*)?$`));
+  await expect(page).toHaveURL(
+    new RegExp(`${nextHref.replaceAll("/", "\\/")}(?:\\?.*)?$`),
+  );
 }
 
 async function loginBuyerAndAddProduct(
@@ -161,7 +165,12 @@ async function loginBuyerAndAddProduct(
   fixture: DevBuyerFixture,
 ): Promise<void> {
   const storefrontHref = `/comercios/${fixture.merchant.id}`;
-  await login(page, fixture.buyer.email, fixture.buyer.password, storefrontHref);
+  await login(
+    page,
+    fixture.buyer.email,
+    fixture.buyer.password,
+    storefrontHref,
+  );
 
   await page.getByLabel("Buscar en este comercio").fill(fixture.product.name);
   const productCard = page
@@ -198,7 +207,9 @@ async function reviewAndPlaceOrder(
   const review = page.getByRole("button", { name: "Revisar pedido" });
   await expect(review).toBeEnabled();
   await review.click();
-  await expect(page.getByText("Pedido revisado", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Pedido revisado", { exact: true }),
+  ).toBeVisible();
 
   const confirm = page
     .locator(".checkout-review-panel")
@@ -253,7 +264,9 @@ async function placeMerchantDeliveryOrder(
   await expect(delivery).toBeVisible();
   await delivery.check();
 
-  await page.locator('select[name="deliveryZoneId"]').selectOption(deliveryZone.zone_id);
+  await page
+    .locator('select[name="deliveryZoneId"]')
+    .selectOption(deliveryZone.zone_id);
   await page.getByLabel("Calle").fill("E2E Avenida Siempre Viva");
   await page.getByLabel("Número").fill("742");
   await page.getByLabel("Piso / depto (opcional)").fill("2 B");
@@ -322,7 +335,9 @@ async function openMerchantOrder(
 ): Promise<void> {
   await page.goto(`/merchant/${merchantId}/orders/${orderId}`);
   await expect(
-    page.getByRole("heading", { name: `Pedido #${shortOrderReference(orderId)}` }),
+    page.getByRole("heading", {
+      name: `Pedido #${shortOrderReference(orderId)}`,
+    }),
   ).toBeVisible();
 }
 
@@ -353,7 +368,8 @@ test.describe("WRITE_DEV merchant delivery, rejection and isolation", () => {
   }) => {
     test.setTimeout(150_000);
     expect(process.env.E2E_MODE).toBe(E2E_WRITE_DEV_MODE);
-    if (!baseURL) throw new Error("Merchant delivery E2E: baseURL is required.");
+    if (!baseURL)
+      throw new Error("Merchant delivery E2E: baseURL is required.");
 
     const fixture = await createDevBuyerFixture({
       productLabel: "Merchant delivery lifecycle product",
@@ -370,7 +386,11 @@ test.describe("WRITE_DEV merchant delivery, rejection and isolation", () => {
         merchantId: fixture.merchant.id,
       });
 
-      const orderId = await placeMerchantDeliveryOrder(page, fixture, deliveryZone);
+      const orderId = await placeMerchantDeliveryOrder(
+        page,
+        fixture,
+        deliveryZone,
+      );
       await expectOrderStatus(fixture, orderId, "PENDING");
       await expectDeliveryStatus(fixture, orderId, "PENDING");
       await expectProductStock(fixture, 4);
@@ -401,12 +421,16 @@ test.describe("WRITE_DEV merchant delivery, rejection and isolation", () => {
       await advanceOrderToReady(merchantPage, fixture, orderId);
       await expectDeliveryStatus(fixture, orderId, "PENDING");
 
-      await merchantPage.getByRole("button", { name: "Marcar en camino" }).click();
+      await merchantPage
+        .getByRole("button", { name: "Marcar en camino" })
+        .click();
       await expectOrderStatus(fixture, orderId, "READY");
       await expectDeliveryStatus(fixture, orderId, "IN_TRANSIT");
       await expectProductStock(fixture, 4);
 
-      await merchantPage.getByRole("button", { name: "Marcar entregado" }).click();
+      await merchantPage
+        .getByRole("button", { name: "Marcar entregado" })
+        .click();
       await expectOrderStatus(fixture, orderId, "COMPLETED");
       await expectDeliveryStatus(fixture, orderId, "DELIVERED");
       await expectProductStock(fixture, 4);
@@ -448,7 +472,8 @@ test.describe("WRITE_DEV merchant delivery, rejection and isolation", () => {
   }) => {
     test.setTimeout(120_000);
     expect(process.env.E2E_MODE).toBe(E2E_WRITE_DEV_MODE);
-    if (!baseURL) throw new Error("Merchant rejection E2E: baseURL is required.");
+    if (!baseURL)
+      throw new Error("Merchant rejection E2E: baseURL is required.");
 
     const fixture = await createDevBuyerFixture({
       productLabel: "Merchant rejection restock product",
@@ -472,7 +497,9 @@ test.describe("WRITE_DEV merchant delivery, rejection and isolation", () => {
       await openMerchantOrder(merchantPage, fixture.merchant.id, orderId);
 
       await merchantPage.getByRole("button", { name: "Rechazar" }).click();
-      const dialog = merchantPage.getByRole("dialog", { name: "Rechazar pedido" });
+      const dialog = merchantPage.getByRole("dialog", {
+        name: "Rechazar pedido",
+      });
       await expect(dialog).toBeVisible();
       await dialog.getByLabel("Sin stock").check();
       await dialog.getByRole("button", { name: "Confirmar rechazo" }).click();
@@ -481,7 +508,9 @@ test.describe("WRITE_DEV merchant delivery, rejection and isolation", () => {
       await expectProductStock(fixture, 5);
       await merchantPage.reload();
       await expectProductStock(fixture, 5);
-      await expect(merchantPage.getByRole("button", { name: "Rechazar" })).toHaveCount(0);
+      await expect(
+        merchantPage.getByRole("button", { name: "Rechazar" }),
+      ).toHaveCount(0);
 
       const [order] = await fixture.sql<
         {
@@ -537,7 +566,8 @@ test.describe("WRITE_DEV merchant delivery, rejection and isolation", () => {
   }) => {
     test.setTimeout(120_000);
     expect(process.env.E2E_MODE).toBe(E2E_WRITE_DEV_MODE);
-    if (!baseURL) throw new Error("Merchant isolation E2E: baseURL is required.");
+    if (!baseURL)
+      throw new Error("Merchant isolation E2E: baseURL is required.");
 
     const fixture = await createDevBuyerFixture({
       productLabel: "Cross merchant isolation product",
@@ -578,14 +608,20 @@ test.describe("WRITE_DEV merchant delivery, rejection and isolation", () => {
       await attackerPage.goto(
         `/merchant/${isolationMerchant.id}/orders/${orderId}`,
       );
-      await expect(attackerPage.getByText("El pedido no existe.")).toBeVisible();
+      await expect(
+        attackerPage.getByText("El pedido no existe."),
+      ).toBeVisible();
       await expect(
         attackerPage.getByRole("heading", {
           name: `Pedido #${shortOrderReference(orderId)}`,
         }),
       ).toHaveCount(0);
-      await expect(attackerPage.getByRole("button", { name: "Aceptar" })).toHaveCount(0);
-      await expect(attackerPage.getByRole("button", { name: "Rechazar" })).toHaveCount(0);
+      await expect(
+        attackerPage.getByRole("button", { name: "Aceptar" }),
+      ).toHaveCount(0);
+      await expect(
+        attackerPage.getByRole("button", { name: "Rechazar" }),
+      ).toHaveCount(0);
       await expectOrderStatus(fixture, orderId, "PENDING");
       await expectProductStock(fixture, 4);
     } finally {
