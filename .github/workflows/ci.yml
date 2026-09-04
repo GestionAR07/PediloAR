@@ -37,28 +37,6 @@ jobs:
       - name: Test
         run: npm run test
 
-      - name: Format pre-pilot files
-        run: >-
-          npx prettier --write
-          README.md
-          docs/CHECKPOINTS.md
-          docs/E2E.md
-          docs/MERCHANT_ONBOARDING.md
-          docs/ROADMAP.md
-          src/app/sumar-comercio/page.tsx
-
-      - name: Upload formatted files
-        uses: actions/upload-artifact@v4
-        with:
-          name: pre-pilot-prettier-output
-          path: |
-            README.md
-            docs/CHECKPOINTS.md
-            docs/E2E.md
-            docs/MERCHANT_ONBOARDING.md
-            docs/ROADMAP.md
-            src/app/sumar-comercio/page.tsx
-
       - name: Format check
         run: npm run format:check
 
