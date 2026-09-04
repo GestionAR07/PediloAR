@@ -37,6 +37,15 @@ jobs:
       - name: Test
         run: npm run test
 
+      - name: Format password recovery action
+        run: npx prettier --write src/app/forgot-password/actions.ts
+
+      - name: Upload formatted action
+        uses: actions/upload-artifact@v4
+        with:
+          name: password-recovery-prettier-output
+          path: src/app/forgot-password/actions.ts
+
       - name: Format check
         run: npm run format:check
 
