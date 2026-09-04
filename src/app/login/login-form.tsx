@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { GoogleOAuthSection } from "@/components/auth/google-oauth-section";
 import { loginAction, type LoginState } from "./actions";
@@ -44,6 +45,15 @@ export function LoginForm({ nextPath, googleOAuthEnabled }: LoginFormProps) {
             className="min-h-12 rounded-2xl border border-sky-100 bg-white px-4 text-foreground outline-none ring-[var(--ps-cyan)] focus:ring-2"
           />
         </label>
+
+        <div className="-mt-1 flex justify-end">
+          <Link
+            href="/forgot-password"
+            className="text-sm font-bold text-[var(--ps-navy)] hover:underline"
+          >
+            Olvidé mi contraseña
+          </Link>
+        </div>
 
         {state.error ? (
           <p className="text-sm text-red-800" role="alert">
