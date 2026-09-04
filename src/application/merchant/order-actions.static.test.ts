@@ -161,7 +161,9 @@ describe("merchant accept/reject static checks", () => {
     expect(lifecycle).toContain("markMerchantOrderReadyAction");
     expect(lifecycle).toContain("completeMerchantPickupOrderAction");
     expect(lifecycle).toContain("min-h-11");
-    expect(lifecycle).toContain("focus-visible:outline");
+    expect(lifecycle).toContain("pedilo-action-primary");
+    expect(lifecycle).toContain("pedilo-action-success");
+    expect(lifecycle).toContain('tone="success"');
     expect(lifecycle).toContain("aria-busy");
     expect(lifecycle).toContain('role="alert"');
     expect(lifecycle).not.toContain("Listo para iniciar el envío.");

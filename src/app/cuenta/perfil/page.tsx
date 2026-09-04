@@ -26,8 +26,8 @@ export default async function CustomerProfilePage({
   }
 
   return (
-    <section className="mx-auto max-w-xl rounded-[1.75rem] border border-violet-100/80 bg-white p-6 shadow-soft sm:p-8">
-      <p className="text-xs font-bold tracking-wider text-violet-700 uppercase">
+    <section className="mx-auto max-w-xl rounded-[1.75rem] border border-sky-100/80 bg-white p-6 shadow-soft sm:p-8">
+      <p className="text-xs font-bold tracking-wider text-[var(--ps-cyan,#20AEE5)] uppercase">
         Mi cuenta
       </p>
       <h1 className="font-display mt-1 text-3xl font-extrabold text-[var(--ps-night-900)]">

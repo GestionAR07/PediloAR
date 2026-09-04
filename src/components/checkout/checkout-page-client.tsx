@@ -66,14 +66,14 @@ import {
 } from "@/lib/order-confirmation-sound";
 
 const focusRing =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-cyan)]";
 
-const inputClassName = `checkout-input min-h-12 w-full rounded-2xl border border-violet-100 bg-white px-4 py-3 text-sm outline-none ring-accent focus-visible:ring-2 disabled:opacity-60 ${focusRing}`;
+const inputClassName = `checkout-input min-h-12 w-full rounded-2xl border border-sky-100 bg-white px-4 py-3 text-sm outline-none ring-accent focus-visible:ring-2 disabled:opacity-60 ${focusRing}`;
 
 const choiceBase =
   "checkout-choice flex min-h-12 cursor-pointer items-start gap-3 rounded-2xl border px-4 py-3 text-sm transition";
-const choiceIdle = `${choiceBase} border-violet-100 bg-white text-[var(--ps-night-900)]`;
-const choiceActive = `${choiceBase} checkout-choice--active border-violet-300 bg-violet-50 text-[var(--ps-night-900)]`;
+const choiceIdle = `${choiceBase} border-sky-100 bg-white text-[var(--ps-night-900)]`;
+const choiceActive = `${choiceBase} checkout-choice--active border-sky-300 bg-sky-50 text-[var(--ps-night-900)]`;
 
 function formatCents(cents: number): string {
   return formatMoneyCentsArs(moneyCents(cents));
@@ -509,10 +509,10 @@ export function CheckoutPageClient({
     return (
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-10 sm:px-6 lg:px-8">
         <section
-          className="checkout-success mx-auto w-full max-w-md space-y-5 rounded-[1.75rem] border border-violet-100/70 bg-white p-6 text-center shadow-soft sm:p-8"
+          className="checkout-success mx-auto w-full max-w-md space-y-5 rounded-[1.75rem] border border-sky-100/70 bg-white p-6 text-center shadow-soft sm:p-8"
           aria-live="polite"
         >
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-50 text-violet-700">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-50 text-[var(--ps-cyan,#20AEE5)]">
             <ShoppingBagIcon className="h-7 w-7" />
           </span>
           <h1 className="font-display text-2xl font-extrabold tracking-tight text-[var(--ps-night-900)]">
@@ -521,7 +521,7 @@ export function CheckoutPageClient({
           <p className="text-sm text-muted">
             El comercio recibió tu pedido. Ahora está pendiente de aceptación.
           </p>
-          <dl className="space-y-2 rounded-2xl bg-violet-50/70 p-4 text-left text-sm">
+          <dl className="space-y-2 rounded-2xl bg-sky-50/70 p-4 text-left text-sm">
             <div className="flex justify-between gap-3">
               <dt className="text-muted">Referencia</dt>
               <dd className="font-bold">{success.orderRef}</dd>
@@ -555,7 +555,7 @@ export function CheckoutPageClient({
           </Link>
           <Link
             href="/"
-            className={`inline-flex min-h-11 w-full items-center justify-center rounded-full border border-violet-100 px-4 text-sm font-bold text-violet-800 ${focusRing}`}
+            className={`inline-flex min-h-11 w-full items-center justify-center rounded-full border border-sky-100 px-4 text-sm font-bold text-[var(--ps-navy,#083F66)] ${focusRing}`}
           >
             Volver al inicio
           </Link>
@@ -567,8 +567,8 @@ export function CheckoutPageClient({
   if (isCartEmpty(cart)) {
     return (
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-10 sm:px-6 lg:px-8">
-        <div className="checkout-empty mx-auto w-full max-w-md rounded-[1.75rem] border border-violet-100/70 bg-white px-6 py-12 text-center shadow-soft">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-50 text-violet-700">
+        <div className="checkout-empty mx-auto w-full max-w-md rounded-[1.75rem] border border-sky-100/70 bg-white px-6 py-12 text-center shadow-soft">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-50 text-[var(--ps-cyan,#20AEE5)]">
             <ShoppingBagIcon className="h-7 w-7" />
           </span>
           <h1 className="font-display mt-5 text-2xl font-extrabold tracking-tight text-[var(--ps-night-900)]">
@@ -614,28 +614,28 @@ export function CheckoutPageClient({
       <p className="text-sm">
         <Link
           href="/carrito"
-          className={`inline-flex items-center font-bold text-violet-800 underline-offset-4 hover:underline ${focusRing}`}
+          className={`inline-flex items-center font-bold text-[var(--ps-navy,#083F66)] underline-offset-4 hover:underline ${focusRing}`}
         >
           ← Volver al carrito
         </Link>
       </p>
 
       <header className="checkout-intro mt-5 max-w-2xl space-y-2">
-        <p className="text-[11px] font-bold tracking-wider text-violet-700 uppercase">
+        <p className="text-[11px] font-bold tracking-wider text-[var(--ps-cyan,#20AEE5)] uppercase">
           Pedido local
         </p>
         <h1 className="font-display text-3xl font-extrabold tracking-tight text-[var(--ps-night-900)]">
           Finalizá tu pedido
         </h1>
         <p className="flex items-center gap-2 text-sm font-medium text-muted">
-          <StoreIcon className="h-4 w-4 shrink-0 text-violet-600" />
+          <StoreIcon className="h-4 w-4 shrink-0 text-[var(--ps-cyan,#20AEE5)]" />
           <span className="min-w-0 truncate">{merchantLabel}</span>
         </p>
         <p className="text-sm text-muted">
           Completá tus datos, revisá el pedido y confirmá. La disponibilidad y
           las condiciones de entrega se validan al revisar el pedido.
         </p>
-        <p className="text-xs font-bold tracking-wide text-violet-700">
+        <p className="text-xs font-bold tracking-wide text-[var(--ps-cyan,#20AEE5)]">
           {showAuthoritativeReview ? (
             <>
               Datos listos · Revisado ·{" "}
@@ -659,7 +659,7 @@ export function CheckoutPageClient({
 
       {configError ? (
         <p
-          className="checkout-alert mt-4 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm"
+          className="checkout-alert mt-4 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm"
           role="alert"
         >
           {configError}
@@ -668,7 +668,7 @@ export function CheckoutPageClient({
 
       {config && !config.merchant.acceptingOrders ? (
         <p
-          className="checkout-alert mt-4 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm"
+          className="checkout-alert mt-4 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm"
           role="alert"
         >
           Este comercio no está tomando pedidos en este momento.
@@ -677,7 +677,7 @@ export function CheckoutPageClient({
 
       {config && config.paymentMethods.length === 0 ? (
         <p
-          className="checkout-alert mt-4 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm"
+          className="checkout-alert mt-4 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm"
           role="alert"
         >
           Este comercio todavía no configuró medios de pago.
@@ -686,7 +686,7 @@ export function CheckoutPageClient({
 
       <div className="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1.62fr)_minmax(18rem,0.9fr)] lg:gap-8">
         <div className="space-y-5">
-          <section className="checkout-section space-y-4 rounded-[1.75rem] border border-violet-100/70 bg-white p-5 shadow-soft">
+          <section className="checkout-section space-y-4 rounded-[1.75rem] border border-sky-100/70 bg-white p-5 shadow-soft">
             <h2 className="font-display text-lg font-extrabold tracking-tight text-[var(--ps-night-900)]">
               Tus datos
             </h2>
@@ -722,7 +722,7 @@ export function CheckoutPageClient({
             </label>
           </section>
 
-          <section className="checkout-section space-y-4 rounded-[1.75rem] border border-violet-100/70 bg-white p-5 shadow-soft">
+          <section className="checkout-section space-y-4 rounded-[1.75rem] border border-sky-100/70 bg-white p-5 shadow-soft">
             <h2 className="font-display text-lg font-extrabold tracking-tight text-[var(--ps-night-900)]">
               Cómo lo recibís
             </h2>
@@ -743,11 +743,11 @@ export function CheckoutPageClient({
                     value="PICKUP"
                     checked={fulfillmentValue === "PICKUP"}
                     onChange={() => setFulfillmentMethod("PICKUP")}
-                    className="mt-1 accent-violet-700"
+                    className="mt-1 accent-[var(--ps-cyan,#20AEE5)]"
                   />
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2 font-bold">
-                      <StoreIcon className="h-4 w-4 shrink-0 text-violet-600" />
+                      <StoreIcon className="h-4 w-4 shrink-0 text-[var(--ps-cyan,#20AEE5)]" />
                       Retiro en el comercio
                     </span>
                     {config ? (
@@ -776,10 +776,10 @@ export function CheckoutPageClient({
                     value="MERCHANT_DELIVERY"
                     checked={fulfillmentValue === "MERCHANT_DELIVERY"}
                     onChange={() => setFulfillmentMethod("MERCHANT_DELIVERY")}
-                    className="mt-1 accent-violet-700"
+                    className="mt-1 accent-[var(--ps-cyan,#20AEE5)]"
                   />
                   <span className="flex items-center gap-2 font-bold">
-                    <BikeIcon className="h-4 w-4 shrink-0 text-violet-600" />
+                    <BikeIcon className="h-4 w-4 shrink-0 text-[var(--ps-cyan,#20AEE5)]" />
                     Envío a domicilio
                   </span>
                 </label>
@@ -793,7 +793,7 @@ export function CheckoutPageClient({
           </section>
 
           {fulfillmentValue === "MERCHANT_DELIVERY" ? (
-            <section className="checkout-section checkout-address space-y-4 rounded-[1.75rem] border border-violet-100/70 bg-white p-5 shadow-soft">
+            <section className="checkout-section checkout-address space-y-4 rounded-[1.75rem] border border-sky-100/70 bg-white p-5 shadow-soft">
               <h2 className="font-display text-lg font-extrabold tracking-tight text-[var(--ps-night-900)]">
                 Dirección
               </h2>
@@ -876,7 +876,7 @@ export function CheckoutPageClient({
             </section>
           ) : null}
 
-          <section className="checkout-section space-y-4 rounded-[1.75rem] border border-violet-100/70 bg-white p-5 shadow-soft">
+          <section className="checkout-section space-y-4 rounded-[1.75rem] border border-sky-100/70 bg-white p-5 shadow-soft">
             <h2 className="font-display text-lg font-extrabold tracking-tight text-[var(--ps-night-900)]">
               Cómo pagás
             </h2>
@@ -898,13 +898,13 @@ export function CheckoutPageClient({
                     value={method.code}
                     checked={paymentValue === method.code}
                     onChange={() => setPaymentMethodCode(method.code)}
-                    className="mt-1 accent-violet-700"
+                    className="mt-1 accent-[var(--ps-cyan,#20AEE5)]"
                   />
                   <span className="font-bold">{method.label}</span>
                 </label>
               ))}
               {selectedInstructions ? (
-                <p className="rounded-2xl border border-violet-100 bg-violet-50/70 px-4 py-3 text-sm text-muted">
+                <p className="rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-sm text-muted">
                   {selectedInstructions}
                 </p>
               ) : null}
@@ -924,7 +924,7 @@ export function CheckoutPageClient({
           {errorCode === CHECKOUT_ERROR_CODES.AUTHENTICATION_REQUIRED ? (
             <Link
               href="/login?next=/checkout"
-              className={`inline-flex min-h-11 w-full items-center justify-center rounded-full border border-violet-200 px-4 text-sm font-extrabold text-violet-800 ${focusRing}`}
+              className={`inline-flex min-h-11 w-full items-center justify-center rounded-full border border-sky-200 px-4 text-sm font-extrabold text-[var(--ps-navy,#083F66)] ${focusRing}`}
             >
               Volver a ingresar
             </Link>
@@ -933,7 +933,7 @@ export function CheckoutPageClient({
           {isStaleCartError(errorCode ?? "") ? (
             <Link
               href="/carrito"
-              className={`inline-flex min-h-11 items-center justify-center rounded-full border border-violet-100 px-4 text-sm font-bold text-violet-800 ${focusRing}`}
+              className={`inline-flex min-h-11 items-center justify-center rounded-full border border-sky-100 px-4 text-sm font-bold text-[var(--ps-navy,#083F66)] ${focusRing}`}
             >
               Volver al carrito
             </Link>
@@ -968,7 +968,7 @@ export function CheckoutPageClient({
                   </p>
                   <Link
                     href={`/comercios/${cart.merchantId}`}
-                    className={`inline-flex min-h-11 w-full items-center justify-center rounded-full border border-violet-200 bg-white px-4 text-sm font-extrabold text-violet-800 ${focusRing}`}
+                    className={`inline-flex min-h-11 w-full items-center justify-center rounded-full border border-sky-200 bg-white px-4 text-sm font-extrabold text-[var(--ps-navy,#083F66)] ${focusRing}`}
                   >
                     Explorar productos
                   </Link>
@@ -980,8 +980,8 @@ export function CheckoutPageClient({
                 disabled={!canReview}
                 className={`inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full px-4 text-sm font-extrabold disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-200 disabled:text-slate-500 disabled:opacity-100 ${focusRing} ${
                   showAuthoritativeReview
-                    ? "border border-violet-100 bg-violet-50/80 text-violet-700"
-                    : "border border-violet-200 bg-white text-violet-800"
+                    ? "border border-sky-100 bg-sky-50/80 text-[var(--ps-cyan,#20AEE5)]"
+                    : "border border-sky-200 bg-white text-[var(--ps-navy,#083F66)]"
                 }`}
               >
                 {reviewing ? (
@@ -1001,7 +1001,7 @@ export function CheckoutPageClient({
 
         <aside className="checkout-summary-panel flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
           <section
-            className={`space-y-3 rounded-[1.75rem] border border-violet-100/70 bg-white shadow-soft ${
+            className={`space-y-3 rounded-[1.75rem] border border-sky-100/70 bg-white shadow-soft ${
               showAuthoritativeReview && review ? "order-2 p-4" : "order-1 p-5"
             }`}
           >
@@ -1052,7 +1052,7 @@ export function CheckoutPageClient({
                     );
                   })}
                 </ul>
-                <div className="flex items-end justify-between gap-3 border-t border-violet-100 pt-3">
+                <div className="flex items-end justify-between gap-3 border-t border-sky-100 pt-3">
                   <span className="text-sm font-bold text-slate-500">
                     Subtotal de productos
                   </span>
@@ -1074,12 +1074,12 @@ export function CheckoutPageClient({
           </section>
 
           {showAuthoritativeReview && review ? (
-            <section className="checkout-review-panel order-1 space-y-3 rounded-[1.75rem] border border-violet-200 bg-violet-50/60 p-5 shadow-soft">
+            <section className="checkout-review-panel order-1 space-y-3 rounded-[1.75rem] border border-sky-200 bg-sky-50/60 p-5 shadow-soft">
               <h2 className="font-display text-lg font-extrabold tracking-tight text-[var(--ps-night-900)]">
                 Revisión del pedido
               </h2>
               <p className="text-sm font-medium">{review.merchantName}</p>
-              <p className="text-xs font-bold tracking-wider text-violet-700 uppercase">
+              <p className="text-xs font-bold tracking-wider text-[var(--ps-cyan,#20AEE5)] uppercase">
                 Pedido revisado
               </p>
               <ul className="space-y-2 text-sm">

@@ -168,14 +168,20 @@
 }
 
 .merchant-workspace-primary-btn {
-  border-color: var(--pedilo-yellow);
-  background: var(--pedilo-yellow);
+  border-color: rgba(8, 63, 102, 0.16);
+  background: linear-gradient(135deg, #20aee5 0%, #1698c9 100%);
   color: var(--pedilo-navy);
+  box-shadow:
+    0 4px 10px rgba(32, 174, 229, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
 .merchant-workspace-primary-btn:hover:not(:disabled) {
-  border-color: var(--pedilo-yellow-hover);
-  background: var(--pedilo-yellow-hover);
+  border-color: rgba(8, 63, 102, 0.22);
+  background: linear-gradient(135deg, #159ccf 0%, #1286b5 100%);
+  box-shadow:
+    0 5px 12px rgba(32, 174, 229, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 .merchant-workspace-secondary-btn {
@@ -225,8 +231,8 @@
 .merchant-workspace-mode-choice:focus-within
   .merchant-workspace-mode-choice-body,
 .merchant-workspace-switch--compact:has(
-    .merchant-workspace-switch-input:focus-visible
-  ),
+  .merchant-workspace-switch-input:focus-visible
+),
 .merchant-workspace-toggle-card--switch:has(
     .merchant-workspace-switch-input:focus-visible
   )

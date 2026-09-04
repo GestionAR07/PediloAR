@@ -35,7 +35,8 @@ describe("new order alert static checks", () => {
     expect(toast).toContain('role="status"');
     expect(toast).toContain('aria-live="polite"');
     expect(toast).toContain('aria-label="Cerrar aviso de pedido nuevo"');
-    expect(toast).toContain("focus-visible:outline");
+    expect(toast).toContain("pedilo-action-link");
+    expect(toast).toContain("pedilo-action-secondary");
     expect(toast).toContain("min-h-11");
     expect(toast).toContain("NEW_ORDER_TOAST_VISIBLE_MS");
     expect(toast).toContain("NEW_ORDER_TOAST_EXIT_MS");

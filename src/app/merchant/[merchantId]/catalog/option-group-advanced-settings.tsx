@@ -12,12 +12,12 @@ export function OptionGroupAdvancedSettings({
   maxSelections,
 }: OptionGroupAdvancedSettingsProps) {
   return (
-    <details className="rounded-xl border border-[#e4dcf7] bg-[#faf8ff] p-3 text-sm">
+    <details className="rounded-xl border border-[#D4E8F3] bg-[#F6F8FA] p-3 text-sm">
       <summary className="cursor-pointer font-medium text-[#3f3a55]">
         Configuración avanzada
       </summary>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        <p className="text-xs text-[#5b5470] sm:col-span-2">
+        <p className="text-xs text-[#4A6B82] sm:col-span-2">
           {getAdvancedBoundsHint(mode)}
         </p>
         <label className="merchant-workspace-field">

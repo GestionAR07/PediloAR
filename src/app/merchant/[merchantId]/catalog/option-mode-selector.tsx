@@ -37,11 +37,11 @@ type OptionModeSelectorProps = {
 export function QuantityModePreview() {
   return (
     <details className="merchant-workspace-example mt-1.5">
-      <summary className="cursor-pointer text-xs font-semibold text-[#6d28d9]">
+      <summary className="cursor-pointer text-xs font-semibold text-[#083F66]">
         Ver ejemplo
       </summary>
-      <div className="mt-2 rounded-xl border border-[#e4dcf7] bg-[#faf8ff] p-3 text-xs text-[#5b5470]">
-        <p className="font-medium text-[#0e0820]">
+      <div className="mt-2 rounded-xl border border-[#D4E8F3] bg-[#F6F8FA] p-3 text-xs text-[#4A6B82]">
+        <p className="font-medium text-[#083F66]">
           Ejemplo: docena de empanadas
         </p>
         <pre className="mt-2 whitespace-pre-wrap font-sans leading-relaxed">

@@ -140,7 +140,7 @@ export function PublicMerchantHero({ merchant, zoneId = null }: Props) {
               {merchant.name}
             </h1>
             <p className="inline-flex max-w-full items-center gap-2 text-sm font-medium break-words text-slate-300">
-              <MapPinIcon className="h-4 w-4 shrink-0 text-violet-300" />
+              <MapPinIcon className="h-4 w-4 shrink-0 text-sky-300" />
               <span className="min-w-0">
                 {merchant.zoneName} · {merchant.cityName}
               </span>
@@ -179,7 +179,7 @@ export function PublicMerchantHero({ merchant, zoneId = null }: Props) {
                   className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold break-words text-slate-200"
                 >
                   {chip.icon === "clock" ? (
-                    <ClockIcon className="h-3.5 w-3.5 shrink-0 text-violet-200" />
+                    <ClockIcon className="h-3.5 w-3.5 shrink-0 text-sky-200" />
                   ) : null}
                   {chip.label}
                 </li>

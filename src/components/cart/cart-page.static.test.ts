@@ -29,6 +29,7 @@ describe("qwen cart v3 static checks", () => {
   it("keeps cart navigation, hydrate gate, honest totals, and live availability feedback", () => {
     const client = read("src/components/cart/cart-page-client.tsx");
     const actions = read("src/app/carrito/actions.ts");
+    const css = read("src/styles/globals.css");
 
     expect(client).toContain("if (!hydrated)");
     expect(client).toContain("isCartEmpty(cart)");
@@ -70,7 +71,11 @@ describe("qwen cart v3 static checks", () => {
     expect(client).toContain(
       "cart-sticky-bar pointer-events-none fixed inset-x-0 bottom-0 z-20 lg:hidden",
     );
-    expect(client).toContain("pb-[calc(5rem+env(safe-area-inset-bottom,0px))]");
+    expect(client).toContain("cart-page");
+    expect(client).toContain("cart-sticky-bar-inner");
+    expect(client).toContain("cart-sticky-spacer");
+    expect(css).toContain(".public-storefront .cart-sticky-spacer");
+    expect(css).toContain("safe-area-inset-bottom");
     expect(client).not.toContain("ProductOptionsSheet");
     expect(client).not.toContain("localStorage");
     expect(client).not.toContain("marketplace-rawson-cart-v1");
