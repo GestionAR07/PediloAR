@@ -16,12 +16,12 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
 SUPABASE_SECRET_KEY=...
 ```
 
-| Variable | Dónde | Uso |
-| --- | --- | --- |
-| `APP_BASE_URL` | server-only | Origen para redirects de invitación |
-| `DATABASE_URL` | server-only | Persistencia y consultas PostgreSQL |
-| `SUPABASE_SECRET_KEY` | server-only | Auth Admin para invitaciones/usuarios |
-| `NEXT_PUBLIC_*` | browser + server | Sesión SSR/cliente con clave pública |
+| Variable              | Dónde            | Uso                                   |
+| --------------------- | ---------------- | ------------------------------------- |
+| `APP_BASE_URL`        | server-only      | Origen para redirects de invitación   |
+| `DATABASE_URL`        | server-only      | Persistencia y consultas PostgreSQL   |
+| `SUPABASE_SECRET_KEY` | server-only      | Auth Admin para invitaciones/usuarios |
+| `NEXT_PUBLIC_*`       | browser + server | Sesión SSR/cliente con clave pública  |
 
 **Prohibido:** `NEXT_PUBLIC_SUPABASE_SECRET_KEY`.
 
@@ -45,7 +45,9 @@ Ajustar el puerto si el servidor local usa otro.
 La invitación debe usar el callback SSR de Pedilo con `token_hash`:
 
 ```html
-<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite&next=/set-password">
+<a
+  href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite&next=/set-password"
+>
   Aceptar invitación
 </a>
 ```
@@ -84,19 +86,19 @@ Mientras está `DRAFT`, la ruta pública `/comercios/[merchantId]` no debe expon
 
 ## Superficies principales
 
-| Ruta | Quién |
-| --- | --- |
-| `/sumar-comercio` | público — solicitud de alta |
-| `/admin/merchant-applications` | ADMIN — revisar solicitudes |
-| `/admin/merchants/[id]` | ADMIN — readiness, OWNER y activación |
-| `/auth/confirm` | callback de Auth |
-| `/set-password` | usuario autenticado post-invite/recovery |
-| `/merchant` | usuario con membership activa |
-| `/merchant/[id]` | miembro de **ese** merchant |
-| `/merchant/[id]/catalog` | OWNER/STAFF |
-| `/merchant/[id]/delivery` | OWNER/STAFF |
-| `/merchant/[id]/payment-methods` | OWNER/STAFF |
-| `/merchant/[id]/profile` | OWNER/STAFF |
+| Ruta                             | Quién                                    |
+| -------------------------------- | ---------------------------------------- |
+| `/sumar-comercio`                | público — solicitud de alta              |
+| `/admin/merchant-applications`   | ADMIN — revisar solicitudes              |
+| `/admin/merchants/[id]`          | ADMIN — readiness, OWNER y activación    |
+| `/auth/confirm`                  | callback de Auth                         |
+| `/set-password`                  | usuario autenticado post-invite/recovery |
+| `/merchant`                      | usuario con membership activa            |
+| `/merchant/[id]`                 | miembro de **ese** merchant              |
+| `/merchant/[id]/catalog`         | OWNER/STAFF                              |
+| `/merchant/[id]/delivery`        | OWNER/STAFF                              |
+| `/merchant/[id]/payment-methods` | OWNER/STAFF                              |
+| `/merchant/[id]/profile`         | OWNER/STAFF                              |
 
 ## Seguridad y aislamiento
 
