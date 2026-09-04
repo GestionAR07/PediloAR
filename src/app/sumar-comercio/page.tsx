@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PublicBrandWordmark } from "@/components/storefront/public-brand-wordmark";
+import { hasDatabaseConfig } from "@/infrastructure/db/env";
 import {
   listCities,
   listZones,
 } from "@/infrastructure/db/repositories/geography-repository";
 import { APP_NAME } from "@/lib/app-info";
-import { PublicBrandWordmark } from "@/components/storefront/public-brand-wordmark";
 import { MerchantApplicationForm } from "./merchant-application-form";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +16,10 @@ export const metadata: Metadata = {
 };
 
 export default async function SumarComercioPage() {
-  const [cities, zones] = await Promise.all([listCities(), listZones()]);
+  const databaseAvailable = hasDatabaseConfig();
+  const [cities, zones] = databaseAvailable
+    ? await Promise.all([listCities(), listZones()])
+    : [[], []];
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10 sm:px-6 md:max-w-4xl lg:max-w-5xl lg:py-14">
@@ -34,7 +38,15 @@ export default async function SumarComercioPage() {
           alta en Pedilo.
         </p>
         <div className="mt-7">
-          {cities.length === 0 || zones.length === 0 ? (
+          {!databaseAvailable ? (
+            <p
+              className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm text-muted"
+              role="status"
+            >
+              Las solicitudes de comercios no están disponibles en este entorno.
+              Intentá nuevamente más tarde.
+            </p>
+          ) : cities.length === 0 || zones.length === 0 ? (
             <p className="text-sm text-muted">
               Todavía no hay ciudades y zonas configuradas para recibir
               solicitudes.

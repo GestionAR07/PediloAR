@@ -26,7 +26,7 @@ export default async function SetPasswordPage() {
           Establecer contraseña
         </h1>
         <p className="text-sm text-muted">
-          Elegí una contraseña para acceder al panel de comercio.
+          Elegí una contraseña nueva para seguir usando Pedilo.
         </p>
       </header>
       <SetPasswordForm />

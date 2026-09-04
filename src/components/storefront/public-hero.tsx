@@ -16,9 +16,8 @@ export function PublicHero() {
             Operando en {APP_SERVICE_AREA}
           </p>
           <h1 className="public-hero-title font-display mt-6 max-w-full font-extrabold tracking-tight break-words text-[var(--ps-deep)]">
-            Todo lo de tu zona,
-            <br />
-            <span className="grad-text">en un solo lugar.</span>
+            Todo lo de tu zona,{" "}
+            <span className="grad-text block">en un solo lugar.</span>
           </h1>
           <p className="mx-auto mt-6 w-full max-w-lg text-base break-words text-[var(--color-muted)] sm:text-lg lg:mx-0">
             Elegí tu zona, descubrí comercios cercanos y armá tu pedido sin
