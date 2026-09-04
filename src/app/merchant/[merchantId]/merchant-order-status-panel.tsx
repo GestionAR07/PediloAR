@@ -95,7 +95,7 @@ export function MerchantOrderStatusPanel({
       </header>
 
       {feedback && (
-        <p className="rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-sm text-violet-900">
+        <p className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-[#083F66]">
           {feedback}
         </p>
       )}
@@ -110,7 +110,7 @@ export function MerchantOrderStatusPanel({
           type="button"
           disabled={pending}
           onClick={openPauseDialog}
-          className="min-h-11 rounded-xl border border-amber-700/30 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7c3aed]"
+          className="min-h-11 rounded-xl border border-amber-700/30 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#083F66]"
         >
           Pausar pedidos
         </button>
@@ -121,7 +121,7 @@ export function MerchantOrderStatusPanel({
           type="button"
           disabled={pending}
           onClick={() => runAction(() => resumeAction(merchantId))}
-          className="min-h-11 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-medium text-violet-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7c3aed]"
+          className="min-h-11 rounded-xl border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-medium text-[#083F66] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#083F66]"
         >
           {operationalStatus === "TEMPORARILY_PAUSED"
             ? "Reactivar ahora"
@@ -131,7 +131,7 @@ export function MerchantOrderStatusPanel({
 
       <dialog
         ref={dialogRef}
-        className="fixed inset-0 m-auto h-fit max-h-[calc(100dvh-2rem)] w-[min(calc(100%-2rem),28rem)] overflow-y-auto rounded-2xl border border-[#e4dcf7] bg-white p-0 shadow-lg backdrop:bg-black/40"
+        className="fixed inset-0 m-auto h-fit max-h-[calc(100dvh-2rem)] w-[min(calc(100%-2rem),28rem)] overflow-y-auto rounded-2xl border border-[#d4e8f3] bg-white p-0 shadow-lg backdrop:bg-black/40"
       >
         <form
           method="dialog"
@@ -160,8 +160,8 @@ export function MerchantOrderStatusPanel({
                 htmlFor={`pause-${option.value}`}
                 className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-md border px-3 py-2 text-sm ${
                   !manualSelected && selectedDuration === option.value
-                    ? "border-[#7c3aed] bg-violet-50"
-                    : "border-[#e4dcf7]"
+                    ? "border-[#083F66] bg-sky-50"
+                    : "border-[#d4e8f3]"
                 }`}
               >
                 <input
@@ -183,8 +183,8 @@ export function MerchantOrderStatusPanel({
               htmlFor="pause-manual"
               className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-md border px-3 py-2 text-sm ${
                 manualSelected
-                  ? "border-[#7c3aed] bg-violet-50"
-                  : "border-[#e4dcf7]"
+                  ? "border-[#083F66] bg-sky-50"
+                  : "border-[#d4e8f3]"
               }`}
             >
               <input
@@ -205,7 +205,7 @@ export function MerchantOrderStatusPanel({
             <button
               type="submit"
               disabled={pending}
-              className="min-h-11 flex-1 rounded-xl bg-[#7c3aed] px-4 py-2 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7c3aed] disabled:opacity-60"
+              className="min-h-11 flex-1 rounded-xl bg-[#083F66] px-4 py-2 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#083F66] disabled:opacity-60"
             >
               {pending ? "..." : "Confirmar pausa"}
             </button>

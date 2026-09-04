@@ -226,7 +226,7 @@ body {
 }
 
 .public-storefront .category-tile:focus-visible {
-  outline: 2px solid var(--ps-violet);
+  outline: 2px solid var(--ps-cyan);
   outline-offset: 4px;
   border-radius: 1.25rem;
 }
@@ -853,7 +853,7 @@ body {
   /* Mobile density: keep cover present without eating the first viewport. */
   max-height: 12.5rem;
   min-height: 10.5rem;
-  background: linear-gradient(135deg, #4c1d95, #a21caf);
+  background: linear-gradient(135deg, #083f66, #20aee5);
 }
 
 @media (min-width: 640px) {
@@ -1047,7 +1047,7 @@ body {
 @media (hover: hover) and (pointer: fine) {
   .public-storefront .cart-line-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 18px 40px -20px rgba(109, 40, 217, 0.22);
+    box-shadow: 0 18px 40px -20px rgba(8, 63, 102, 0.22);
   }
 }
 
@@ -1103,7 +1103,7 @@ body {
 }
 
 .public-storefront .checkout-input:focus-visible {
-  border-color: #7c3aed;
+  border-color: #083f66;
 }
 
 /* Chromium/Safari paint their own autofill surface over bg-white. */
@@ -1115,7 +1115,7 @@ body {
   -webkit-text-fill-color: var(--ps-night-900);
   caret-color: var(--ps-night-900);
   box-shadow: 0 0 0 1000px #fff inset;
-  border-color: #ede9fe;
+  border-color: #d4e8f3;
 }
 
 .public-storefront .checkout-choice {
@@ -1142,8 +1142,8 @@ body {
   display: inline-block;
   height: 0.9rem;
   width: 0.9rem;
-  border: 2px solid #ddd6fe;
-  border-top-color: #7c3aed;
+  border: 2px solid #d4e8f3;
+  border-top-color: #083f66;
   border-radius: 999px;
   animation: ps-checkout-spin 0.6s linear infinite;
 }
@@ -1278,7 +1278,7 @@ body {
 @keyframes merchant-order-toast-ring {
   from {
     box-shadow:
-      0 0 0 3px rgba(124, 58, 237, 0.28),
+      0 0 0 3px rgba(32, 174, 229, 0.28),
       0 12px 32px -16px rgba(15, 23, 42, 0.28);
   }
   to {
@@ -1319,13 +1319,13 @@ body {
 
 /* Private merchant dashboard — not public-storefront. */
 .merchant-ops {
-  --color-bg: #faf8ff;
-  --color-fg: #0e0820;
-  --color-muted: #5b5470;
-  --color-border: #e4dcf7;
-  --color-accent: #7c3aed;
-  background-color: #faf8ff;
-  color: #0e0820;
+  --color-bg: #f4f8fb;
+  --color-fg: #083f66;
+  --color-muted: #4a6b82;
+  --color-border: #d4e8f3;
+  --color-accent: #083f66;
+  background-color: #f4f8fb;
+  color: #083f66;
   overflow-x: clip;
 }
 
@@ -1347,7 +1347,7 @@ body {
   align-items: start;
   min-width: 0;
   padding: 0.75rem 0.9rem;
-  border: 1px solid #e4dcf7;
+  border: 1px solid #d4e8f3;
   border-radius: 1.25rem;
   background: #ffffff;
   box-shadow: 0 10px 30px -24px rgba(15, 23, 42, 0.35);
@@ -1378,7 +1378,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #7c3aed;
+  color: #083f66;
 }
 
 .merchant-ops-title {
@@ -1391,7 +1391,7 @@ body {
 
 .merchant-ops-kicker {
   font-size: 0.875rem;
-  color: #5b5470;
+  color: #4a6b82;
 }
 
 .merchant-ops-badge {
@@ -1434,18 +1434,18 @@ body {
   min-height: 2.75rem;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid #e4dcf7;
-  background: #faf8ff;
+  border: 1px solid #d4e8f3;
+  background: #f4f8fb;
   padding: 0 1rem;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #6d28d9;
+  color: #083f66;
 }
 
 .merchant-ops-store-link:focus-visible,
 .merchant-ops-nav-link:focus-visible,
 .merchant-ops-logout:focus-visible {
-  outline: 2px solid #7c3aed;
+  outline: 2px solid #083f66;
   outline-offset: 2px;
 }
 
@@ -1456,7 +1456,7 @@ body {
   background: transparent;
   padding: 0 0.75rem;
   font-size: 0.8125rem;
-  color: #5b5470;
+  color: #4a6b82;
 }
 
 .merchant-ops-layout {
@@ -1488,18 +1488,18 @@ body {
   min-height: 2.75rem;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid #e4dcf7;
+  border: 1px solid #d4e8f3;
   background: #ffffff;
   padding: 0 1rem;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #3f3a55;
+  color: #083f66;
   white-space: nowrap;
 }
 
 .merchant-ops-nav-link--active {
-  border-color: #7c3aed;
-  background: #7c3aed;
+  border-color: #083f66;
+  background: #083f66;
   color: #ffffff;
 }
 
@@ -1518,7 +1518,7 @@ body {
 
 .merchant-ops-stat {
   min-width: 0;
-  border: 1px solid #e4dcf7;
+  border: 1px solid #d4e8f3;
   border-radius: 1.15rem;
   background: #ffffff;
   padding: 0.9rem 1rem;
@@ -1528,7 +1528,7 @@ body {
 .merchant-ops-stat-label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #5b5470;
+  color: #4a6b82;
 }
 
 .merchant-ops-stat-value {
@@ -1536,7 +1536,7 @@ body {
   font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: -0.03em;
-  color: #7c3aed;
+  color: #083f66;
 }
 
 .merchant-ops-workspace {
@@ -1569,7 +1569,7 @@ body {
 .merchant-ops-board > section,
 .merchant-ops-today {
   min-width: 0;
-  border: 1px solid #e4dcf7;
+  border: 1px solid #d4e8f3;
   border-radius: 1.25rem;
   background: #ffffff;
   padding: 1rem;
@@ -1578,7 +1578,7 @@ body {
 
 .merchant-ops-status {
   min-width: 0;
-  border: 1px solid #e4dcf7;
+  border: 1px solid #d4e8f3;
   border-radius: 1.25rem;
   background: #ffffff;
   padding: 1rem;
@@ -1630,7 +1630,7 @@ body {
 }
 
 .merchant-ops-order-card {
-  border: 1px solid #e4dcf7;
+  border: 1px solid #d4e8f3;
   border-radius: 1.1rem;
   background: #ffffff;
   padding: 0.9rem 1rem;
@@ -1757,7 +1757,7 @@ body {
 .merchant-workspace-module-description {
   margin-top: 0.25rem;
   font-size: 0.875rem;
-  color: #5b5470;
+  color: #4a6b82;
 }
 
 .merchant-workspace-toolbar {
@@ -1772,18 +1772,18 @@ body {
   min-height: 2.75rem;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid #e4dcf7;
+  border: 1px solid #d4e8f3;
   background: #ffffff;
   padding: 0 1rem;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #3f3a55;
+  color: #083f66;
 }
 
 .merchant-workspace-toolbar-link--active {
-  border-color: #7c3aed;
-  background: #f3e8ff;
-  color: #6d28d9;
+  border-color: #083f66;
+  background: #e8f6fc;
+  color: #083f66;
 }
 
 .merchant-workspace-toolbar-link:focus-visible,
@@ -1792,13 +1792,13 @@ body {
 .merchant-workspace-danger-btn:focus-visible,
 .merchant-workspace-inline-link:focus-visible,
 .merchant-workspace-input:focus-visible {
-  outline: 2px solid #7c3aed;
+  outline: 2px solid #083f66;
   outline-offset: 2px;
 }
 
 .merchant-workspace-card {
   min-width: 0;
-  border: 1px solid #e4dcf7;
+  border: 1px solid #d4e8f3;
   border-radius: 1.25rem;
   background: #ffffff;
   padding: 1rem;
@@ -1812,7 +1812,7 @@ body {
 
 .merchant-workspace-card-copy {
   font-size: 0.875rem;
-  color: #5b5470;
+  color: #4a6b82;
 }
 
 .merchant-workspace-filters {
@@ -1827,19 +1827,19 @@ body {
   gap: 0.35rem;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #3f3a55;
+  color: #083f66;
 }
 
 .merchant-workspace-input {
   min-height: 2.75rem;
   width: 100%;
   border-radius: 0.9rem;
-  border: 1px solid #e4dcf7;
-  background: #faf8ff;
+  border: 1px solid #d4e8f3;
+  background: #f4f8fb;
   padding: 0.55rem 0.85rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #0e0820;
+  color: #083f66;
 }
 
 .merchant-workspace-input--narrow {
@@ -1870,8 +1870,8 @@ body {
 }
 
 .merchant-workspace-primary-btn {
-  border: 1px solid #7c3aed;
-  background: #7c3aed;
+  border: 1px solid #083f66;
+  background: #083f66;
   color: #ffffff;
 }
 
@@ -1881,9 +1881,9 @@ body {
 }
 
 .merchant-workspace-secondary-btn {
-  border: 1px solid #e4dcf7;
+  border: 1px solid #d4e8f3;
   background: #ffffff;
-  color: #6d28d9;
+  color: #083f66;
 }
 
 .merchant-workspace-danger-btn {
@@ -1898,12 +1898,12 @@ body {
 
 .merchant-workspace-empty {
   font-size: 0.875rem;
-  color: #5b5470;
+  color: #4a6b82;
 }
 
 .merchant-workspace-inline-link {
   font-weight: 600;
-  color: #6d28d9;
+  color: #083f66;
   text-decoration-line: underline;
   text-underline-offset: 4px;
 }
@@ -1919,7 +1919,7 @@ body {
   flex-direction: column;
   gap: 0.9rem;
   min-width: 0;
-  border: 1px solid #e4dcf7;
+  border: 1px solid #d4e8f3;
   border-radius: 1.25rem;
   background: #ffffff;
   padding: 1rem;
@@ -1940,14 +1940,14 @@ body {
 .merchant-workspace-product-meta,
 .merchant-workspace-product-status {
   font-size: 0.875rem;
-  color: #5b5470;
+  color: #4a6b82;
 }
 
 .merchant-workspace-product-price {
   margin-top: 0.15rem;
   font-size: 0.95rem;
   font-weight: 700;
-  color: #6d28d9;
+  color: #083f66;
 }
 
 .merchant-workspace-status-live {
@@ -1956,7 +1956,7 @@ body {
 }
 
 .merchant-workspace-status-muted {
-  color: #5b5470;
+  color: #4a6b82;
 }
 
 .merchant-workspace-product-actions {
@@ -1991,8 +1991,8 @@ body {
   max-width: 28rem;
   overflow: hidden;
   border-radius: 1rem;
-  border: 1px solid #e4dcf7;
-  background: #faf8ff;
+  border: 1px solid #d4e8f3;
+  background: #f4f8fb;
 }
 
 .merchant-workspace-cover-side {
@@ -2039,14 +2039,14 @@ body {
   font-size: 1.05rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  color: #0e0820;
+  color: #083f66;
 }
 
 .merchant-workspace-settings-pane-copy {
   margin: 0;
   font-size: 0.9rem;
   line-height: 1.45;
-  color: #5b5470;
+  color: #4a6b82;
 }
 
 .merchant-workspace-store-details {
@@ -2073,13 +2073,13 @@ body {
 .merchant-workspace-store-details-item dt {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #5b5470;
+  color: #4a6b82;
 }
 
 .merchant-workspace-store-details-item dd {
   margin: 0;
   font-size: 0.875rem;
-  color: #0e0820;
+  color: #083f66;
   overflow-wrap: anywhere;
 }
 
@@ -2157,7 +2157,7 @@ body {
 .merchant-workspace-product-meta-name {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #0e0820;
+  color: #083f66;
 }
 
 .merchant-workspace-product-chips {
@@ -2171,12 +2171,12 @@ body {
   align-items: center;
   min-height: 1.6rem;
   border-radius: 999px;
-  border: 1px solid #e4dcf7;
-  background: #faf8ff;
+  border: 1px solid #d4e8f3;
+  background: #f4f8fb;
   padding: 0 0.6rem;
   font-size: 0.75rem;
   font-weight: 700;
-  color: #5b5470;
+  color: #4a6b82;
 }
 
 .merchant-workspace-status-chip--live {
@@ -2197,22 +2197,22 @@ body {
   min-height: 2.5rem;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid #e4dcf7;
+  border: 1px solid #d4e8f3;
   background: #ffffff;
   padding: 0 1rem;
   font-size: 0.875rem;
   font-weight: 700;
-  color: #3f3a55;
+  color: #083f66;
 }
 
 .merchant-workspace-segment--active {
-  border-color: #7c3aed;
-  background: #f3e8ff;
-  color: #6d28d9;
+  border-color: #083f66;
+  background: #e8f6fc;
+  color: #083f66;
 }
 
 .merchant-workspace-segment:focus-visible {
-  outline: 2px solid #7c3aed;
+  outline: 2px solid #083f66;
   outline-offset: 2px;
 }
 
@@ -2221,12 +2221,12 @@ body {
   align-items: center;
   min-height: 1.6rem;
   border-radius: 999px;
-  border: 1px solid #ddd6fe;
-  background: #f5f3ff;
+  border: 1px solid #d4e8f3;
+  background: #e8f6fc;
   padding: 0 0.65rem;
   font-size: 0.75rem;
   font-weight: 700;
-  color: #6d28d9;
+  color: #083f66;
 }
 
 .merchant-workspace-mode-grid {
@@ -2246,7 +2246,7 @@ body {
   gap: 0.25rem;
   min-height: 100%;
   border-radius: 1rem;
-  border: 1px solid #e4dcf7;
+  border: 1px solid #d4e8f3;
   background: #ffffff;
   padding: 0.75rem 0.85rem;
 }
@@ -2254,25 +2254,25 @@ body {
 .merchant-workspace-mode-choice-title {
   font-size: 0.875rem;
   font-weight: 700;
-  color: #0e0820;
+  color: #083f66;
 }
 
 .merchant-workspace-mode-choice-copy {
   font-size: 0.8125rem;
-  color: #5b5470;
+  color: #4a6b82;
 }
 
 .merchant-workspace-mode-choice-selected {
   display: none;
   font-size: 0.7rem;
   font-weight: 700;
-  color: #6d28d9;
+  color: #083f66;
 }
 
 .merchant-workspace-mode-choice:has(:checked)
   .merchant-workspace-mode-choice-body {
-  border-color: #7c3aed;
-  background: #f5f3ff;
+  border-color: #083f66;
+  background: #e8f6fc;
 }
 
 .merchant-workspace-mode-choice:has(:checked)
@@ -2282,7 +2282,7 @@ body {
 
 .merchant-workspace-mode-choice:focus-within
   .merchant-workspace-mode-choice-body {
-  outline: 2px solid #7c3aed;
+  outline: 2px solid #083f66;
   outline-offset: 2px;
 }
 
@@ -2353,8 +2353,8 @@ body {
   gap: 0.65rem;
   min-width: 0;
   border-radius: 1rem;
-  border: 1px solid #e4dcf7;
-  background: #faf8ff;
+  border: 1px solid #d4e8f3;
+  background: #f4f8fb;
   padding: 0.85rem;
 }
 
@@ -2371,7 +2371,7 @@ body {
 .merchant-workspace-field-help {
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #5b5470;
+  color: #4a6b82;
   margin: 0;
 }
 
@@ -2380,8 +2380,8 @@ body {
   gap: 0.75rem;
   min-width: 0;
   border-radius: 1rem;
-  border: 1px solid #e4dcf7;
-  background: #faf8ff;
+  border: 1px solid #d4e8f3;
+  background: #f4f8fb;
   padding: 0.9rem 1rem;
 }
 
@@ -2389,7 +2389,7 @@ body {
   margin: 0;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #3f3a55;
+  color: #083f66;
 }
 
 .merchant-workspace-check-row {
@@ -2411,7 +2411,7 @@ body {
   display: block;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #0e0820;
+  color: #083f66;
 }
 
 .merchant-workspace-check-help {
@@ -2419,7 +2419,7 @@ body {
   font-size: 0.8125rem;
   font-weight: 400;
   line-height: 1.45;
-  color: #5b5470;
+  color: #4a6b82;
 }
 
 .merchant-workspace-disclosure-summary {
@@ -2438,7 +2438,7 @@ body {
 
 .merchant-workspace-disclosure-body {
   margin-top: 1rem;
-  border-top: 1px solid #e4dcf7;
+  border-top: 1px solid #d4e8f3;
   padding-top: 1rem;
 }
 
@@ -2459,7 +2459,7 @@ body {
 .merchant-workspace-inline-action {
   font-size: 0.8125rem;
   font-weight: 700;
-  color: #6d28d9;
+  color: #083f66;
 }
 
 .merchant-workspace-add-block,
@@ -2472,7 +2472,7 @@ body {
   list-style: none;
   font-size: 0.875rem;
   font-weight: 700;
-  color: #6d28d9;
+  color: #083f66;
 }
 
 .merchant-workspace-add-summary::-webkit-details-marker {
@@ -2590,7 +2590,7 @@ body {
 .merchant-workspace-switch--compact:has(
   .merchant-workspace-switch-input:focus-visible
 ) {
-  outline: 2px solid #7c3aed;
+  outline: 2px solid #083f66;
   outline-offset: 2px;
 }
 
@@ -2606,14 +2606,14 @@ body {
   z-index: 0;
   font-size: 0.8125rem;
   font-weight: 700;
-  color: #5b5470;
+  color: #4a6b82;
   white-space: nowrap;
   pointer-events: none;
 }
 
 .merchant-workspace-switch:has(.merchant-workspace-switch-input:checked)
   .merchant-workspace-switch-copy {
-  color: #6d28d9;
+  color: #083f66;
 }
 
 .merchant-workspace-switch-label-on {
@@ -2641,7 +2641,7 @@ body {
   height: 1.5rem;
   flex-shrink: 0;
   border-radius: 999px;
-  background: #ddd6fe;
+  background: #d4e8f3;
   transition: background-color 0.2s ease;
 }
 
@@ -2653,7 +2653,7 @@ body {
     .merchant-workspace-switch-input:checked
   )
   .merchant-workspace-switch-track--decor {
-  background: #7c3aed;
+  background: #083f66;
 }
 
 .merchant-workspace-toggle-card--switch:has(
@@ -2667,7 +2667,7 @@ body {
     .merchant-workspace-switch-input:focus-visible
   )
   .merchant-workspace-switch-track--decor {
-  outline: 2px solid #7c3aed;
+  outline: 2px solid #083f66;
   outline-offset: 2px;
 }
 
@@ -2686,7 +2686,7 @@ body {
 
 .merchant-workspace-switch:has(.merchant-workspace-switch-input:checked)
   .merchant-workspace-switch-track {
-  background: #7c3aed;
+  background: #083f66;
 }
 
 .merchant-workspace-switch:has(.merchant-workspace-switch-input:checked)
@@ -2696,7 +2696,7 @@ body {
 
 .merchant-workspace-switch:has(.merchant-workspace-switch-input:focus-visible)
   .merchant-workspace-switch-track {
-  outline: 2px solid #7c3aed;
+  outline: 2px solid #083f66;
   outline-offset: 2px;
 }
 
@@ -2711,7 +2711,7 @@ body {
   margin: 0 0 0.15rem;
   font-size: 0.8125rem;
   line-height: 1.45;
-  color: #5b5470;
+  color: #4a6b82;
 }
 
 .merchant-workspace-payment-card:has(.merchant-workspace-switch-input:checked)
@@ -2733,12 +2733,12 @@ body {
   height: 1.05rem;
   width: 1.05rem;
   flex-shrink: 0;
-  accent-color: #7c3aed;
+  accent-color: #083f66;
   cursor: pointer;
 }
 
 .merchant-workspace-checkbox:focus-visible {
-  outline: 2px solid #7c3aed;
+  outline: 2px solid #083f66;
   outline-offset: 2px;
 }
 
@@ -2779,8 +2779,8 @@ body {
   align-items: center;
   gap: 0.45rem;
   border-radius: 999px;
-  border: 1px solid #e4dcf7;
-  background: #faf8ff;
+  border: 1px solid #d4e8f3;
+  background: #f4f8fb;
   padding: 0.25rem 0.85rem;
   font-size: 0.8125rem;
   font-weight: 700;
@@ -2806,9 +2806,9 @@ body {
 }
 
 .merchant-workspace-alert--success {
-  border: 1px solid #ddd6fe;
-  background: #f5f3ff;
-  color: #5b21b6;
+  border: 1px solid #a7f3d0;
+  background: #ecfdf5;
+  color: #065f46;
 }
 
 .merchant-workspace-alert--error {

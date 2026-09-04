@@ -73,6 +73,7 @@ Ver [`CUSTOMER_ACCOUNTS.md`](./CUSTOMER_ACCOUNTS.md).
 - Historial y seguimiento viven bajo `/cuenta/pedidos`.
 - El detalle se consulta por `order_id + customer_user_id`; no existe acceso
   público por token o por ID aislado.
+- Branding y reutilización de cuenta en Google: [`GOOGLE_OAUTH.md`](./GOOGLE_OAUTH.md).
 
 ## Merchant onboarding (Fase 3B)
 

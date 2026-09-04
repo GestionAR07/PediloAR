@@ -46,17 +46,17 @@ export function OrderNotificationToast({
       role="status"
       aria-live="polite"
       aria-atomic="true"
-      className={`merchant-order-toast pointer-events-auto w-full rounded-2xl border border-violet-200 bg-white p-4 shadow-[0_12px_32px_-16px_rgba(15,23,42,0.28)] ${
+      className={`merchant-order-toast pointer-events-auto w-full rounded-2xl border border-sky-200 bg-white p-4 shadow-[0_12px_32px_-16px_rgba(15,23,42,0.28)] ${
         exiting ? "merchant-order-toast--out" : ""
       }`}
     >
       <div className="flex items-start gap-3">
         <span
           aria-hidden="true"
-          className="mt-0.5 h-10 w-1 shrink-0 rounded-full bg-gradient-to-b from-violet-600 to-fuchsia-500"
+          className="mt-0.5 h-10 w-1 shrink-0 rounded-full bg-gradient-to-b from-[#083F66] to-[#20AEE5]"
         />
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-extrabold tracking-[0.16em] text-violet-700 uppercase">
+          <p className="text-[11px] font-extrabold tracking-[0.16em] text-[#083F66] uppercase">
             NUEVO PEDIDO
           </p>
           <p className="mt-1 text-base font-semibold tracking-tight text-foreground">
@@ -68,7 +68,7 @@ export function OrderNotificationToast({
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <Link
               href={href}
-              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-violet-700 px-4 text-sm font-bold text-white hover:bg-violet-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-[#083F66] px-4 text-sm font-bold text-white hover:bg-[#062f4d] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#083F66]"
             >
               Ver pedido
             </Link>
@@ -76,7 +76,7 @@ export function OrderNotificationToast({
               type="button"
               aria-label="Cerrar aviso de pedido nuevo"
               onClick={() => setExiting(true)}
-              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-violet-200 px-3 text-sm font-medium text-violet-800 hover:bg-violet-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-sky-200 px-3 text-sm font-medium text-[#083F66] hover:bg-sky-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#083F66]"
             >
               Cerrar
             </button>

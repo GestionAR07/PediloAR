@@ -49,7 +49,7 @@ export function OptionGroupsSection({
           Configurá tamaños, sabores, agregados o combinaciones.
         </p>
         {groups.length > 0 ? (
-          <p className="text-sm font-medium text-[#5b5470]">
+          <p className="text-sm font-medium text-[#4a6b82]">
             {groups.length}{" "}
             {groups.length === 1 ? "configuración" : "configuraciones"}
             {" · "}
@@ -98,7 +98,7 @@ export function OptionGroupsSection({
                       <span className="merchant-workspace-mode-badge">
                         {modeCopy.label}
                       </span>
-                      <span className="text-sm text-[#5b5470]">
+                      <span className="text-sm text-[#4a6b82]">
                         {groupChoices.length}{" "}
                         {groupChoices.length === 1 ? "opción" : "opciones"}
                       </span>
@@ -124,7 +124,7 @@ export function OptionGroupsSection({
                       action={boundUpdateGroup}
                       className="merchant-workspace-group-edit-main grid gap-3"
                     >
-                      <p className="text-sm text-[#5b5470]">
+                      <p className="text-sm text-[#4a6b82]">
                         Ajustá nombre, tipo de elección y estado.
                       </p>
                       <label className="merchant-workspace-field">
@@ -145,7 +145,7 @@ export function OptionGroupsSection({
                         minSelections={group.minSelections}
                         maxSelections={group.maxSelections}
                       />
-                      <label className="flex items-center gap-2 text-sm font-semibold text-[#3f3a55]">
+                      <label className="flex items-center gap-2 text-sm font-semibold text-[#083F66]">
                         <input
                           type="checkbox"
                           name="active"
@@ -163,7 +163,7 @@ export function OptionGroupsSection({
                     </form>
 
                     <section className="merchant-workspace-group-edit-side space-y-3">
-                      <h4 className="text-sm font-semibold text-[#3f3a55]">
+                      <h4 className="text-sm font-semibold text-[#083F66]">
                         Opciones
                       </h4>
 
@@ -190,7 +190,7 @@ export function OptionGroupsSection({
                                           ),
                                       )}
                                       {!choice.active ? (
-                                        <span className="ml-2 text-[#5b5470]">
+                                        <span className="ml-2 text-[#4a6b82]">
                                           (pausada)
                                         </span>
                                       ) : null}
@@ -201,7 +201,7 @@ export function OptionGroupsSection({
                                   </summary>
                                   <form
                                     action={boundUpdateChoice}
-                                    className="mt-3 grid gap-3 border-t border-[#e4dcf7] pt-3"
+                                    className="mt-3 grid gap-3 border-t border-[#d4e8f3] pt-3"
                                   >
                                     <div className="merchant-workspace-option-fields">
                                       <label className="merchant-workspace-field">
@@ -224,7 +224,7 @@ export function OptionGroupsSection({
                                         />
                                       </label>
                                     </div>
-                                    <label className="flex items-center gap-2 font-semibold text-[#3f3a55]">
+                                    <label className="flex items-center gap-2 font-semibold text-[#083F66]">
                                       <input
                                         type="checkbox"
                                         name="active"
@@ -307,7 +307,7 @@ export function OptionGroupsSection({
           + Agregar variantes o extras
         </summary>
         <div className="mt-4 grid gap-4">
-          <p className="text-sm text-[#5b5470]">
+          <p className="text-sm text-[#4a6b82]">
             Creá una configuración para tamaños, sabores o agregados.
           </p>
           <form action={boundCreateGroup} className="grid gap-4">

@@ -58,6 +58,9 @@ Helpers (`src/server/auth/authorization.ts`, pure policy en `policy.ts`):
 - Roles: **solo** columnas DB (`user_profiles`, `merchant_users`).
 - Ocultar links en UI **no** es seguridad.
 
+Google OAuth reutiliza el UUID de sesión. Pedilo **no** copia `merchant_users`
+entre dos `auth.users` que compartan email. Detalle: [`GOOGLE_OAUTH.md`](./GOOGLE_OAUTH.md).
+
 ## Profile provisioning
 
 Trigger `on_auth_user_created` en `auth.users` INSERT → `user_profiles` con:

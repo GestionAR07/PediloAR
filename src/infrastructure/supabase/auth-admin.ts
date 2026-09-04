@@ -66,6 +66,48 @@ export async function findAuthUserByEmail(
   return null;
 }
 
+/**
+ * Same email on a *different* auth.users row is an unsafe split identity.
+ * Returns that other user so callers can fail closed instead of merging.
+ */
+export async function findConflictingAuthUserByEmail(
+  admin: SupabaseClient,
+  normalizedEmail: string,
+  currentUserId: string,
+): Promise<AuthUserLookup | null> {
+  const target = normalizedEmail.trim().toLowerCase();
+  if (!target || !currentUserId) {
+    return null;
+  }
+
+  for (let page = 1; page <= MAX_PAGES; page += 1) {
+    const { data, error } = await admin.auth.admin.listUsers({
+      page,
+      perPage: PAGE_SIZE,
+    });
+
+    if (error) {
+      throw new Error(`Auth Admin listUsers failed: ${error.message}`);
+    }
+
+    const users = data.users ?? [];
+    const match = users.find(
+      (user) =>
+        (user.email ?? "").trim().toLowerCase() === target &&
+        user.id !== currentUserId,
+    );
+    if (match) {
+      return toLookup(match);
+    }
+
+    if (users.length < PAGE_SIZE) {
+      return null;
+    }
+  }
+
+  return null;
+}
+
 export type InviteAuthUserInput = {
   email: string;
   displayName?: string;
