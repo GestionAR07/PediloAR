@@ -4,6 +4,7 @@ import { CartProvider } from "@/components/cart/cart-provider";
 import { SiteShell } from "@/components/layout/site-shell";
 import { APP_NAME, APP_TAGLINE } from "@/lib/app-info";
 import "@/styles/globals.css";
+import "@/styles/brand-theme.css";
 
 const inter = Inter({
   subsets: ["latin"],
