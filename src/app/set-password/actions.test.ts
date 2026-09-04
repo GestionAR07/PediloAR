@@ -87,7 +87,7 @@ describe("setPasswordAction", () => {
     expect(redirect).not.toHaveBeenCalled();
   });
 
-  it("redirects only after updateUser + signInWithPassword succeed", async () => {
+  it("redirects invite flow only after updateUser + signInWithPassword succeed", async () => {
     const updateUser = vi.fn().mockResolvedValue({
       data: { user: { id: "u1" } },
       error: null,
@@ -129,6 +129,51 @@ describe("setPasswordAction", () => {
       email: "owner@example.com",
       password: "password12",
     });
+  });
+
+  it("recovery flow signs out verification session and returns to login", async () => {
+    const signOut = vi.fn().mockResolvedValue({ error: null });
+    const signInWithPassword = vi.fn().mockResolvedValue({
+      data: { user: { id: "u1" } },
+      error: null,
+    });
+
+    createSupabaseServerClient.mockResolvedValue({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: { user: { id: "u1", email: "buyer@example.com" } },
+          error: null,
+        }),
+        getSession: vi.fn().mockResolvedValue({
+          data: {
+            session: { access_token: "a", refresh_token: "r" },
+          },
+          error: null,
+        }),
+        setSession: vi.fn().mockResolvedValue({ error: null }),
+        updateUser: vi.fn().mockResolvedValue({
+          data: { user: { id: "u1" } },
+          error: null,
+        }),
+        signOut,
+        signInWithPassword,
+      },
+    });
+
+    const { setPasswordAction } = await loadAction();
+    const form = new FormData();
+    form.set("password", "password12");
+    form.set("confirm", "password12");
+    form.set("flow", "recovery");
+
+    await expect(setPasswordAction({ error: null }, form)).rejects.toThrow(
+      "NEXT_REDIRECT:/login?reset=success",
+    );
+    expect(signInWithPassword).toHaveBeenCalledWith({
+      email: "buyer@example.com",
+      password: "password12",
+    });
+    expect(signOut).toHaveBeenCalledTimes(2);
   });
 
   it("does not trim password from FormData", async () => {
