@@ -54,7 +54,7 @@ export function SetPasswordForm({
       <button
         type="submit"
         disabled={pending}
-        className="min-h-12 w-full rounded-full border border-[#FFC51B] bg-[#FFC51B] px-5 text-sm font-extrabold text-[#083F66] shadow-[0_10px_24px_rgba(8,63,102,0.14)] transition hover:-translate-y-0.5 hover:bg-[#F4BB13] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#20AEE5] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+        className="min-h-12 w-full rounded-full border border-[#FFC51B] bg-[#FFC51B] px-5 text-sm font-extrabold text-[#083F66] transition hover:-translate-y-0.5 hover:bg-[#F4BB13] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#20AEE5] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
       >
         {pending ? "Guardando…" : "Establecer contraseña"}
       </button>
