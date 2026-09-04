@@ -1,162 +1,140 @@
 # Pedilo E2E (Playwright)
 
-Playwright is Chromium-only and always runs against the exact checked-out HEAD.
-The default suite remains safe/read-only. A separate, explicit DEV-only runtime
-exists for future browser tests that need controlled writes.
+Pedilo usa Playwright en Chromium con dos modos deliberadamente separados:
 
-## Modes
+- `READ_ONLY`: seguro por defecto y apto para CI;
+- `WRITE_DEV`: manual/local, con escritura real sólo contra el proyecto DEV autorizado.
 
-### `READ_ONLY` — default
+La suite nunca debe usar producción como destino de escritura.
 
-```bash
+## `READ_ONLY` — modo por defecto
+
+```powershell
 npm run e2e
 npm run e2e:headed
 npm run e2e:ui
 ```
 
-If `E2E_MODE` is unset, it resolves to `READ_ONLY`.
+Si `E2E_MODE` no está definido, se resuelve como `READ_ONLY`.
 
-The Playwright-started Next server:
+El servidor Next iniciado por Playwright:
 
-- runs at `http://127.0.0.1:3100` by default;
-- always uses `reuseExistingServer = false`;
-- fails fast if the port is occupied;
-- clears `DATABASE_URL` and `SUPABASE_SECRET_KEY` before starting Next;
-- ignores every future `*.write.spec.ts` test.
+- usa `http://127.0.0.1:3100` por defecto;
+- usa `reuseExistingServer = false`;
+- falla si el puerto está ocupado, en vez de reutilizar otra app;
+- limpia `DATABASE_URL` y `SUPABASE_SECRET_KEY` antes de iniciar;
+- ignora todos los archivos `*.write.spec.ts`.
 
-`npm test` remains Vitest. It also runs the pure E2E safety-unit tests under
-`e2e/lib/**/*.test.ts`; it does not run browser specs.
+La suite READ_ONLY cubre arranque, navegación pública, autenticación superficial, carrito vacío, responsive base y guards de destino. CI ejecuta únicamente este modo.
 
-### `WRITE_DEV` — manual/local only
+## `WRITE_DEV` — manual/local únicamente
 
-The DEV runner loads ordinary development identity/credentials from
-`.env.local` **before** Playwright evaluates its safety preflight. The write
-confirmation itself is deliberately different: it must come from the current
-operator shell and cannot be persistently enabled by `.env.local`.
-
-PowerShell:
+Runner:
 
 ```powershell
 $env:E2E_ALLOW_WRITES="I_ACCEPT_E2E_DEV_WRITES"
-npm run e2e:dev
-Remove-Item Env:E2E_ALLOW_WRITES
+npm run e2e:dev -- e2e/write/<spec>.write.spec.ts
+$code=$LASTEXITCODE
+Remove-Item Env:E2E_ALLOW_WRITES -ErrorAction SilentlyContinue
+Write-Host "EXIT_CODE=$code"
 ```
 
-Bash:
+`npm run e2e:dev` establece `E2E_MODE=WRITE_DEV`, pero eso **no alcanza** para habilitar escrituras. El preflight es fail-closed y se ejecuta antes de levantar el servidor Next.
 
-```bash
-E2E_ALLOW_WRITES=I_ACCEPT_E2E_DEV_WRITES npm run e2e:dev
-```
+### Condiciones obligatorias
 
-`npm run e2e:dev` sets `E2E_MODE=WRITE_DEV`, but that is **not** enough to
-start. The Playwright config executes a fail-closed preflight before its Next
-`webServer` process can be created.
+1. `E2E_MODE=WRITE_DEV`.
+2. `E2E_ALLOW_WRITES=I_ACCEPT_E2E_DEV_WRITES` exactamente y suministrado por la shell actual.
+3. Target de app sólo loopback (`localhost`, `127.0.0.1`, `::1`).
+4. `NODE_ENV`, `VERCEL_ENV` y `MARKETPLACE_ENV` no pueden indicar producción.
+5. `MARKETPLACE_DEV_PROJECT_REF` debe estar configurado.
+6. `NEXT_PUBLIC_SUPABASE_URL` debe pertenecer exactamente al mismo proyecto DEV.
+7. `DATABASE_URL` debe ser demostrablemente del mismo proyecto DEV, ya sea por host directo o pooler Supabase con identidad verificable.
 
-Required conditions:
+Si la identidad del entorno no puede probarse, la suite **no arranca**. Los mensajes de guard no imprimen credenciales ni project refs sensibles.
 
-1. `E2E_MODE=WRITE_DEV` (set by the command above).
-2. `E2E_ALLOW_WRITES=I_ACCEPT_E2E_DEV_WRITES` exactly, supplied by the current
-   shell invocation/session rather than `.env.local`.
-3. App target is loopback (`localhost`, `127.0.0.1`, or `::1`). Remote
-   WRITE_DEV is forbidden.
-4. `NODE_ENV`, `VERCEL_ENV`, and `MARKETPLACE_ENV` are not production.
-5. `MARKETPLACE_DEV_PROJECT_REF` is configured.
-6. `NEXT_PUBLIC_SUPABASE_URL` must be exactly the Supabase API project whose
-   project ref matches `MARKETPLACE_DEV_PROJECT_REF`.
-7. `DATABASE_URL` must be present and its Supabase project identity must be
-   provable and match the same DEV project. Supported proof is either:
-   - direct `db.<project-ref>.supabase.co`, or
-   - Supabase pooler with username `postgres.<project-ref>`.
+## Aislamiento de recursos WRITE_DEV
 
-If any identity cannot be proven, WRITE_DEV fails closed. Guard errors never
-print credentials or project refs.
+Los tests con escritura usan markers y registros run-scoped. Cada fixture es responsable de borrar únicamente los IDs exactos que creó.
 
-After preflight passes, and only then, the local Next server receives the DEV
-environment including `DATABASE_URL` and any configured server-side Supabase
-credentials.
+Reglas:
 
-WRITE_DEV runs one Playwright worker to reduce mutation collisions. Future
-browser specs that can write must be named `*.write.spec.ts`. Normal
-`npm run e2e` ignores those files automatically.
+- sin `TRUNCATE`;
+- sin reset global de tablas;
+- sin `DELETE` amplio;
+- sin borrar recursos ajenos al run actual;
+- cleanup verificado;
+- si quedan leftovers registrados, el test debe fallar visiblemente;
+- no persistir el sentinel de autorización en `.env.local`.
 
-**Current state:** the WRITE_DEV runtime/gates exist, but no browser test in
-this phase performs a real DB/Auth/order mutation yet.
+Algunos fixtures leen geografía de un comercio DEV existente para crear entidades temporales, pero las suites aisladas no deben modificar su catálogo/configuración salvo que el propio spec documente explícitamente un recurso compartido y su rollback exacto.
 
-## Install browser (once per machine)
+## Cobertura WRITE_DEV actual
 
-Chromium only:
+Las suites existentes bajo `e2e/write/` incluyen:
 
-```bash
-npx playwright install chromium
-```
+- `dev-database-canary.write.spec.ts`: canary reversible de escritura DEV;
+- `buyer-order-flow.write.spec.ts`: pedido real de comprador;
+- `buyer-adversarial.write.spec.ts`: carreras de stock/requote;
+- `buyer-idempotent-retry.write.spec.ts`: retry después de respuesta perdida sin orden duplicada;
+- `buyer-merchant-constraints.write.spec.ts`: mínimos, merchant pausado/cerrado después de review;
+- `buyer-stale-catalog.write.spec.ts`: producto/opciones que cambian después del review;
+- `merchant-realtime-lifecycle.write.spec.ts`: pedido → Realtime → ciclo merchant de retiro;
+- `merchant-delivery-rejection-security.write.spec.ts`: delivery propio, rechazo/restock y aislamiento;
+- `merchant-onboarding.write.spec.ts`: solicitud → DRAFT → configuración → activación → storefront público;
+- `merchant-multitenancy-security.write.spec.ts`: aislamiento cross-merchant y RLS autenticada.
 
-## Safe browser target
+No todas las suites necesitan ejecutarse en cada cambio. La regla es correr el spec WRITE_DEV cuya frontera funcional fue modificada y mantener CI normal siempre en READ_ONLY.
 
-Production browser targets are permanently prohibited. `pedilo.store`,
-`www.pedilo.store`, all subdomains, and trailing-dot variants are rejected.
+## Invariantes críticos que ya tienen cobertura real DEV
 
-Every main-frame HTTP(S) navigation is checked by `e2e/fixtures.ts`. Browser
-specs must import `test` from that module so they inherit the navigation guard.
-Internals such as `about:blank` are allowed during bootstrap.
+- un pedido inválido no se persiste;
+- stock `TRACKED` no se descuenta cuando falla la confirmación;
+- retry idempotente no crea una segunda orden;
+- merchant cerrado/pausado se revalida al confirmar;
+- cambios de catálogo/opciones posteriores al review invalidan la confirmación;
+- rechazo/cancelación repone stock una sola vez;
+- delivery merchant finaliza sin doble descuento de stock;
+- un `STAFF` no puede entrar al workspace de otro merchant;
+- RLS no expone merchants ajenos y niega `UPDATE` directo autenticado;
+- onboarding `DRAFT` no se publica antes de activación;
+- activación requiere readiness completo.
 
-READ_ONLY may target a remote DEV origin only when both are explicitly set:
+## Guard de navegación
 
-```text
-E2E_ALLOW_REMOTE_DEV=I_ACCEPT_REMOTE_DEV
-E2E_REMOTE_DEV_HOST=<exact-dev-hostname>
-```
+Todos los browser specs deben importar `test` desde `e2e/fixtures.ts` para heredar el guard de navegación.
 
-That remote exception never applies to WRITE_DEV.
-
-## Server isolation
-
-Playwright always starts its own Next process for the current HEAD when the
-target is loopback. It never reuses or kills an existing process.
-
-If `127.0.0.1:3100` is occupied, the run fails and asks the operator to stop
-the other process. This prevents testing the wrong commit or environment.
-
-## Scoped resources for future write tests
-
-`e2e/lib/e2e-run-scope.ts` provides a per-run marker and an exact-ID resource
-registry. Future fixture/cleanup adapters must register each resource they
-create and remove only those exact IDs.
-
-The design intentionally provides no broad cleanup primitive:
-
-- no `TRUNCATE`;
-- no blanket table reset;
-- no unscoped `DELETE`;
-- no deletion of resources that were not registered by the current E2E run.
-
-A write test must fail visibly if registered leftovers remain after cleanup.
-
-## Existing read-only smokes
-
-- App starts and home returns OK.
-- Public home, login, and empty cart render.
-- Header/cart navigation works.
-- Chromium does not crash on startup.
-- Home opens at 390×844, 768×1024, and 1366×768.
-- Production / reuse / trailing-dot / navigation guards.
+Targets de producción conocidos, incluido `pedilo.store` y variantes, se rechazan. Una excepción READ_ONLY hacia un host DEV remoto requiere opt-in explícito y **nunca** habilita WRITE_DEV.
 
 ## Artifacts
 
-On failure: screenshot under `test-results/`. Trace on first retry.
-HTML report: `playwright-report/` (`npx playwright show-report`).
+En failure:
+
+- screenshots: `test-results/`;
+- trace: primera retry cuando corresponda;
+- reporte HTML: `playwright-report/`.
+
+Abrir reporte:
+
+```powershell
+npx playwright show-report
+```
 
 ## CI
 
-Normal GitHub Actions continues to run only the READ_ONLY Chromium smoke suite
-with no production/DEV mutation secrets.
+GitHub Actions ejecuta:
 
-WRITE_DEV is manual/local only in this phase. Do not add DEV database, Auth
-admin, or write-sentinel secrets to ordinary PR CI.
+```text
+lint
+→ typecheck
+→ Vitest
+→ Prettier check
+→ build
+→ Playwright READ_ONLY
+```
 
-## Product bugs still pending (not fixed by the E2E foundation)
+No agregar a CI ordinario el sentinel WRITE_DEV, `SUPABASE_SECRET_KEY` ni credenciales de base de datos con permisos de escritura.
 
-- `GET /sumar-comercio` returns HTTP 500 when `DATABASE_URL` is unset.
-- Next.js 16 `next dev` warning: `scroll-behavior: smooth` on `<html>` without
-  `data-scroll-behavior="smooth"`.
-- Hero `<h1>` accessible name concatenates across `<br />` as
-  `Todo lo de tu zona,en un solo lugar.` (missing space after the comma).
+## Estado pre-piloto
+
+La base E2E crítica de comprador/comercio y multitenancy está validada. El trabajo pre-piloto pasa a concentrarse en responsive real, recuperación de contraseña pública, observabilidad/dependencias y preparación de producción, sin debilitar los guards existentes.
