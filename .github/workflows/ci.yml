@@ -37,20 +37,6 @@ jobs:
       - name: Test
         run: npm run test
 
-      - name: Format recovery files
-        run: >-
-          npx prettier --write
-          docs/MERCHANT_ONBOARDING.md
-          src/app/set-password/set-password-form.tsx
-
-      - name: Upload formatted recovery files
-        uses: actions/upload-artifact@v4
-        with:
-          name: password-recovery-final-prettier
-          path: |
-            docs/MERCHANT_ONBOARDING.md
-            src/app/set-password/set-password-form.tsx
-
       - name: Format check
         run: npm run format:check
 
