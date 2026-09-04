@@ -64,7 +64,7 @@ export function LoginForm({ nextPath, googleOAuthEnabled }: LoginFormProps) {
         <button
           type="submit"
           disabled={pending}
-          className="grad-btn min-h-12 rounded-full px-5 text-sm font-extrabold shadow-glow transition disabled:opacity-60"
+          className="grad-btn min-h-12 rounded-full px-5 text-sm font-extrabold shadow-sm transition disabled:opacity-60"
         >
           {pending ? "Ingresando…" : "Ingresar"}
         </button>
