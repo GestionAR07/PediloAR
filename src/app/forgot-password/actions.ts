@@ -1,9 +1,7 @@
 "use server";
 
 import { appAbsoluteUrl, hasAppBaseUrl } from "@/config/app-base-url";
-import {
-  hasSupabasePublicConfig,
-} from "@/infrastructure/supabase/env";
+import { hasSupabasePublicConfig } from "@/infrastructure/supabase/env";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/server";
 
 export type ForgotPasswordState = {
