@@ -6,6 +6,8 @@ import { DomainError } from "@/domain/shared/errors";
 import { err, ok, type Result } from "@/domain/shared/result";
 import { sanitizeInternalPath } from "@/lib/safe-redirect";
 
+export type CustomerContactField = "name" | "phone";
+
 export type CustomerContactProfile = {
   displayName: string | null;
   phone: string | null;
@@ -46,10 +48,37 @@ export function parseCustomerContactProfile(input: {
 export function hasCompleteCustomerContact(
   profile: CustomerContactProfile,
 ): boolean {
-  return parseCustomerContactProfile({
-    displayName: profile.displayName ?? "",
-    phone: profile.phone ?? "",
-  }).ok;
+  return missingCustomerContactFields(profile).length === 0;
+}
+
+export function missingCustomerContactFields(
+  profile: CustomerContactProfile,
+): CustomerContactField[] {
+  const missing: CustomerContactField[] = [];
+  if (!parseCustomerNameSnapshot(profile.displayName ?? "").ok) {
+    missing.push("name");
+  }
+  if (!parseCustomerPhoneSnapshot(profile.phone ?? "").ok) {
+    missing.push("phone");
+  }
+  return missing;
+}
+
+export function parseMissingCustomerContactFields(
+  raw: string | null | undefined,
+): CustomerContactField[] | null {
+  if (!raw?.trim()) {
+    return null;
+  }
+  const allowed = new Set<CustomerContactField>(["name", "phone"]);
+  const fields: CustomerContactField[] = [];
+  for (const token of raw.split(",")) {
+    const field = token.trim() as CustomerContactField;
+    if (allowed.has(field) && !fields.includes(field)) {
+      fields.push(field);
+    }
+  }
+  return fields.length > 0 ? fields : null;
 }
 
 /** Prevent completion/callback redirect loops in addition to open redirects. */
@@ -69,14 +98,25 @@ export function sanitizeCustomerDestination(
   return destination;
 }
 
+export type CustomerProfileHrefOptions = {
+  required?: boolean;
+  missing?: readonly CustomerContactField[];
+};
+
 export function customerProfileHref(
   destination: string,
-  required = false,
+  options: boolean | CustomerProfileHrefOptions = false,
 ): string {
+  const required =
+    typeof options === "boolean" ? options : Boolean(options.required);
+  const missing = typeof options === "boolean" ? undefined : options.missing;
   const safeDestination = sanitizeCustomerDestination(destination);
   const query = new URLSearchParams({ next: safeDestination });
   if (required) {
     query.set("required", "1");
+  }
+  if (missing && missing.length > 0) {
+    query.set("missing", missing.join(","));
   }
   return `${PROFILE_PATH}?${query.toString()}`;
 }

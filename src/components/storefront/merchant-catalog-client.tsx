@@ -22,9 +22,9 @@ type Props = {
 };
 
 const chipBase =
-  "min-h-11 snap-start shrink-0 rounded-full border-2 px-5 py-2.5 text-sm font-extrabold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]";
+  "min-h-11 snap-start shrink-0 rounded-full border-2 px-5 py-2.5 text-sm font-extrabold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-cyan)]";
 const chipActive = `${chipBase} chip-active border-transparent`;
-const chipIdle = `${chipBase} border-slate-200 bg-white text-slate-600 hover:border-fuchsia-300`;
+const chipIdle = `${chipBase} border-slate-200 bg-white text-slate-600 hover:border-sky-300`;
 
 export function MerchantCatalogClient({
   merchantId,
@@ -114,7 +114,7 @@ export function MerchantCatalogClient({
         {feedback ? (
           <p
             role="status"
-            className="rounded-2xl bg-violet-50 px-4 py-3 text-sm font-medium text-violet-800"
+            className="rounded-2xl bg-sky-50 px-4 py-3 text-sm font-medium text-[#083F66]"
           >
             {feedback}
           </p>
@@ -125,7 +125,7 @@ export function MerchantCatalogClient({
             Buscar en este comercio
           </label>
           <div className="relative min-w-0">
-            <span className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-violet-500">
+            <span className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-[#20AEE5]">
               <SearchIcon className="h-4 w-4" />
             </span>
             <input
@@ -134,7 +134,7 @@ export function MerchantCatalogClient({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Buscar productos…"
-              className="min-h-12 w-full min-w-0 max-w-full rounded-full border-2 border-violet-100 bg-white py-2.5 pr-4 pl-11 text-sm font-medium shadow-soft transition focus:border-fuchsia-400 focus:ring-4 focus:ring-fuchsia-100 focus-visible:outline-none"
+              className="min-h-12 w-full min-w-0 max-w-full rounded-full border-2 border-sky-100 bg-white py-2.5 pr-4 pl-11 text-sm font-medium shadow-soft transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100 focus-visible:outline-none"
             />
           </div>
         </div>
@@ -164,7 +164,7 @@ export function MerchantCatalogClient({
         ) : null}
 
         {filtered.length === 0 ? (
-          <div className="rounded-[2rem] border-2 border-dashed border-violet-200 bg-white px-6 py-14 text-center">
+          <div className="rounded-[2rem] border-2 border-dashed border-sky-200 bg-white px-6 py-14 text-center">
             <p className="font-display text-lg font-extrabold text-[var(--ps-night-900)]">
               {query.trim()
                 ? "No hay productos que coincidan con tu búsqueda."
@@ -181,11 +181,11 @@ export function MerchantCatalogClient({
             {filtered.map((product) => (
               <li key={product.id} className="min-w-0">
                 <article
-                  className={`merchant-product-card group flex h-full min-w-0 flex-col overflow-hidden rounded-[1.75rem] border border-violet-100/70 bg-white shadow-soft ${
+                  className={`merchant-product-card group flex h-full min-w-0 flex-col overflow-hidden rounded-[1.75rem] border border-sky-100/70 bg-white shadow-soft ${
                     product.sellable ? "card-lift" : "opacity-90"
                   }`}
                 >
-                  <div className="merchant-product-media relative isolate shrink-0 overflow-hidden bg-gradient-to-br from-violet-200 to-fuchsia-200">
+                  <div className="merchant-product-media relative isolate shrink-0 overflow-hidden bg-gradient-to-br from-sky-200 to-cyan-100">
                     {product.imageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -199,7 +199,7 @@ export function MerchantCatalogClient({
                         aria-hidden
                         className="relative h-full w-full overflow-hidden"
                       >
-                        <div className="zoom-img absolute inset-0 bg-gradient-to-br from-violet-800 via-violet-600 to-fuchsia-500" />
+                        <div className="zoom-img absolute inset-0 bg-gradient-to-br from-[#083F66] via-[#0a5a8a] to-[#20AEE5]" />
                         <span className="font-display absolute inset-0 flex items-center justify-center text-3xl font-extrabold text-white/90 sm:text-4xl">
                           {product.name.slice(0, 1).toUpperCase()}
                         </span>
@@ -233,7 +233,7 @@ export function MerchantCatalogClient({
                         <button
                           type="button"
                           onClick={() => setSelected(product)}
-                          className="inline-flex min-h-11 items-center rounded-full border border-violet-200 bg-violet-50 px-5 text-sm font-extrabold text-violet-800 transition hover:border-fuchsia-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+                          className="inline-flex min-h-11 items-center rounded-full border border-sky-200 bg-sky-50 px-5 text-sm font-extrabold text-[#083F66] transition hover:border-sky-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-cyan)]"
                         >
                           {product.canAddToCart
                             ? "Elegir opciones"
@@ -243,7 +243,7 @@ export function MerchantCatalogClient({
                         <button
                           type="button"
                           onClick={() => handleAdd(product, [])}
-                          className="grad-btn inline-flex min-h-11 items-center rounded-full px-5 text-sm font-extrabold text-white shadow-glow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+                          className="grad-btn inline-flex min-h-11 items-center rounded-full px-5 text-sm font-extrabold text-white shadow-glow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-cyan)]"
                         >
                           Agregar
                         </button>
@@ -251,7 +251,7 @@ export function MerchantCatalogClient({
                         <button
                           type="button"
                           onClick={() => setSelected(product)}
-                          className="inline-flex min-h-11 items-center rounded-full border border-violet-200 bg-white px-5 text-sm font-extrabold text-violet-800 transition hover:border-fuchsia-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+                          className="inline-flex min-h-11 items-center rounded-full border border-sky-200 bg-white px-5 text-sm font-extrabold text-[#083F66] transition hover:border-sky-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-cyan)]"
                         >
                           Ver detalle
                         </button>
@@ -289,7 +289,7 @@ export function MerchantCatalogClient({
               role="dialog"
               aria-modal="true"
               aria-labelledby="merchant-conflict-title"
-              className="relative z-10 w-full max-w-md space-y-4 rounded-t-[2rem] border border-violet-100 bg-white p-6 shadow-2xl sm:rounded-[2rem]"
+              className="relative z-10 w-full max-w-md space-y-4 rounded-t-[2rem] border border-sky-100 bg-white p-6 shadow-2xl sm:rounded-[2rem]"
             >
               <h2
                 id="merchant-conflict-title"
@@ -307,7 +307,7 @@ export function MerchantCatalogClient({
                 <button
                   type="button"
                   onClick={() => setConflict(null)}
-                  className="min-h-11 rounded-full border border-violet-100 px-4 text-sm font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+                  className="min-h-11 rounded-full border border-sky-100 px-4 text-sm font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-cyan)]"
                 >
                   Cancelar
                 </button>
@@ -319,7 +319,7 @@ export function MerchantCatalogClient({
                     setSelected(null);
                     flash("Carrito actualizado");
                   }}
-                  className="grad-btn min-h-11 rounded-full px-4 text-sm font-extrabold text-white shadow-glow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+                  className="grad-btn min-h-11 rounded-full px-4 text-sm font-extrabold text-white shadow-glow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-cyan)]"
                 >
                   Vaciar carrito y continuar
                 </button>
@@ -333,7 +333,7 @@ export function MerchantCatalogClient({
         <div className="pb-safe sticky bottom-3 z-20 sm:hidden">
           <Link
             href="/carrito"
-            className="grad-btn flex min-h-12 items-center justify-between gap-3 rounded-full px-5 text-sm font-extrabold whitespace-nowrap text-white shadow-glow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+            className="grad-btn flex min-h-12 items-center justify-between gap-3 rounded-full px-5 text-sm font-extrabold whitespace-nowrap text-white shadow-glow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-cyan)]"
           >
             <span className="min-w-0 truncate">{stickyCartLabel}</span>
             <span className="shrink-0">

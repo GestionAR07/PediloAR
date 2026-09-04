@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { resolveOAuthDestination } from "./oauth-continuation";
+import {
+  resolveOAuthContinueRedirect,
+  resolveOAuthDestination,
+} from "./oauth-continuation";
 
 describe("OAuth continuation", () => {
   it("preserves an explicit safe checkout destination", () => {
@@ -32,5 +35,38 @@ describe("OAuth continuation", () => {
         memberships: [],
       }),
     ).toBe("/cuenta");
+  });
+
+  it("keeps an existing Owner on the merchant workspace without new-customer onboarding", () => {
+    expect(
+      resolveOAuthContinueRedirect({
+        destination: "/merchant/merchant-1",
+        profile: { displayName: "Ana Owner", phone: null },
+      }),
+    ).toBe("/merchant/merchant-1");
+    expect(
+      resolveOAuthContinueRedirect({
+        destination: "/admin",
+        profile: { displayName: null, phone: null },
+      }),
+    ).toBe("/admin");
+  });
+
+  it("asks only for the missing buyer contact fields", () => {
+    expect(
+      resolveOAuthContinueRedirect({
+        destination: "/cuenta",
+        profile: { displayName: "Ana Owner", phone: null },
+      }),
+    ).toBe("/cuenta/perfil?next=%2Fcuenta&required=1&missing=phone");
+    expect(
+      resolveOAuthContinueRedirect({
+        destination: "/checkout",
+        profile: {
+          displayName: "Ana López",
+          phone: "+54 280 412-3456",
+        },
+      }),
+    ).toBe("/checkout");
   });
 });

@@ -58,7 +58,7 @@ export default async function PublicMerchantPage({
 
       <div className="mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-10 px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
         {merchant.paymentMethods.length > 0 ? (
-          <section className="min-w-0 space-y-3 rounded-[2rem] border border-violet-100/70 bg-white p-6 shadow-soft sm:p-8">
+          <section className="min-w-0 space-y-3 rounded-[2rem] border border-sky-100/70 bg-white p-6 shadow-soft sm:p-8">
             <p className="text-xs font-extrabold tracking-wide break-words text-slate-500 uppercase">
               Medios de pago (directo al comercio)
             </p>
@@ -66,7 +66,7 @@ export default async function PublicMerchantPage({
               {merchant.paymentMethods.map((method) => (
                 <li
                   key={method.code}
-                  className="rounded-full bg-violet-100 px-3.5 py-1.5 text-xs font-extrabold text-violet-700"
+                  className="rounded-full bg-sky-100 px-3.5 py-1.5 text-xs font-extrabold text-[#083F66]"
                   title={method.instructions ?? undefined}
                 >
                   {method.label}

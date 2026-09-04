@@ -82,7 +82,7 @@ export function MerchantPendingOrderActions({ merchantId, orderId }: Props) {
           type="button"
           disabled={busy}
           onClick={runAccept}
-          className="min-h-11 flex-1 rounded-xl bg-[#7c3aed] px-4 py-2 text-sm font-medium text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7c3aed] disabled:opacity-60"
+          className="min-h-11 flex-1 rounded-xl bg-[#083F66] px-4 py-2 text-sm font-medium text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#083F66] disabled:opacity-60"
         >
           {accepting ? "Aceptando..." : "Aceptar"}
         </button>

@@ -60,10 +60,14 @@ describe("customer account security and wiring", () => {
     expect(oauth).toContain("signInWithOAuth");
     expect(oauth).toContain("sanitizeInternalPath");
     expect(oauth).toContain("isGoogleOAuthEnabled");
-    expect(continuation).toContain("hasCompleteCustomerContact");
-    expect(checkout).toContain('customerProfileHref("/checkout", true)');
-    expect(accountLoader).toContain("hasCompleteCustomerContact");
-    expect(accountLoader).toContain("customerProfileHref(destination, true)");
+    expect(continuation).toContain("resolveOAuthContinueRedirect");
+    expect(continuation).toContain("findConflictingAuthUserByEmail");
+    expect(continuation).toContain("account_exists");
+    expect(continuation).toContain("ensureUserProfile");
+    expect(checkout).toContain("missingCustomerContactFields");
+    expect(checkout).toContain('customerProfileHref("/checkout"');
+    expect(accountLoader).toContain("missingCustomerContactFields");
+    expect(accountLoader).toContain("customerProfileHref(destination");
     for (const protectedAccountPage of [account, orderList, orderDetail]) {
       expect(protectedAccountPage).toContain("loadCompleteCustomerPage");
     }

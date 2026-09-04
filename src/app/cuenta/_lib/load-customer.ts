@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import {
   customerProfileHref,
-  hasCompleteCustomerContact,
+  missingCustomerContactFields,
   type CustomerContactProfile,
 } from "@/application/customer/profile";
 import { isAuthzError } from "@/server/auth/errors";
@@ -35,8 +35,9 @@ export async function loadCompleteCustomerPage<
   T extends CustomerPageWithContext,
 >(loader: () => Promise<T>, destination: string): Promise<T> {
   const result = await loadCustomerPage(loader);
-  if (!hasCompleteCustomerContact(result.context.profile)) {
-    redirect(customerProfileHref(destination, true));
+  const missing = missingCustomerContactFields(result.context.profile);
+  if (missing.length > 0) {
+    redirect(customerProfileHref(destination, { required: true, missing }));
   }
   return result;
 }

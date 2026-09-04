@@ -37,11 +37,11 @@ type OptionModeSelectorProps = {
 export function QuantityModePreview() {
   return (
     <details className="merchant-workspace-example mt-1.5">
-      <summary className="cursor-pointer text-xs font-semibold text-[#6d28d9]">
+      <summary className="cursor-pointer text-xs font-semibold text-[#083F66]">
         Ver ejemplo
       </summary>
-      <div className="mt-2 rounded-xl border border-[#e4dcf7] bg-[#faf8ff] p-3 text-xs text-[#5b5470]">
-        <p className="font-medium text-[#0e0820]">
+      <div className="mt-2 rounded-xl border border-[#d4e8f3] bg-[#f4f8fb] p-3 text-xs text-[#4a6b82]">
+        <p className="font-medium text-[#083F66]">
           Ejemplo: docena de empanadas
         </p>
         <pre className="mt-2 whitespace-pre-wrap font-sans leading-relaxed">
@@ -59,7 +59,7 @@ export function OptionModeSelector({
 }: OptionModeSelectorProps) {
   return (
     <fieldset className="space-y-2">
-      <legend className="text-sm font-semibold text-[#3f3a55]">
+      <legend className="text-sm font-semibold text-[#083F66]">
         ¿Cómo puede elegir el cliente?
       </legend>
       <div className="merchant-workspace-mode-grid">

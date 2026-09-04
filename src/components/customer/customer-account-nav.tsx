@@ -22,10 +22,10 @@ export function CustomerAccountNav() {
             key={link.href}
             href={link.href}
             aria-current={active ? "page" : undefined}
-            className={`inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-sm font-extrabold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)] ${
+            className={`inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-sm font-extrabold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-cyan)] ${
               active
-                ? "bg-violet-700 text-white shadow-glow"
-                : "border border-violet-100 bg-white text-violet-800 hover:bg-violet-50"
+                ? "bg-[#083F66] text-white shadow-glow"
+                : "border border-sky-100 bg-white text-[#083F66] hover:bg-sky-50"
             }`}
           >
             {link.label}

@@ -8,7 +8,7 @@ import { requireActiveUser } from "@/server/auth/authorization";
 import { isAuthzError } from "@/server/auth/errors";
 import {
   customerProfileHref,
-  hasCompleteCustomerContact,
+  missingCustomerContactFields,
 } from "@/application/customer/profile";
 
 export const dynamic = "force-dynamic";
@@ -28,8 +28,9 @@ export default async function CheckoutPage() {
     }
     throw error;
   }
-  if (!hasCompleteCustomerContact(account.profile)) {
-    redirect(customerProfileHref("/checkout", true));
+  const missing = missingCustomerContactFields(account.profile);
+  if (missing.length > 0) {
+    redirect(customerProfileHref("/checkout", { required: true, missing }));
   }
   const nav = await getPublicNavContextApp();
 

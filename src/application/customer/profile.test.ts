@@ -2,7 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 import {
   customerProfileHref,
   hasCompleteCustomerContact,
+  missingCustomerContactFields,
   parseCustomerContactProfile,
+  parseMissingCustomerContactFields,
   sanitizeCustomerDestination,
   updateCustomerContact,
 } from "./profile";
@@ -33,6 +35,17 @@ describe("customer contact profile", () => {
     expect(customerProfileHref("/checkout", true)).toBe(
       "/cuenta/perfil?next=%2Fcheckout&required=1",
     );
+    expect(
+      customerProfileHref("/cuenta", { required: true, missing: ["phone"] }),
+    ).toBe("/cuenta/perfil?next=%2Fcuenta&required=1&missing=phone");
+    expect(
+      missingCustomerContactFields({ displayName: "Ana", phone: null }),
+    ).toEqual(["phone"]);
+    expect(parseMissingCustomerContactFields("phone,name")).toEqual([
+      "phone",
+      "name",
+    ]);
+    expect(parseMissingCustomerContactFields("role")).toBeNull();
   });
 
   it("persists only validated contact fields for the authenticated user", async () => {
