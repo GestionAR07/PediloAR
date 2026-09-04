@@ -28,18 +28,18 @@ Los cambios de producción, despliegue definitivo, dominio y operación comercia
 
 ## Stack
 
-| Área | Tecnología |
-| --- | --- |
-| Framework | Next.js 16 (App Router) |
-| UI | React 19 + Tailwind CSS 4 |
-| Lenguaje | TypeScript (`strict`) |
-| Auth / Realtime / Storage | Supabase |
-| Datos | PostgreSQL + Drizzle ORM |
-| Cliente SQL | postgres.js |
-| Tests | Vitest + Playwright |
-| Calidad | ESLint + Prettier |
-| CI | GitHub Actions |
-| Package manager | npm |
+| Área                      | Tecnología                |
+| ------------------------- | ------------------------- |
+| Framework                 | Next.js 16 (App Router)   |
+| UI                        | React 19 + Tailwind CSS 4 |
+| Lenguaje                  | TypeScript (`strict`)     |
+| Auth / Realtime / Storage | Supabase                  |
+| Datos                     | PostgreSQL + Drizzle ORM  |
+| Cliente SQL               | postgres.js               |
+| Tests                     | Vitest + Playwright       |
+| Calidad                   | ESLint + Prettier         |
+| CI                        | GitHub Actions            |
+| Package manager           | npm                       |
 
 ## Requisitos de desarrollo
 
