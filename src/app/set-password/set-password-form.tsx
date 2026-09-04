@@ -5,7 +5,13 @@ import { setPasswordAction, type SetPasswordState } from "./actions";
 
 const initial: SetPasswordState = { error: null };
 
-export function SetPasswordForm() {
+type SetPasswordFormProps = {
+  recoveryMode?: boolean;
+};
+
+export function SetPasswordForm({
+  recoveryMode = false,
+}: SetPasswordFormProps) {
   const [state, formAction, pending] = useActionState(
     setPasswordAction,
     initial,
@@ -13,6 +19,9 @@ export function SetPasswordForm() {
 
   return (
     <form action={formAction} className="flex w-full max-w-sm flex-col gap-4">
+      {recoveryMode ? (
+        <input type="hidden" name="flow" value="recovery" />
+      ) : null}
       <label className="flex flex-col gap-1.5 text-sm">
         <span className="font-medium">Nueva contraseña</span>
         <input
