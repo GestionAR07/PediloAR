@@ -16,12 +16,12 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
 SUPABASE_SECRET_KEY=...
 ```
 
-| Variable              | Dónde            | Uso                                              |
-| --------------------- | ---------------- | ------------------------------------------------ |
-| `APP_BASE_URL`        | server-only      | Origen para redirects de invitación y recovery   |
-| `DATABASE_URL`        | server-only      | Persistencia y consultas PostgreSQL              |
-| `SUPABASE_SECRET_KEY` | server-only      | Auth Admin para invitaciones/usuarios            |
-| `NEXT_PUBLIC_*`       | browser + server | Sesión SSR/cliente con clave pública             |
+| Variable              | Dónde            | Uso                                            |
+| --------------------- | ---------------- | ---------------------------------------------- |
+| `APP_BASE_URL`        | server-only      | Origen para redirects de invitación y recovery |
+| `DATABASE_URL`        | server-only      | Persistencia y consultas PostgreSQL            |
+| `SUPABASE_SECRET_KEY` | server-only      | Auth Admin para invitaciones/usuarios          |
+| `NEXT_PUBLIC_*`       | browser + server | Sesión SSR/cliente con clave pública           |
 
 **Prohibido:** `NEXT_PUBLIC_SUPABASE_SECRET_KEY`.
 
