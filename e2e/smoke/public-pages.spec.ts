@@ -71,6 +71,26 @@ test.describe("B — deterministic public routes (GET only, no mutations)", () =
     expect(errors).toEqual([]);
   });
 
+  test("password reset success returns to login with confirmation", async ({
+    page,
+  }) => {
+    const { errors } = attachPageCrashGuard(page);
+    await page.goto("/login?reset=success", {
+      waitUntil: "domcontentloaded",
+    });
+
+    await expect(
+      page.getByRole("status").filter({
+        hasText: "Contraseña actualizada. Ingresá con tu nueva contraseña.",
+      }),
+    ).toBeVisible();
+    await expect(page.getByLabel("Email")).toBeVisible();
+    await expect(page.getByLabel("Contraseña")).toBeVisible();
+
+    await expectNoNextCrashOverlay(page);
+    expect(errors).toEqual([]);
+  });
+
   test("empty cart page renders from local state only", async ({ page }) => {
     const { errors } = attachPageCrashGuard(page);
     await page.goto("/carrito", { waitUntil: "domcontentloaded" });
