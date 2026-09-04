@@ -1,8 +1,8 @@
-# Merchant onboarding (Fase 3B) — Marketplace Rawson
+# Merchant onboarding — Pedilo
 
-Checkpoint objetivo: `MERCHANT_ONBOARDING_READY` (solo tras validación E2E manual).
+Estado actual: `MERCHANT_ONBOARDING_ACTIVE_FLOW_VALIDATED`.
 
-Código de esta fase: onboarding asistido de comercios + invitación OWNER.
+El alta de comercios es asistida: una solicitud pública pasa por revisión ADMIN, crea un comercio `DRAFT`, el propietario configura el comercio y luego un ADMIN lo activa manualmente cuando cumple los requisitos mínimos. Un comercio `DRAFT` no se publica en Pedilo.
 
 ## Variables de entorno
 
@@ -16,157 +16,138 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
 SUPABASE_SECRET_KEY=...
 ```
 
-| Variable              | Dónde            | Uso                                                 |
-| --------------------- | ---------------- | --------------------------------------------------- |
-| `APP_BASE_URL`        | server-only      | Origen para redirects de invitación                 |
-| `SUPABASE_SECRET_KEY` | server-only      | Auth Admin: localizar usuarios, `inviteUserByEmail` |
-| `NEXT_PUBLIC_*`       | browser + server | Sesión SSR/cliente (clave pública)                  |
+| Variable | Dónde | Uso |
+| --- | --- | --- |
+| `APP_BASE_URL` | server-only | Origen para redirects de invitación |
+| `DATABASE_URL` | server-only | Persistencia y consultas PostgreSQL |
+| `SUPABASE_SECRET_KEY` | server-only | Auth Admin para invitaciones/usuarios |
+| `NEXT_PUBLIC_*` | browser + server | Sesión SSR/cliente con clave pública |
 
 **Prohibido:** `NEXT_PUBLIC_SUPABASE_SECRET_KEY`.
 
-La secret **no** autoriza al caller: primero `requirePlatformAdmin()`, luego Admin API.
+La secret no autoriza al caller: las operaciones administrativas siguen requiriendo `requirePlatformAdmin()` y las operaciones merchant siguen requiriendo membresía/rol del comercio exacto.
 
-Puerto dev: este proyecto suele usar **3001** si 3000 está ocupado:
+## Configuración de Supabase Auth
 
-```powershell
-npx next dev -p 3001
-```
+### URL Configuration
 
-## Configuración manual en Supabase Dashboard
-
-Cursor/agente **no** puede modificar el Dashboard. Operador en **marketplace-rawson-dev**:
-
-### 1. URL Configuration
-
-**Authentication → URL Configuration**
-
-- **Site URL** (desarrollo): `http://localhost:3001`
-- **Redirect URLs** (permitidas), al menos:
+En **Authentication → URL Configuration**, el Site URL y los Redirect URLs deben apuntar al host real del entorno. En desarrollo, por ejemplo:
 
 ```text
 http://localhost:3001/auth/confirm
 http://localhost:3001/**
 ```
 
-Ajustar host/puerto si el dev server corre en otro port.
+Ajustar el puerto si el servidor local usa otro.
 
-### 2. Plantilla Invite user (SSR + token_hash)
+### Plantilla Invite user
 
-**Authentication → Email Templates → Invite user**
-
-Usar confirmación por **Token Hash** hacia la ruta SSR de la app (no depender solo del SPA hash fragment de Supabase).
-
-Ejemplo de cuerpo (HTML simplificado):
+La invitación debe usar el callback SSR de Pedilo con `token_hash`:
 
 ```html
-<h2>Te invitaron a Marketplace Rawson</h2>
-<p>Aceptá la invitación para acceder al panel de comercio:</p>
-<p>
-  <a
-    href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite&next=/set-password"
-  >
-    Aceptar invitación
-  </a>
-</p>
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite&next=/set-password">
+  Aceptar invitación
+</a>
 ```
 
-Notas:
+Después de `verifyOtp(type=invite)`, `/auth/confirm` establece la sesión y redirige a `/set-password`.
 
-- `type=invite` es obligatorio para el flujo de invitación.
-- `next=/set-password` es ruta interna; la app rechaza open redirects.
-- `SiteURL` debe coincidir con el Site URL de Auth (p.ej. `http://localhost:3001`).
-- Tras verificar el token, `/auth/confirm` crea la sesión (cookies SSR) y redirige a `/set-password`.
-
-### 3. Flujo esperado
+## Flujo de producto actual
 
 ```text
-ADMIN crea Merchant DRAFT
-  → ADMIN invita OWNER (email)
-  → Supabase envía mail (Invite)
-  → Link: /auth/confirm?token_hash=…&type=invite&next=/set-password
-  → sesión cookies SSR
-  → /set-password (updateUser password del usuario + verificación signInWithPassword)
-  → /merchant (membership OWNER en merchant_users)
+Usuario envía /sumar-comercio
+  → MerchantApplication PENDING
+  → ADMIN revisa y aprueba
+  → Merchant DRAFT
+  → ADMIN asigna/invita OWNER
+  → OWNER accede a /merchant
+  → OWNER configura operación, pagos y catálogo
+  → ADMIN revisa readiness
+  → ADMIN activa DRAFT → ACTIVE
+  → comercio visible públicamente en Pedilo
 ```
 
-`/set-password` solo redirige a `/merchant` si `updateUser({ password })` **y** un `signInWithPassword` posterior con esa misma contraseña tienen éxito. Si el update “parece” OK pero la contraseña no es usable, la UI muestra error (no hay redirect engañoso).
+La activación es **manual** y solo admite `DRAFT → ACTIVE`. La reactivación de `SUSPENDED` queda separada.
 
-## Superficies de producto
+## Requisitos de activación
 
-| Ruta                    | Quién                           |
-| ----------------------- | ------------------------------- |
-| `/admin/geography`      | ADMIN — Province / City / Zone  |
-| `/admin/merchants`      | ADMIN — listado                 |
-| `/admin/merchants/new`  | ADMIN — crear DRAFT             |
-| `/admin/merchants/[id]` | ADMIN — detalle + invitar OWNER |
-| `/auth/confirm`         | callback email                  |
-| `/set-password`         | usuario autenticado post-invite |
-| `/merchant`             | membership activa               |
-| `/merchant/[id]`        | membership de **ese** merchant  |
+Un `DRAFT` no puede activarse hasta cumplir todos los requisitos aplicables:
 
-### Datos piloto (manual, sin seed SQL)
+- al menos un `OWNER` operativo y activo;
+- retiro o delivery propio habilitado;
+- si hay delivery propio, al menos una zona de delivery activa;
+- al menos un medio de pago activo;
+- al menos un producto activo y disponible dentro de una categoría activa;
+- para productos con stock `TRACKED`, el stock debe ser mayor a cero.
 
-Desde `/admin/geography`:
+Mientras está `DRAFT`, la ruta pública `/comercios/[merchantId]` no debe exponer el comercio. Después de la activación debe ser visible con su catálogo y medios de pago configurados.
 
-- Province: **Chubut**, code **AR-U**
-- City: **Rawson**, timezone **America/Argentina/Catamarca**
-- Zones: a elección del operador (sin inventar barrios en código)
+## Superficies principales
 
-### Schema notes
+| Ruta | Quién |
+| --- | --- |
+| `/sumar-comercio` | público — solicitud de alta |
+| `/admin/merchant-applications` | ADMIN — revisar solicitudes |
+| `/admin/merchants/[id]` | ADMIN — readiness, OWNER y activación |
+| `/auth/confirm` | callback de Auth |
+| `/set-password` | usuario autenticado post-invite/recovery |
+| `/merchant` | usuario con membership activa |
+| `/merchant/[id]` | miembro de **ese** merchant |
+| `/merchant/[id]/catalog` | OWNER/STAFF |
+| `/merchant/[id]/delivery` | OWNER/STAFF |
+| `/merchant/[id]/payment-methods` | OWNER/STAFF |
+| `/merchant/[id]/profile` | OWNER/STAFF |
 
-- `provinces` tiene `name` + `code` (no hay columna `slug`).
-- Merchants siempre `status = DRAFT`, `platform_delivery_enabled = false` en create.
-- OWNER/STAFF viven en `merchant_users` (no en `platform_role`).
+## Seguridad y aislamiento
 
-## Seguridad
+- Admin client y `SUPABASE_SECRET_KEY`: server-only.
+- Las rutas merchant validan la sesión real, perfil activo y membership del `merchantId` exacto.
+- `OWNER` y `STAFF` son roles de `merchant_users`, no `platform_role`.
+- Un miembro de un comercio no puede leer el workspace de otro comercio.
+- Las mutaciones de catálogo, delivery, pagos, portada, disponibilidad y pedidos pasan por autorización server-side merchant-scoped.
+- RLS permanece deny-by-default para escrituras autenticadas directas sobre tablas merchant; no se agregan policies permisivas `USING (true)`.
 
-- Admin client: `src/infrastructure/supabase/admin.ts` (`server-only`).
-- No client-side authorization for ADMIN writes.
-- Cross-merchant: `requireMerchantMembership(merchantId)` + query filtrada.
-- STAFF no se eleva silenciosamente a OWNER.
-- Sin policies `USING (true)` nuevas.
-- Migraciones `0000` / `0001` intactas.
+La batería WRITE_DEV de multitenancy valida además que un `STAFF` puede usar su propio workspace, recibe `forbidden` al navegar al de otro comercio y que un `UPDATE` directo autenticado sobre `merchants` no altera el estado autoritativo.
 
-## Validación manual (checklist E2E)
+## Validación automatizada DEV
 
-1. `SUPABASE_SECRET_KEY` en server `.env.local`
-2. `APP_BASE_URL=http://localhost:3001`
-3. Site URL + Redirect URLs en Supabase
-4. Plantilla Invite con TokenHash → `/auth/confirm`
-5. Geografía piloto en `/admin/geography`
-6. Crear Merchant DRAFT
-7. Invitar email OWNER de prueba
-8. Recibir email real
-9. Abrir invitación
-10. `/auth/confirm` OK
-11. Establecer contraseña
-12. `/merchant` OK
-13. Comercio visible
-14. Rol OWNER
-15. Status sigue DRAFT
-16. Owner no entra a `/admin`
-17. Owner no entra a otro merchantId
-18. Logout OK
+`e2e/write/merchant-onboarding.write.spec.ts` valida de punta a punta:
 
-Si el código está listo pero falta este E2E:
+1. solicitud pública;
+2. persistencia `PENDING`;
+3. aprobación ADMIN;
+4. creación de Merchant `DRAFT`;
+5. comercio no visible públicamente antes de activar;
+6. asignación de OWNER existente y confirmado;
+7. configuración de medio de pago;
+8. creación de categoría y producto;
+9. readiness completo;
+10. activación ADMIN;
+11. estado `ACTIVE`;
+12. storefront público con producto y medio de pago;
+13. cleanup exacto de recursos temporales.
 
-`MERCHANT_ONBOARDING_READY_MANUAL_VALIDATION_PENDING`
+**Importante:** este E2E automatizado usa un OWNER temporal ya confirmado para evitar depender de correo externo. Por lo tanto prueba el onboarding y la activación de producto, pero **no prueba entrega real del email de invitación**. Si se cambia proveedor SMTP, plantilla o Redirect URL, la recepción del email debe revalidarse manualmente.
 
-## Password recovery (fuera de 3B)
+## Checklist manual antes de piloto
 
-Estado: **`PASSWORD_RECOVERY_NOT_IMPLEMENTED`**
+1. Confirmar Site URL y Redirect URLs del entorno.
+2. Confirmar plantilla `Invite user` con `/auth/confirm?token_hash=...&type=invite&next=/set-password`.
+3. Enviar una invitación real a una cuenta de prueba cuando se cambie configuración de correo/Auth.
+4. Abrir el link, establecer contraseña e ingresar nuevamente con email/password.
+5. Confirmar que OWNER no entra a `/admin`.
+6. Confirmar que OWNER/STAFF no entra al `merchantId` de otro comercio.
+7. Configurar operación, pago y al menos un producto vendible.
+8. Confirmar que el botón de activación permanece bloqueado mientras falte readiness.
+9. Activar y comprobar visibilidad pública.
+10. Confirmar logout/login posterior.
 
-El callback `/auth/confirm` **acepta** `type=recovery` y puede redirigir a `/set-password` si el mail trae `token_hash` + `type=recovery` + `next` interno seguro. Eso **no** es un producto de recuperación completo.
+## Password recovery
 
-Por qué el “Reset password” del Dashboard suele terminar en `/login`:
+`/auth/confirm` soporta `type=recovery` y `/set-password` puede completar el cambio de contraseña si existe una sesión recovery válida. El flujo depende de que la plantilla Reset Password de Supabase apunte al callback SSR correcto.
 
-1. La plantilla **Reset Password** de Supabase (distinta de Invite) suele usar `{{ .ConfirmationURL }}` / Site URL, no el deep-link SSR `/auth/confirm?token_hash=…&type=recovery&next=/set-password`.
-2. Sin `verifyOtp(type=recovery)` no hay sesión recovery en cookies SSR; el navegador cae en Site URL (p. ej. `/` o `/login`).
-3. Recovery **no** es el mismo flujo que invite (`type=invite`). No reutilizar ciegamente la plantilla de invitación.
-4. La app **no** expone UI para `resetPasswordForEmail` ni un flujo dedicado post-recovery.
+No confundir recovery con invite: deben usar su `type` correspondiente. Si no existe una UI pública dedicada que dispare `resetPasswordForEmail`, la capacidad de callback por sí sola no constituye un producto completo de “Olvidé mi contraseña”.
 
-Fase posterior: plantilla Reset → `/auth/confirm?type=recovery&next=/set-password`, UI “olvidé mi contraseña”, y pruebas E2E propias. **No** usar Magic Link como sustituto del bug de password set.
+## Fuera de alcance de este documento
 
-## Fuera de alcance (3B)
-
-Catálogo, productos, pedidos, carrito, checkout, platform delivery, mapas, Storage, OAuth, customer signup público, activación AUTO de merchant, recuperación completa de contraseña.
+Checkout, ciclo de pedidos, Realtime, cancelaciones, delivery operativo, RLS detallado y pruebas adversariales se documentan y validan en sus módulos/E2E correspondientes.
