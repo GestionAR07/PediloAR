@@ -109,6 +109,24 @@ describe("persistInvitedUserPassword", () => {
     expect(updateUser).toHaveBeenCalledWith({ password: "  ExactPass9" });
   });
 
+  it("explains when Supabase rejects reusing the current password", async () => {
+    const supabase = makeClient({
+      updateUser: vi.fn().mockResolvedValue({
+        data: { user: null },
+        error: {
+          message: "New password should be different from the old password.",
+        },
+      }),
+    });
+
+    const result = await persistInvitedUserPassword(supabase, "password12");
+    expect(result).toEqual({
+      ok: false,
+      error: "La nueva contraseña debe ser distinta de la contraseña actual.",
+    });
+    expect(supabase.auth.signInWithPassword).not.toHaveBeenCalled();
+  });
+
   it("does not succeed when updateUser returns an error", async () => {
     const supabase = makeClient({
       updateUser: vi.fn().mockResolvedValue({

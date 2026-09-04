@@ -86,6 +86,22 @@ export type UserScopedAuthClient = {
 export type PersistPasswordResult =
   { ok: true } | { ok: false; error: string; unauthenticated?: boolean };
 
+function passwordUpdateErrorMessage(message: string | null | undefined): string {
+  const normalized = message?.trim().toLowerCase() ?? "";
+  const reusedPassword =
+    normalized.includes("different from the old password") ||
+    normalized.includes("different from old password") ||
+    normalized.includes("same password") ||
+    normalized.includes("same as the old password") ||
+    normalized.includes("same as old password");
+
+  if (reusedPassword) {
+    return "La nueva contraseña debe ser distinta de la contraseña actual.";
+  }
+
+  return "No se pudo actualizar la contraseña. Verificá los requisitos e intentá de nuevo.";
+}
+
 /**
  * Persists password for the authenticated user via user-scoped updateUser,
  * then proves signInWithPassword accepts that exact password before success.
@@ -146,11 +162,17 @@ export async function persistInvitedUserPassword(
     password,
   });
 
-  if (updateError || !updated.user) {
+  if (updateError) {
     return {
       ok: false,
-      error:
-        "No se pudo actualizar la contraseña. Verificá los requisitos e intentá de nuevo.",
+      error: passwordUpdateErrorMessage(updateError.message),
+    };
+  }
+
+  if (!updated.user) {
+    return {
+      ok: false,
+      error: passwordUpdateErrorMessage(null),
     };
   }
 
