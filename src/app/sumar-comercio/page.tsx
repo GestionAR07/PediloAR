@@ -43,8 +43,8 @@ export default async function SumarComercioPage() {
               className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm text-muted"
               role="status"
             >
-              Las solicitudes de comercios no están disponibles en este
-              entorno. Intentá nuevamente más tarde.
+              Las solicitudes de comercios no están disponibles en este entorno.
+              Intentá nuevamente más tarde.
             </p>
           ) : cities.length === 0 || zones.length === 0 ? (
             <p className="text-sm text-muted">
