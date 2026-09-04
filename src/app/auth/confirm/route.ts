@@ -20,7 +20,9 @@ import { sanitizeInternalPath } from "@/lib/safe-redirect";
  * would not see a coherent authenticated session.
  *
  * Recovery (type=recovery) is accepted here so the public forgot-password
- * flow can establish a recovery session before /set-password.
+ * flow can establish a recovery session before /set-password. Recovery keeps
+ * an explicit flow marker so the password form can finish at login instead of
+ * assuming the user is a merchant invite.
  */
 export async function GET(request: NextRequest) {
   if (!hasSupabasePublicConfig()) {
@@ -33,7 +35,12 @@ export async function GET(request: NextRequest) {
   const token_hash = searchParams.get("token_hash");
   const code = searchParams.get("code");
   const type = searchParams.get("type");
-  const next = sanitizeInternalPath(searchParams.get("next"), "/set-password");
+  const requestedNext = sanitizeInternalPath(
+    searchParams.get("next"),
+    "/set-password",
+  );
+  const next =
+    type === "recovery" ? "/set-password?flow=recovery" : requestedNext;
 
   if (!code && (!token_hash || !type)) {
     return NextResponse.redirect(
