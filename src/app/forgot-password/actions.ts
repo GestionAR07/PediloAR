@@ -13,7 +13,9 @@ const SUCCESS_MESSAGE =
   "Si existe una cuenta con ese email, te enviamos un enlace para restablecer la contraseña.";
 
 function normalizeEmail(value: FormDataEntryValue | null): string {
-  return String(value ?? "").trim().toLowerCase();
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
 }
 
 function isPlausibleEmail(email: string): boolean {
@@ -35,7 +37,8 @@ export async function requestPasswordResetAction(
 
   if (!hasSupabasePublicConfig() || !hasAppBaseUrl()) {
     return {
-      error: "La recuperación de contraseña no está disponible en este entorno.",
+      error:
+        "La recuperación de contraseña no está disponible en este entorno.",
       success: null,
     };
   }
@@ -51,7 +54,8 @@ export async function requestPasswordResetAction(
 
     if (error) {
       return {
-        error: "No pudimos procesar la solicitud. Intentá nuevamente más tarde.",
+        error:
+          "No pudimos procesar la solicitud. Intentá nuevamente más tarde.",
         success: null,
       };
     }
