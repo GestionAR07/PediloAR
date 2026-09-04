@@ -35,9 +35,7 @@ export function SetPasswordForm({
         />
       </label>
       <label className="flex flex-col gap-1.5 text-sm">
-        <span className="font-medium text-foreground">
-          Repetir contraseña
-        </span>
+        <span className="font-medium text-foreground">Repetir contraseña</span>
         <input
           type="password"
           name="confirm"
