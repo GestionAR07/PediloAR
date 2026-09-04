@@ -46,5 +46,14 @@ export async function setPasswordAction(
     return { error: result.error };
   }
 
+  if (String(formData.get("flow") ?? "") === "recovery") {
+    // Recovery finishes with an explicit fresh login. The core flow signs back
+    // in only to prove the new password works; do not retain that verification
+    // session as the user's post-recovery destination.
+    await supabase.auth.signOut();
+    redirect("/login?reset=success");
+  }
+
+  // Invite flow keeps the historical merchant onboarding destination.
   redirect("/merchant");
 }
