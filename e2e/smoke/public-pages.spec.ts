@@ -64,7 +64,7 @@ test.describe("B — deterministic public routes (GET only, no mutations)", () =
       page.getByRole("button", { name: "Enviar enlace" }),
     ).toBeVisible();
     await expect(
-      page.getByRole("link", { name: "Volver a ingresar" }),
+      page.getByRole("link", { name: "Volver a iniciar sesión" }),
     ).toBeVisible();
 
     await expectNoNextCrashOverlay(page);
