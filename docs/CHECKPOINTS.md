@@ -24,6 +24,10 @@ PostgreSQL + Drizzle + migraciones base aplicadas/validadas en DEV.
 
 Supabase Auth SSR, perfiles, roles, login/logout, ADMIN y memberships merchant validados.
 
+### `PUBLIC_PASSWORD_RECOVERY_IMPLEMENTED`
+
+La UI pública “Olvidé mi contraseña” solicita recovery mediante Supabase sin usar privilegios admin, mantiene respuesta neutral para no revelar existencia de cuentas y reutiliza `/auth/confirm` → `/set-password`. La entrega real de email y el callback completo quedan como validación manual DEV antes de considerar cerrado el flujo externo.
+
 ## Catálogo y storefront
 
 ### `PRODUCT_IMAGES_STORAGE_READY`
@@ -121,7 +125,7 @@ Trabajo actual:
 - accesibilidad y responsive final;
 - actualizar documentación operativa;
 - revisar dependencias/observabilidad;
-- preparar recuperación de contraseña pública;
+- validar en DEV la entrega/callback real de recuperación de contraseña pública;
 - preparar entorno productivo separado de DEV.
 
 ## Próximo checkpoint objetivo
