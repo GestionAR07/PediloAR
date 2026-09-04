@@ -19,9 +19,8 @@ import { sanitizeInternalPath } from "@/lib/safe-redirect";
  * would appear to work only intermittently, and updateUser/signInWithPassword
  * would not see a coherent authenticated session.
  *
- * Recovery (type=recovery) is accepted here so a correctly configured Reset
- * Password template can reach /set-password, but the app still does not ship
- * a full password-recovery product flow (PASSWORD_RECOVERY_NOT_IMPLEMENTED).
+ * Recovery (type=recovery) is accepted here so the public forgot-password
+ * flow can establish a recovery session before /set-password.
  */
 export async function GET(request: NextRequest) {
   if (!hasSupabasePublicConfig()) {
