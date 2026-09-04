@@ -18,6 +18,7 @@ Flujos actualmente cubiertos:
 - retiro y delivery propio del comercio;
 - creación, idempotencia, cancelación y seguimiento de pedidos;
 - cuenta de comprador e historial de pedidos;
+- login, registro y recuperación pública de contraseña;
 - panel merchant con catálogo, configuración, pagos, delivery y operación de pedidos;
 - actualización operativa y notificaciones Realtime de pedidos;
 - solicitud pública para sumar un comercio;

@@ -58,7 +58,7 @@ Pedilo ya superó la etapa de MVP técnico y se encuentra en **pre-piloto**. Los
    - multitenancy merchant y RLS adversarial: completado.
    - pulido de warnings, fallbacks públicos, accesibilidad y documentación: en curso.
    - QA responsive final en teléfonos reales: pendiente.
-   - recuperación de contraseña pública (“Olvidé mi contraseña”): pendiente de producto/validación final.
+   - recuperación de contraseña pública (“Olvidé mi contraseña”): implementada; pendiente validar entrega real de email/callback en DEV.
    - revisión de vulnerabilidades/dependencias y observabilidad operativa: pendiente.
    - preparación de entorno de producción, dominio, HTTPS, variables, backups/logs: pendiente.
 

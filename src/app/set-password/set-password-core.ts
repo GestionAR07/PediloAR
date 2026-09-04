@@ -124,7 +124,7 @@ export async function persistInvitedUserPassword(
     return {
       ok: false,
       error:
-        "No hay una sesión válida para actualizar la contraseña. Volvé a abrir el enlace de invitación.",
+        "No hay una sesión válida para actualizar la contraseña. Volvé a abrir el enlace de acceso.",
     };
   }
 
@@ -138,7 +138,7 @@ export async function persistInvitedUserPassword(
     return {
       ok: false,
       error:
-        "No se pudo revalidar la sesión. Volvé a abrir el enlace de invitación.",
+        "No se pudo revalidar la sesión. Volvé a abrir el enlace de acceso.",
     };
   }
 

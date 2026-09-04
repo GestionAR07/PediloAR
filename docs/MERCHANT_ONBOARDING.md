@@ -16,12 +16,12 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
 SUPABASE_SECRET_KEY=...
 ```
 
-| Variable              | Dónde            | Uso                                   |
-| --------------------- | ---------------- | ------------------------------------- |
-| `APP_BASE_URL`        | server-only      | Origen para redirects de invitación   |
-| `DATABASE_URL`        | server-only      | Persistencia y consultas PostgreSQL   |
-| `SUPABASE_SECRET_KEY` | server-only      | Auth Admin para invitaciones/usuarios |
-| `NEXT_PUBLIC_*`       | browser + server | Sesión SSR/cliente con clave pública  |
+| Variable              | Dónde            | Uso                                            |
+| --------------------- | ---------------- | ---------------------------------------------- |
+| `APP_BASE_URL`        | server-only      | Origen para redirects de invitación y recovery |
+| `DATABASE_URL`        | server-only      | Persistencia y consultas PostgreSQL            |
+| `SUPABASE_SECRET_KEY` | server-only      | Auth Admin para invitaciones/usuarios          |
+| `NEXT_PUBLIC_*`       | browser + server | Sesión SSR/cliente con clave pública           |
 
 **Prohibido:** `NEXT_PUBLIC_SUPABASE_SECRET_KEY`.
 
@@ -53,6 +53,20 @@ La invitación debe usar el callback SSR de Pedilo con `token_hash`:
 ```
 
 Después de `verifyOtp(type=invite)`, `/auth/confirm` establece la sesión y redirige a `/set-password`.
+
+### Plantilla Reset Password
+
+La recuperación pública usa `resetPasswordForEmail` y el callback SSR existente. La plantilla de Supabase debe conservar el `token_hash` y `type=recovery`, por ejemplo:
+
+```html
+<a
+  href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/set-password"
+>
+  Restablecer contraseña
+</a>
+```
+
+El origen efectivo debe coincidir con la configuración del entorno y con `APP_BASE_URL`.
 
 ## Flujo de producto actual
 
@@ -89,6 +103,7 @@ Mientras está `DRAFT`, la ruta pública `/comercios/[merchantId]` no debe expon
 | Ruta                             | Quién                                    |
 | -------------------------------- | ---------------------------------------- |
 | `/sumar-comercio`                | público — solicitud de alta              |
+| `/forgot-password`               | público — solicitar recovery             |
 | `/admin/merchant-applications`   | ADMIN — revisar solicitudes              |
 | `/admin/merchants/[id]`          | ADMIN — readiness, OWNER y activación    |
 | `/auth/confirm`                  | callback de Auth                         |
@@ -103,6 +118,8 @@ Mientras está `DRAFT`, la ruta pública `/comercios/[merchantId]` no debe expon
 ## Seguridad y aislamiento
 
 - Admin client y `SUPABASE_SECRET_KEY`: server-only.
+- La recuperación pública usa el cliente normal Supabase y no utiliza Auth Admin/service-role.
+- La respuesta exitosa de recovery es neutral y no revela si un email está registrado.
 - Las rutas merchant validan la sesión real, perfil activo y membership del `merchantId` exacto.
 - `OWNER` y `STAFF` son roles de `merchant_users`, no `platform_role`.
 - Un miembro de un comercio no puede leer el workspace de otro comercio.
@@ -135,20 +152,24 @@ La batería WRITE_DEV de multitenancy valida además que un `STAFF` puede usar s
 
 1. Confirmar Site URL y Redirect URLs del entorno.
 2. Confirmar plantilla `Invite user` con `/auth/confirm?token_hash=...&type=invite&next=/set-password`.
-3. Enviar una invitación real a una cuenta de prueba cuando se cambie configuración de correo/Auth.
-4. Abrir el link, establecer contraseña e ingresar nuevamente con email/password.
-5. Confirmar que OWNER no entra a `/admin`.
-6. Confirmar que OWNER/STAFF no entra al `merchantId` de otro comercio.
-7. Configurar operación, pago y al menos un producto vendible.
-8. Confirmar que el botón de activación permanece bloqueado mientras falte readiness.
-9. Activar y comprobar visibilidad pública.
-10. Confirmar logout/login posterior.
+3. Confirmar plantilla Reset Password con `type=recovery` y `/set-password`.
+4. Enviar una invitación real a una cuenta de prueba cuando se cambie configuración de correo/Auth.
+5. Abrir el link, establecer contraseña e ingresar nuevamente con email/password.
+6. Probar “Olvidé mi contraseña” con una cuenta DEV controlada y confirmar recepción, callback y cambio efectivo de contraseña.
+7. Confirmar que OWNER no entra a `/admin`.
+8. Confirmar que OWNER/STAFF no entra al `merchantId` de otro comercio.
+9. Configurar operación, pago y al menos un producto vendible.
+10. Confirmar que el botón de activación permanece bloqueado mientras falte readiness.
+11. Activar y comprobar visibilidad pública.
+12. Confirmar logout/login posterior.
 
 ## Password recovery
 
-`/auth/confirm` soporta `type=recovery` y `/set-password` puede completar el cambio de contraseña si existe una sesión recovery válida. El flujo depende de que la plantilla Reset Password de Supabase apunte al callback SSR correcto.
+Pedilo ya expone `/forgot-password` desde el login. La acción normaliza/valida el email, usa `resetPasswordForEmail`, construye el callback desde `APP_BASE_URL` y muestra una respuesta neutral para no revelar existencia de cuentas.
 
-No confundir recovery con invite: deben usar su `type` correspondiente. Si no existe una UI pública dedicada que dispare `resetPasswordForEmail`, la capacidad de callback por sí sola no constituye un producto completo de “Olvidé mi contraseña”.
+`/auth/confirm` soporta `type=recovery` y establece la sesión necesaria para continuar en `/set-password`. No confundir recovery con invite: deben usar su `type` correspondiente.
+
+La cobertura automatizada valida la superficie pública y las restricciones de seguridad, pero el envío real depende de la configuración de Supabase Auth/SMTP/template del entorno. Antes del piloto debe realizarse al menos una validación manual DEV de recepción del email, callback y login posterior con la nueva contraseña.
 
 ## Fuera de alcance de este documento
 
