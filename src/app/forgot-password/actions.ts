@@ -46,7 +46,7 @@ export async function requestPasswordResetAction(
   try {
     const supabase = await createSupabaseServerClient();
     const redirectTo = appAbsoluteUrl(
-      "/auth/confirm?type=recovery&next=/set-password",
+      "/auth/confirm?type=recovery&next=/set-password%3Fflow%3Drecovery",
     );
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo,
