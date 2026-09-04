@@ -53,6 +53,8 @@ function isPublicStorefrontPath(pathname: string): boolean {
     pathname === "/checkout" ||
     pathname === "/login" ||
     pathname === "/registro" ||
+    pathname === "/forgot-password" ||
+    pathname === "/set-password" ||
     pathname === "/sumar-comercio" ||
     pathname.startsWith("/cuenta") ||
     pathname.startsWith("/comercios")

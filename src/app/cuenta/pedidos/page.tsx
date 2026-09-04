@@ -14,7 +14,7 @@ export default async function CustomerOrdersPage() {
   return (
     <div className="space-y-8">
       <header>
-        <p className="text-xs font-bold tracking-wider text-violet-700 uppercase">
+        <p className="text-xs font-bold tracking-wider text-[var(--ps-cyan,#20AEE5)] uppercase">
           Mi cuenta
         </p>
         <h1 className="font-display mt-1 text-3xl font-extrabold tracking-tight text-[var(--ps-night-900)]">
@@ -33,7 +33,7 @@ export default async function CustomerOrdersPage() {
         </p>
       ) : orders.value.active.length === 0 &&
         orders.value.history.length === 0 ? (
-        <p className="rounded-[1.5rem] border border-violet-100 bg-white p-6 text-sm text-muted shadow-soft">
+        <p className="rounded-[1.5rem] border border-sky-100 bg-white p-6 text-sm text-muted shadow-soft">
           Todavía no realizaste pedidos con esta cuenta.
         </p>
       ) : (

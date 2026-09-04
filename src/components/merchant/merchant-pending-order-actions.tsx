@@ -82,7 +82,7 @@ export function MerchantPendingOrderActions({ merchantId, orderId }: Props) {
           type="button"
           disabled={busy}
           onClick={runAccept}
-          className="min-h-11 flex-1 rounded-xl bg-[#7c3aed] px-4 py-2 text-sm font-medium text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7c3aed] disabled:opacity-60"
+          className="pedilo-action-primary merchant-ops-accept-btn min-h-11 flex-1 rounded-xl px-4 py-2 text-sm disabled:cursor-not-allowed"
         >
           {accepting ? "Aceptando..." : "Aceptar"}
         </button>
@@ -94,7 +94,7 @@ export function MerchantPendingOrderActions({ merchantId, orderId }: Props) {
             setReason("");
             dialogRef.current?.showModal();
           }}
-          className="min-h-11 rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-60"
+          className="pedilo-action-danger min-h-11 rounded-xl px-4 py-2 text-sm font-medium disabled:cursor-not-allowed"
         >
           Rechazar
         </button>
@@ -156,7 +156,7 @@ export function MerchantPendingOrderActions({ merchantId, orderId }: Props) {
             <button
               type="submit"
               disabled={busy || !reason}
-              className="min-h-11 flex-1 rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm font-medium text-red-900 disabled:opacity-60"
+              className="pedilo-action-danger-confirm min-h-11 flex-1 rounded-md px-4 py-2 text-sm font-medium disabled:cursor-not-allowed"
             >
               {rejecting ? "Rechazando..." : "Confirmar rechazo"}
             </button>
@@ -164,7 +164,7 @@ export function MerchantPendingOrderActions({ merchantId, orderId }: Props) {
               type="button"
               disabled={busy}
               onClick={closeDialog}
-              className="min-h-11 rounded-md border border-border px-4 py-2 text-sm"
+              className="pedilo-action-secondary min-h-11 rounded-md px-4 py-2 text-sm disabled:cursor-not-allowed"
             >
               Volver
             </button>

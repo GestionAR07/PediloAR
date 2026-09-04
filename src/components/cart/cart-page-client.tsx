@@ -15,7 +15,7 @@ import { ShoppingBagIcon, StoreIcon } from "@/components/ui/public-icons";
 import { useCart } from "./cart-provider";
 
 const focusRing =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-cyan)]";
 
 export function CartPageClient() {
   const {
@@ -73,8 +73,8 @@ export function CartPageClient() {
   if (isCartEmpty(cart)) {
     return (
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-10 sm:px-6 lg:px-8">
-        <div className="cart-empty mx-auto w-full max-w-md rounded-[1.75rem] border border-violet-100/70 bg-white px-6 py-12 text-center shadow-soft">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-50 text-violet-700">
+        <div className="cart-empty mx-auto w-full max-w-md rounded-[1.75rem] border border-sky-100/70 bg-white px-6 py-12 text-center shadow-soft">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-50 text-[var(--ps-cyan,#20AEE5)]">
             <ShoppingBagIcon className="h-7 w-7" />
           </span>
           <h1 className="font-display mt-5 text-2xl font-extrabold tracking-tight text-[var(--ps-night-900)]">
@@ -106,16 +106,16 @@ export function CartPageClient() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 pt-6 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] sm:px-6 lg:px-8 lg:pt-8 lg:pb-12">
+    <div className="cart-page mx-auto w-full max-w-6xl px-4 pt-6 pb-6 sm:px-6 lg:px-8 lg:pt-8 lg:pb-12">
       <header className="cart-intro max-w-2xl space-y-2">
-        <p className="text-[11px] font-bold tracking-wider text-violet-700 uppercase">
+        <p className="cart-brand-kicker text-[11px] font-bold tracking-wider uppercase">
           Pedido local
         </p>
         <h1 className="font-display text-3xl font-extrabold tracking-tight text-[var(--ps-night-900)]">
           Tu carrito
         </h1>
         <p className="flex items-center gap-2 text-sm font-medium text-muted">
-          <StoreIcon className="h-4 w-4 shrink-0 text-violet-600" />
+          <StoreIcon className="cart-brand-icon h-4 w-4 shrink-0" />
           <span className="min-w-0 truncate">{cart.merchantNameSnapshot}</span>
         </p>
         <p className="text-xs font-semibold text-slate-400">
@@ -134,16 +134,15 @@ export function CartPageClient() {
             return (
               <li
                 key={line.id}
-                className="cart-line-card space-y-4 rounded-[1.75rem] border border-violet-100/70 bg-white p-4 shadow-soft sm:p-5"
+                className="cart-line-card space-y-4 rounded-[1.75rem] border border-sky-100/70 bg-white p-4 shadow-soft sm:p-5"
                 style={{ ["--cart-i" as string]: String(index) }}
               >
                 <div className="flex gap-3 sm:gap-4">
                   <div
                     aria-hidden
-                    className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-violet-200 to-fuchsia-200 sm:h-[4.5rem] sm:w-[4.5rem]"
+                    className="cart-product-avatar relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl sm:h-[4.5rem] sm:w-[4.5rem]"
                   >
-                    <span className="absolute inset-0 bg-gradient-to-br from-violet-800 via-violet-600 to-fuchsia-500" />
-                    <span className="font-display relative text-xl font-extrabold text-white/90">
+                    <span className="font-display relative text-xl font-extrabold text-white">
                       {initial}
                     </span>
                   </div>
@@ -180,14 +179,14 @@ export function CartPageClient() {
                 </div>
 
                 <div className="flex items-center justify-between gap-3">
-                  <div className="cart-qty-stepper inline-flex items-center rounded-full border border-violet-100 bg-violet-50/80 p-0.5">
+                  <div className="cart-qty-stepper inline-flex items-center rounded-full p-0.5">
                     <button
                       type="button"
                       aria-label={`Disminuir ${line.productNameSnapshot}`}
                       onClick={() =>
                         setLineQuantity(line.id, line.quantity - 1)
                       }
-                      className={`flex h-11 w-11 items-center justify-center rounded-full text-lg font-bold text-violet-800 hover:bg-white ${focusRing}`}
+                      className={`cart-qty-btn flex h-11 w-11 items-center justify-center rounded-full text-lg font-bold hover:bg-white ${focusRing}`}
                     >
                       −
                     </button>
@@ -204,7 +203,7 @@ export function CartPageClient() {
                       onClick={() =>
                         setLineQuantity(line.id, line.quantity + 1)
                       }
-                      className={`flex h-11 w-11 items-center justify-center rounded-full text-lg font-bold text-violet-800 hover:bg-white disabled:cursor-not-allowed disabled:opacity-40 ${focusRing}`}
+                      className={`cart-qty-btn flex h-11 w-11 items-center justify-center rounded-full text-lg font-bold hover:bg-white disabled:cursor-not-allowed disabled:opacity-40 ${focusRing}`}
                     >
                       +
                     </button>
@@ -222,7 +221,7 @@ export function CartPageClient() {
           })}
         </ul>
 
-        <aside className="cart-summary-panel space-y-4 rounded-[1.75rem] border border-violet-100/70 bg-white p-5 shadow-soft lg:sticky lg:top-24">
+        <aside className="cart-summary-panel space-y-4 rounded-[1.75rem] border border-sky-100/70 bg-white p-5 shadow-soft lg:sticky lg:top-24">
           <h2 className="font-display text-lg font-extrabold tracking-tight text-[var(--ps-night-900)]">
             Resumen del pedido
           </h2>
@@ -232,7 +231,7 @@ export function CartPageClient() {
               {cart.merchantNameSnapshot}
             </span>
           </p>
-          <div className="flex items-end justify-between gap-3 border-t border-violet-100 pt-4">
+          <div className="flex items-end justify-between gap-3 border-t border-sky-100 pt-4">
             <span className="text-sm font-bold text-slate-500">
               Subtotal de productos
             </span>
@@ -272,7 +271,7 @@ export function CartPageClient() {
           )}
           <Link
             href={backHref}
-            className={`inline-flex min-h-11 w-full items-center justify-center rounded-full border border-violet-100 px-4 text-sm font-bold text-violet-800 hover:bg-violet-50 ${focusRing}`}
+            className={`cart-continue-shopping inline-flex min-h-11 w-full items-center justify-center rounded-full px-4 text-sm font-bold ${focusRing}`}
           >
             Seguir comprando
           </Link>
@@ -286,8 +285,13 @@ export function CartPageClient() {
         </aside>
       </div>
 
+      {/* In-flow reserve so document scroll (html/body) can clear the fixed CTA.
+          Padding on .cart-page alone is unreliable: Tailwind pb-* competes and
+          short carts leave actions in the sticky overlay zone. */}
+      <div className="cart-sticky-spacer lg:hidden" aria-hidden="true" />
+
       <div className="cart-sticky-bar pointer-events-none fixed inset-x-0 bottom-0 z-20 lg:hidden">
-        <div className="pointer-events-auto mx-auto max-w-6xl px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:px-6">
+        <div className="cart-sticky-bar-inner pointer-events-auto mx-auto max-w-6xl px-4 sm:px-6">
           {hasUnavailableLine ? (
             <span
               aria-disabled="true"

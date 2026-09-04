@@ -32,7 +32,7 @@ export function CustomerProfileForm({
           maxLength={80}
           defaultValue={displayName}
           required
-          className="min-h-12 w-full rounded-2xl border border-violet-100 bg-white px-4 outline-none ring-violet-500 focus:ring-2"
+          className="min-h-12 w-full rounded-2xl border border-sky-100 bg-white px-4 outline-none ring-[var(--ps-cyan,#20AEE5)] focus:ring-2"
         />
       </label>
       <label className="block text-sm">
@@ -45,7 +45,7 @@ export function CustomerProfileForm({
           maxLength={32}
           defaultValue={phone}
           required
-          className="min-h-12 w-full rounded-2xl border border-violet-100 bg-white px-4 outline-none ring-violet-500 focus:ring-2"
+          className="min-h-12 w-full rounded-2xl border border-sky-100 bg-white px-4 outline-none ring-[var(--ps-cyan,#20AEE5)] focus:ring-2"
         />
         <span className="mt-1.5 block text-xs text-muted">
           Lo usaremos únicamente para coordinar tus pedidos.

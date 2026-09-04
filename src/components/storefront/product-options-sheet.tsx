@@ -116,8 +116,8 @@ function setQuantitySelection(
 
 function choiceSurface(selected: boolean): string {
   return selected
-    ? "border-violet-200 bg-violet-50"
-    : "border-transparent bg-slate-50 hover:border-violet-100 hover:bg-violet-50";
+    ? "border-sky-200 bg-sky-50"
+    : "border-transparent bg-slate-50 hover:border-sky-100 hover:bg-sky-50";
 }
 
 export function ProductOptionsSheet({
@@ -267,7 +267,7 @@ export function ProductOptionsSheet({
         aria-labelledby={titleId}
         className="product-options-sheet relative z-10 flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-[2rem] bg-white shadow-2xl sm:max-w-xl sm:rounded-[2rem]"
       >
-        <div className="shrink-0 border-b border-violet-100/70 px-5 pt-3 pb-4 sm:px-6 sm:pt-5">
+        <div className="shrink-0 border-b border-sky-100/70 px-5 pt-3 pb-4 sm:px-6 sm:pt-5">
           <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-slate-200 sm:hidden" />
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
@@ -287,7 +287,7 @@ export function ProductOptionsSheet({
               ref={closeRef}
               type="button"
               onClick={requestClose}
-              className="flex h-10 w-10 items-center justify-center rounded-xl transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+              className="flex h-10 w-10 items-center justify-center rounded-xl transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-cyan)]"
             >
               <CloseIcon className="h-5 w-5" />
               <span className="sr-only">Cerrar</span>
@@ -303,7 +303,7 @@ export function ProductOptionsSheet({
           ) : null}
 
           {feedback ? (
-            <p className="mb-3 rounded-2xl bg-violet-50 px-3 py-2 text-sm font-medium text-violet-800">
+            <p className="mb-3 rounded-2xl bg-sky-50 px-3 py-2 text-sm font-medium text-[var(--ps-navy,#083F66)]">
               {feedback}
             </p>
           ) : null}
@@ -351,7 +351,7 @@ export function ProductOptionsSheet({
                           <input
                             type="radio"
                             name={`group-${group.id}`}
-                            className="accent-violet-600"
+                            className="accent-[var(--ps-cyan,#20AEE5)]"
                             checked={
                               (draft.find((d) => d.groupId === group.id)
                                 ?.selections.length ?? 0) === 0
@@ -381,7 +381,7 @@ export function ProductOptionsSheet({
                               <input
                                 type="radio"
                                 name={`group-${group.id}`}
-                                className="accent-violet-600"
+                                className="accent-[var(--ps-cyan,#20AEE5)]"
                                 checked={selected}
                                 onChange={() =>
                                   setDraft((current) =>
@@ -423,7 +423,7 @@ export function ProductOptionsSheet({
                               <span className="flex items-center gap-3">
                                 <input
                                   type="checkbox"
-                                  className="accent-violet-600"
+                                  className="accent-[var(--ps-cyan,#20AEE5)]"
                                   checked={selected}
                                   onChange={() =>
                                     setDraft((current) =>
@@ -485,7 +485,7 @@ export function ProductOptionsSheet({
                                     ),
                                   )
                                 }
-                                className="flex h-10 w-10 items-center justify-center rounded-full border border-violet-200 bg-white font-bold disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+                                className="flex h-10 w-10 items-center justify-center rounded-full border border-sky-200 bg-white font-bold disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-cyan)]"
                               >
                                 −
                               </button>
@@ -510,7 +510,7 @@ export function ProductOptionsSheet({
                                     ),
                                   )
                                 }
-                                className="flex h-10 w-10 items-center justify-center rounded-full border border-violet-200 bg-white font-bold disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+                                className="flex h-10 w-10 items-center justify-center rounded-full border border-sky-200 bg-white font-bold disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-cyan)]"
                               >
                                 +
                               </button>
@@ -526,7 +526,7 @@ export function ProductOptionsSheet({
           </div>
         </div>
 
-        <div className="product-options-sheet-footer sticky bottom-0 shrink-0 border-t border-violet-100/70 bg-white">
+        <div className="product-options-sheet-footer sticky bottom-0 shrink-0 border-t border-sky-100/70 bg-white">
           <button
             type="button"
             disabled={!canSubmit}
@@ -537,7 +537,7 @@ export function ProductOptionsSheet({
               );
               onAddConfigured(configuration);
             }}
-            className="product-options-sheet-cta grad-btn rounded-full px-4 py-3 text-sm font-extrabold text-white shadow-glow disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-violet)]"
+            className="product-options-sheet-cta grad-btn rounded-full px-4 py-3 text-sm font-extrabold text-white shadow-glow disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ps-cyan)]"
           >
             Agregar al carrito
             {estimatedUnit != null

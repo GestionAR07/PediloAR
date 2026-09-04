@@ -19,7 +19,7 @@ export default async function CustomerAccountPage() {
     <div className="space-y-8">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-bold tracking-wider text-violet-700 uppercase">
+          <p className="text-xs font-bold tracking-wider text-[var(--ps-cyan,#20AEE5)] uppercase">
             Mi cuenta
           </p>
           <h1 className="font-display mt-1 text-3xl font-extrabold tracking-tight text-[var(--ps-night-900)]">
@@ -30,7 +30,7 @@ export default async function CustomerAccountPage() {
           </p>
         </div>
         <form action={logoutAction}>
-          <button className="min-h-11 rounded-full border border-violet-100 bg-white px-4 text-sm font-bold text-violet-800 hover:bg-violet-50">
+          <button className="min-h-11 rounded-full border border-sky-100 bg-white px-4 text-sm font-bold text-[var(--ps-navy,#083F66)] hover:bg-sky-50">
             Cerrar sesión
           </button>
         </form>
@@ -51,7 +51,7 @@ export default async function CustomerAccountPage() {
             </h2>
             <Link
               href="/cuenta/pedidos"
-              className="text-sm font-bold text-violet-800 hover:underline"
+              className="text-sm font-bold text-[var(--ps-navy,#083F66)] hover:underline"
             >
               Ver todos
             </Link>
@@ -63,7 +63,7 @@ export default async function CustomerAccountPage() {
           </div>
         </section>
       ) : (
-        <section className="rounded-[1.75rem] border border-violet-100/80 bg-white p-7 text-center shadow-soft">
+        <section className="rounded-[1.75rem] border border-sky-100/80 bg-white p-7 text-center shadow-soft">
           <h2 className="font-display text-xl font-extrabold text-[var(--ps-night-900)]">
             No tenés pedidos en curso
           </h2>
@@ -80,16 +80,16 @@ export default async function CustomerAccountPage() {
       )}
 
       <section className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-[1.5rem] border border-violet-100/80 bg-white p-5 shadow-soft">
-          <p className="text-xs font-bold tracking-wider text-violet-700 uppercase">
+        <div className="rounded-[1.5rem] border border-sky-100/80 bg-white p-5 shadow-soft">
+          <p className="text-xs font-bold tracking-wider text-[var(--ps-cyan,#20AEE5)] uppercase">
             Email
           </p>
           <p className="mt-2 break-all font-bold text-[var(--ps-night-900)]">
             {context.user.email ?? "Sin email"}
           </p>
         </div>
-        <div className="rounded-[1.5rem] border border-violet-100/80 bg-white p-5 shadow-soft">
-          <p className="text-xs font-bold tracking-wider text-violet-700 uppercase">
+        <div className="rounded-[1.5rem] border border-sky-100/80 bg-white p-5 shadow-soft">
+          <p className="text-xs font-bold tracking-wider text-[var(--ps-cyan,#20AEE5)] uppercase">
             Teléfono
           </p>
           <p className="mt-2 font-bold text-[var(--ps-night-900)]">

@@ -103,10 +103,10 @@ export function ProductImageEditor({
         <img
           src={imageUrl}
           alt="Imagen del producto"
-          className="h-40 w-40 rounded-xl border border-[#e4dcf7] object-cover"
+          className="h-40 w-40 rounded-xl border border-[#D4E8F3] object-cover"
         />
       ) : (
-        <div className="flex h-40 w-40 items-center justify-center rounded-xl border border-dashed border-[#e4dcf7] bg-[#faf8ff] text-center text-xs text-[#5b5470]">
+        <div className="flex h-40 w-40 items-center justify-center rounded-xl border border-dashed border-[#D4E8F3] bg-[#F6F8FA] text-center text-xs text-[#4A6B82]">
           No cargaste una imagen todavía.
         </div>
       )}

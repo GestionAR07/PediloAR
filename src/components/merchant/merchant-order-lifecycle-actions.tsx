@@ -20,8 +20,14 @@ type Props = {
   deliveryStatus?: string | null;
 };
 
-const buttonClassName =
-  "min-h-11 w-full rounded-md bg-accent px-4 py-2 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-60";
+type ActionTone = "primary" | "success";
+
+const toneClassName: Record<ActionTone, string> = {
+  primary:
+    "pedilo-action-primary min-h-11 w-full rounded-md px-4 py-2 text-sm font-medium disabled:cursor-not-allowed",
+  success:
+    "pedilo-action-success min-h-11 w-full rounded-md px-4 py-2 text-sm font-medium disabled:cursor-not-allowed",
+};
 
 type ProgressionProps = {
   merchantId: string;
@@ -29,6 +35,7 @@ type ProgressionProps = {
   label: string;
   pendingLabel: string;
   fallbackError: string;
+  tone?: ActionTone;
   run: (
     merchantId: string,
     orderId: string,
@@ -41,6 +48,7 @@ function MerchantProgressionAction({
   label,
   pendingLabel,
   fallbackError,
+  tone = "primary",
   run,
 }: ProgressionProps) {
   const router = useRouter();
@@ -65,7 +73,7 @@ function MerchantProgressionAction({
         type="button"
         disabled={pending}
         onClick={onClick}
-        className={buttonClassName}
+        className={toneClassName[tone]}
       >
         {pending ? pendingLabel : label}
       </button>
@@ -125,6 +133,7 @@ export function MerchantOrderLifecycleActions({
         label="Marcar retirado"
         pendingLabel="Marcando retirado..."
         fallbackError="No se pudo marcar el retiro."
+        tone="success"
         run={completeMerchantPickupOrderAction}
       />
     );
@@ -151,6 +160,7 @@ export function MerchantOrderLifecycleActions({
           label="Marcar entregado"
           pendingLabel="Marcando entregado..."
           fallbackError="No se pudo marcar la entrega."
+          tone="success"
           run={completeMerchantDeliveryAction}
         />
       );

@@ -92,7 +92,7 @@ describe("merchant order inbox static checks", () => {
     expect(card).not.toContain("flex flex-wrap gap-x-2");
     expect(card).toContain("<Link");
     expect(card).toContain("Ver pedido");
-    expect(card).toContain("focus-visible:outline");
+    expect(card).toContain("pedilo-action-link");
     expect(card).toContain("break-words");
     expect(card).not.toContain("<table");
     expect(detail).not.toContain("<table");

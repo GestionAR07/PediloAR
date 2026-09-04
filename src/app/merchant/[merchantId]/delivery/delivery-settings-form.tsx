@@ -134,7 +134,7 @@ export function DeliverySettingsForm({ merchantId, settings }: Props) {
                       placeholder="30"
                       className="merchant-workspace-input merchant-workspace-input--narrow"
                     />
-                    <span className="text-sm text-[#5b5470]">minutos</span>
+                    <span className="text-sm text-[#4A6B82]">minutos</span>
                   </span>
                 </label>
               </div>

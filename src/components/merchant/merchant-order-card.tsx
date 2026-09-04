@@ -41,7 +41,7 @@ export function MerchantOrderCard({ merchantId, order, now, timeZone }: Props) {
       <p>
         <Link
           href={`/merchant/${merchantId}/orders/${order.orderId}`}
-          className="text-sm font-medium text-[#6d28d9] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7c3aed]"
+          className="pedilo-action-link text-sm font-medium"
         >
           Ver pedido
         </Link>
