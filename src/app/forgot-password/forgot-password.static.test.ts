@@ -38,7 +38,9 @@ describe("public password recovery", () => {
       "Si existe una cuenta con ese email, te enviamos un enlace para restablecer la contraseña.";
     expect(actions).toContain(neutralCopy);
     expect(page).toContain("Si está registrado");
-    expect(actions).not.toMatch(/usuario no existe|cuenta no existe|email no registrado/i);
+    expect(actions).not.toMatch(
+      /usuario no existe|cuenta no existe|email no registrado/i,
+    );
   });
 
   it("validates configuration and email before sending", () => {
