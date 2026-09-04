@@ -1,0 +1,258 @@
+/* Pedilo brand color unification.
+ * Loaded after globals.css so legacy private/public surfaces inherit one
+ * consistent brand system while semantic states (success/warning/danger)
+ * remain intentionally distinct.
+ */
+
+:root {
+  --pedilo-navy: #083f66;
+  --pedilo-cyan: #20aee5;
+  --pedilo-yellow: #ffc51b;
+  --pedilo-yellow-hover: #ecaf00;
+  --pedilo-surface: #f6f8fa;
+  --pedilo-surface-soft: #eef7fb;
+  --pedilo-border: #d4e8f3;
+  --pedilo-text: #083f66;
+  --pedilo-muted: #4a6b82;
+  --pedilo-white: #ffffff;
+
+  --color-bg: var(--pedilo-surface);
+  --color-fg: var(--pedilo-text);
+  --color-muted: var(--pedilo-muted);
+  --color-border: var(--pedilo-border);
+  --color-accent: var(--pedilo-cyan);
+}
+
+/* Public storefront: remove the remaining purple-era hardcoded accents. */
+.public-storefront .merchant-storefront-cover {
+  background: linear-gradient(135deg, var(--pedilo-navy), var(--pedilo-cyan));
+}
+
+.public-storefront .merchant-storefront-cover-scrim {
+  background: linear-gradient(
+    to top,
+    rgb(8 63 102 / 0.44) 0%,
+    rgb(8 63 102 / 0.08) 45%,
+    transparent 72%
+  );
+}
+
+.public-storefront .product-options-sheet {
+  border-color: rgb(212 232 243 / 0.9);
+}
+
+.public-storefront .cart-line-card:hover {
+  box-shadow: 0 18px 40px -20px rgba(8, 63, 102, 0.2);
+}
+
+.public-storefront .checkout-input:focus-visible {
+  border-color: var(--pedilo-cyan);
+}
+
+.public-storefront .checkout-input:-webkit-autofill,
+.public-storefront .checkout-input:-webkit-autofill:hover,
+.public-storefront .checkout-input:-webkit-autofill:focus,
+.public-storefront .checkout-input:-webkit-autofill:active,
+.public-storefront .checkout-input:autofill {
+  border-color: var(--pedilo-border);
+}
+
+.public-storefront .checkout-spinner {
+  border-color: #cfeaf5;
+  border-top-color: var(--pedilo-cyan);
+}
+
+/* Merchant/private workspace brand foundation. */
+.merchant-ops {
+  --color-bg: var(--pedilo-surface);
+  --color-fg: var(--pedilo-text);
+  --color-muted: var(--pedilo-muted);
+  --color-border: var(--pedilo-border);
+  --color-accent: var(--pedilo-cyan);
+  background-color: var(--pedilo-surface);
+  color: var(--pedilo-text);
+}
+
+.merchant-ops-header,
+.merchant-ops-stat,
+.merchant-ops-board > section,
+.merchant-ops-today,
+.merchant-ops-status,
+.merchant-ops-order-card,
+.merchant-workspace-card,
+.merchant-workspace-product-card,
+.merchant-workspace-mode-choice-body,
+.merchant-workspace-option-row,
+.merchant-workspace-segment,
+.merchant-workspace-toolbar-link {
+  border-color: var(--pedilo-border);
+  background: var(--pedilo-white);
+}
+
+.merchant-ops-mark,
+.merchant-ops-stat-value {
+  color: var(--pedilo-cyan);
+}
+
+.merchant-ops-kicker,
+.merchant-ops-logout,
+.merchant-ops-stat-label,
+.merchant-workspace-module-description,
+.merchant-workspace-card-copy,
+.merchant-workspace-empty,
+.merchant-workspace-product-meta,
+.merchant-workspace-product-status,
+.merchant-workspace-settings-pane-copy,
+.merchant-workspace-store-details-item dt,
+.merchant-workspace-status-chip,
+.merchant-workspace-mode-choice-copy,
+.merchant-workspace-field-help,
+.merchant-workspace-check-help,
+.merchant-workspace-switch-copy,
+.merchant-workspace-payment-instructions-hint {
+  color: var(--pedilo-muted);
+}
+
+.merchant-ops-store-link,
+.merchant-workspace-input,
+.merchant-workspace-cover-preview,
+.merchant-workspace-stock-block,
+.merchant-workspace-commerce-states,
+.merchant-workspace-status-chip {
+  border-color: var(--pedilo-border);
+  background: var(--pedilo-surface-soft);
+}
+
+.merchant-ops-store-link,
+.merchant-workspace-secondary-btn,
+.merchant-workspace-inline-link,
+.merchant-workspace-product-price,
+.merchant-workspace-inline-action,
+.merchant-workspace-add-summary,
+.merchant-workspace-switch:has(.merchant-workspace-switch-input:checked)
+  .merchant-workspace-switch-copy {
+  color: var(--pedilo-navy);
+}
+
+.merchant-ops-nav-link,
+.merchant-workspace-toolbar-link,
+.merchant-workspace-field,
+.merchant-workspace-segment,
+.merchant-workspace-commerce-states-title {
+  color: var(--pedilo-navy);
+}
+
+.merchant-ops-nav-link--active {
+  border-color: var(--pedilo-navy);
+  background: var(--pedilo-navy);
+  color: var(--pedilo-white);
+}
+
+.merchant-workspace-toolbar-link--active,
+.merchant-workspace-segment--active,
+.merchant-workspace-mode-choice:has(:checked)
+  .merchant-workspace-mode-choice-body {
+  border-color: var(--pedilo-cyan);
+  background: var(--pedilo-surface-soft);
+  color: var(--pedilo-navy);
+}
+
+.merchant-workspace-mode-badge {
+  border-color: var(--pedilo-border);
+  background: var(--pedilo-surface-soft);
+  color: var(--pedilo-navy);
+}
+
+.merchant-workspace-mode-choice-selected {
+  color: var(--pedilo-cyan);
+}
+
+.merchant-workspace-primary-btn {
+  border-color: var(--pedilo-yellow);
+  background: var(--pedilo-yellow);
+  color: var(--pedilo-navy);
+}
+
+.merchant-workspace-primary-btn:hover:not(:disabled) {
+  border-color: var(--pedilo-yellow-hover);
+  background: var(--pedilo-yellow-hover);
+}
+
+.merchant-workspace-secondary-btn {
+  border-color: var(--pedilo-border);
+  background: var(--pedilo-white);
+}
+
+.merchant-workspace-input {
+  color: var(--pedilo-navy);
+}
+
+.merchant-workspace-settings-pane-title,
+.merchant-workspace-store-details-item dd,
+.merchant-workspace-product-meta-name,
+.merchant-workspace-mode-choice-title,
+.merchant-workspace-check-title {
+  color: var(--pedilo-navy);
+}
+
+.merchant-workspace-switch-track {
+  background: #cfe4ee;
+}
+
+.merchant-workspace-toggle-card--switch:has(
+    .merchant-workspace-switch-input:checked
+  )
+  .merchant-workspace-switch-track--decor,
+.merchant-workspace-switch:has(.merchant-workspace-switch-input:checked)
+  .merchant-workspace-switch-track {
+  background: var(--pedilo-cyan);
+}
+
+.merchant-workspace-checkbox {
+  accent-color: var(--pedilo-cyan);
+}
+
+.merchant-ops-store-link:focus-visible,
+.merchant-ops-nav-link:focus-visible,
+.merchant-ops-logout:focus-visible,
+.merchant-workspace-toolbar-link:focus-visible,
+.merchant-workspace-primary-btn:focus-visible,
+.merchant-workspace-secondary-btn:focus-visible,
+.merchant-workspace-danger-btn:focus-visible,
+.merchant-workspace-inline-link:focus-visible,
+.merchant-workspace-input:focus-visible,
+.merchant-workspace-segment:focus-visible,
+.merchant-workspace-mode-choice:focus-within
+  .merchant-workspace-mode-choice-body,
+.merchant-workspace-switch--compact:has(
+    .merchant-workspace-switch-input:focus-visible
+  ),
+.merchant-workspace-toggle-card--switch:has(
+    .merchant-workspace-switch-input:focus-visible
+  )
+  .merchant-workspace-switch-track--decor,
+.merchant-workspace-switch:has(.merchant-workspace-switch-input:focus-visible)
+  .merchant-workspace-switch-track,
+.merchant-workspace-checkbox:focus-visible {
+  outline-color: var(--pedilo-cyan);
+}
+
+@media (min-width: 1280px) {
+  .merchant-ops-board > section {
+    background: var(--pedilo-surface-soft);
+    border-color: var(--pedilo-border);
+  }
+}
+
+/* Success remains green, warning amber and destructive/error red. */
+.merchant-workspace-alert--success {
+  border-color: #bbf7d0;
+  background: #ecfdf3;
+  color: #166534;
+}
+
+/* Generic operational/admin pages now inherit Pedilo instead of beige/green. */
+body {
+  background: var(--pedilo-surface);
+  color: var(--pedilo-text);
+}
