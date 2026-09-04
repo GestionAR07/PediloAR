@@ -13,7 +13,11 @@ describe("public password recovery", () => {
   const form = read("src/app/forgot-password/forgot-password-form.tsx");
   const page = read("src/app/forgot-password/page.tsx");
   const loginForm = read("src/app/login/login-form.tsx");
+  const loginPage = read("src/app/login/page.tsx");
   const confirmRoute = read("src/app/auth/confirm/route.ts");
+  const setPasswordPage = read("src/app/set-password/page.tsx");
+  const setPasswordForm = read("src/app/set-password/set-password-form.tsx");
+  const setPasswordActions = read("src/app/set-password/actions.ts");
 
   it("exposes a public recovery entry point from login", () => {
     expect(loginForm).toContain('href="/forgot-password"');
@@ -27,7 +31,7 @@ describe("public password recovery", () => {
     expect(actions).toContain("resetPasswordForEmail");
     expect(actions).toContain("appAbsoluteUrl");
     expect(actions).toContain(
-      '"/auth/confirm?type=recovery&next=/set-password"',
+      '"/auth/confirm?type=recovery&next=/set-password%3Fflow%3Drecovery"',
     );
     expect(actions).not.toContain("SUPABASE_SECRET_KEY");
     expect(actions).not.toContain("auth.admin");
@@ -52,9 +56,21 @@ describe("public password recovery", () => {
     expect(form).toContain("required");
   });
 
-  it("keeps recovery on the existing SSR callback and set-password route", () => {
-    expect(confirmRoute).toContain('"recovery"');
-    expect(confirmRoute).toContain('"/set-password"');
+  it("keeps an explicit recovery marker through callback and set-password", () => {
+    expect(confirmRoute).toContain('type === "recovery"');
+    expect(confirmRoute).toContain('"/set-password?flow=recovery"');
+    expect(setPasswordPage).toContain('params.flow === "recovery"');
+    expect(setPasswordForm).toContain('name="flow" value="recovery"');
+    expect(setPasswordActions).toContain(
+      'String(formData.get("flow") ?? "") === "recovery"',
+    );
+  });
+
+  it("finishes recovery with a fresh login instead of merchant onboarding", () => {
+    expect(setPasswordActions).toContain('redirect("/login?reset=success")');
+    expect(loginPage).toContain(
+      "Contraseña actualizada. Ingresá con tu nueva contraseña.",
+    );
     expect(confirmRoute).not.toContain("PASSWORD_RECOVERY_NOT_IMPLEMENTED");
   });
 });
