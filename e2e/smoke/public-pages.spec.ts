@@ -40,7 +40,31 @@ test.describe("B — deterministic public routes (GET only, no mutations)", () =
     await expect(page.getByLabel("Contraseña")).toBeVisible();
     await expect(page.getByRole("button", { name: "Ingresar" })).toBeVisible();
     await expect(
+      page.getByRole("link", { name: "Olvidé mi contraseña" }),
+    ).toBeVisible();
+    await expect(
       page.getByRole("link", { name: "Crear cuenta" }),
+    ).toBeVisible();
+
+    await expectNoNextCrashOverlay(page);
+    expect(errors).toEqual([]);
+  });
+
+  test("password recovery page renders without sending email", async ({
+    page,
+  }) => {
+    const { errors } = attachPageCrashGuard(page);
+    await page.goto("/forgot-password", { waitUntil: "domcontentloaded" });
+
+    await expect(
+      page.getByRole("heading", { name: "Recuperá tu contraseña" }),
+    ).toBeVisible();
+    await expect(page.getByLabel("Email")).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Enviar enlace" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Volver a ingresar" }),
     ).toBeVisible();
 
     await expectNoNextCrashOverlay(page);
