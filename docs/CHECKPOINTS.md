@@ -5,65 +5,83 @@ Este archivo resume hitos funcionales relevantes. Los commits históricos detall
 ## Fundación
 
 ### `PROJECT_ARCHITECTURE_V1_APPROVED`
+
 Arquitectura general del proyecto aprobada.
 
 ### `BASE_TECH_FOUNDATION_READY`
+
 Next.js/TypeScript/Tailwind, calidad y estructura base operativas.
 
 ### `CORE_DOMAIN_MODEL_HARDENED`
+
 Dominio y reglas principales validados.
 
 ### `CORE_PERSISTENCE_SCHEMA_VALIDATED`
+
 PostgreSQL + Drizzle + migraciones base aplicadas/validadas en DEV.
 
 ### `AUTH_FOUNDATION_VALIDATED`
+
 Supabase Auth SSR, perfiles, roles, login/logout, ADMIN y memberships merchant validados.
 
 ## Catálogo y storefront
 
 ### `PRODUCT_IMAGES_STORAGE_READY`
+
 Imágenes de producto con Storage y persistencia de path validadas.
 
 ### `PUBLIC_STOREFRONT_DISCOVERY_VALIDATED`
+
 Discovery público, zonas, categorías, tarjetas de comercio y storefront responsive validados.
 
 ### `MERCHANT_STOREFRONT_CATALOG_VALIDATED`
+
 Catálogo público con disponibilidad, stock, opciones y presentación de comercio integrado.
 
 ## Comprador
 
 ### `BUYER_CART_CHECKOUT_VALIDATED`
+
 Carrito persistente, checkout, retiro/delivery, pagos, mínimos y review autoritativo funcionales.
 
 ### `BUYER_ORDER_IDEMPOTENCY_VALIDATED`
+
 Confirmación idempotente y recuperación ante respuesta perdida validadas.
 
 ### `BUYER_ADVERSARIAL_CHECKOUT_VALIDATED`
+
 Carreras de stock, requote, producto que deja de estar disponible y configuración de opciones obsoleta bloqueadas correctamente.
 
 ### `BUYER_CRITICAL_E2E_VALIDATED`
+
 Batería crítica WRITE_DEV comprador/comercio cerrada: no hay persistencia ni descuento de stock cuando una revalidación invalida el pedido.
 
 ## Operación merchant
 
 ### `MERCHANT_ORDER_READ_ONLY_INBOX_READY`
+
 Inbox merchant-scoped y detalle de pedido disponibles.
 
 ### `MERCHANT_ORDER_LIFECYCLE_VALIDATED`
+
 Flujo `PENDING → ACCEPTED → PREPARING → READY → COMPLETED` validado para retiro.
 
 ### `MERCHANT_DELIVERY_LIFECYCLE_VALIDATED`
+
 Delivery propio `PENDING → IN_TRANSIT → DELIVERED` y finalización de Order validados sin doble descuento de stock.
 
 ### `ORDER_CANCELLATION_RESTOCK_READY`
+
 Cancelación/rechazo transaccional y restitución de stock validados.
 
 ### `MERCHANT_REALTIME_PRIVATE_VALIDATED`
+
 Realtime de pedidos merchant-scoped y alertas de nuevos pedidos integrados.
 
 ## Onboarding
 
 ### `MERCHANT_ONBOARDING_ACTIVE_FLOW_VALIDATED`
+
 Flujo actual validado:
 
 ```text
@@ -81,6 +99,7 @@ El E2E automatizado DEV valida el producto completo usando un OWNER temporal ya 
 ## Seguridad
 
 ### `MERCHANT_MULTITENANCY_SECURITY_VALIDATED`
+
 Validado en DEV:
 
 - `STAFF` accede a su propio workspace;
