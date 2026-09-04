@@ -5,7 +5,11 @@ import { PublicBrandWordmark } from "@/components/storefront/public-brand-wordma
 import { isGoogleOAuthEnabled } from "@/config/auth-providers";
 
 type LoginPageProps = {
-  searchParams: Promise<{ next?: string; error?: string }>;
+  searchParams: Promise<{
+    next?: string;
+    error?: string;
+    reset?: string;
+  }>;
 };
 
 function friendlyLoginError(code: string | undefined): string | null {
@@ -13,7 +17,7 @@ function friendlyLoginError(code: string | undefined): string | null {
     case "forbidden":
       return "No tenés acceso a esa sección.";
     case "expired_token":
-      return "El enlace de invitación expiró o no es válido. Pedí una nueva invitación al administrador.";
+      return "El enlace de acceso expiró o no es válido. Solicitá uno nuevo e intentá nuevamente.";
     case "invalid_token":
       return "El enlace de confirmación no es válido.";
     case "auth_config":
@@ -25,6 +29,13 @@ function friendlyLoginError(code: string | undefined): string | null {
   }
 }
 
+function friendlyLoginSuccess(code: string | undefined): string | null {
+  if (code === "success") {
+    return "Contraseña actualizada. Ingresá con tu nueva contraseña.";
+  }
+  return null;
+}
+
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const nextPath =
@@ -32,6 +43,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       ? sanitizeInternalPath(params.next)
       : undefined;
   const banner = friendlyLoginError(params.error);
+  const successBanner = friendlyLoginSuccess(params.reset);
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10 sm:px-6">
@@ -55,6 +67,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             role="alert"
           >
             {banner}
+          </p>
+        ) : null}
+        {successBanner ? (
+          <p
+            className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900"
+            role="status"
+          >
+            {successBanner}
           </p>
         ) : null}
         <div className="mt-7">
